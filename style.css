@@ -1,11 +1,19 @@
+/* Paleta de Colores de la imagen:
+   Azul Oscuro/Grisáceo: #2c3e50 (Principal)
+   Verde Azulado Intenso: #16a085 (Acento Fuerte)
+   Mostaza / Dorado: #f39c12 (Acento Botón)
+   Gris Claro Azulado: #bdc3c7 (Texto Secundario)
+*/
+
 /* RESET BÁSICO Y FUENTES */
 body {
-    font-family: sans-serif; /* Usaremos una fuente limpia por defecto */
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    color: #333; /* Texto principal oscuro */
-    background-color: #f4f4f9; /* Fondo muy claro */
+    color: #34495e; /* Gris oscuro suave para texto principal */
+    background-color: #ecf0f1; /* Fondo muy claro */
 }
+
 .container {
     width: 90%;
     max-width: 1200px;
@@ -15,73 +23,107 @@ body {
 
 /* 1. HERO SECTION (La más llamativa) */
 .hero {
-    background-color: #1f3a93; /* Un azul oscuro profesional */
+    background-color: #2c3e50; /* Azul oscuro/grisáceo principal */
     color: white;
     padding: 100px 0;
     text-align: center;
 }
 .hero h1 {
-    font-size: 3em;
+    font-family: 'Lato', sans-serif;
+    font-size: 3.5em;
     margin-bottom: 0.1em;
 }
 .hero .subtitle {
-    font-size: 1.5em;
+    font-size: 1.8em;
     font-weight: 300;
     margin-top: 0;
+    color: #bdc3c7; /* Gris claro azulado */
 }
 .hero .tagline {
-    font-size: 1.2em;
+    font-size: 1.3em;
     margin-bottom: 2em;
-    color: #b3cde0; /* Color secundario claro */
+    color: #ecf0f1;
+    max-width: 800px;
+    margin: 0 auto 2em;
 }
 
 /* BOTONES */
 .btn {
     display: inline-block;
-    padding: 12px 25px;
+    padding: 12px 28px;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-size: 1.1em;
 }
 .primary-btn {
-    background-color: #ff6f61; /* Un color de acento llamativo (naranja/rojo) */
+    background-color: #f39c12; /* Mostaza/Dorado - Acento fuerte */
     color: white;
+    border: none;
 }
 .primary-btn:hover {
-    background-color: #e55c50;
+    background-color: #e67e22;
+    transform: translateY(-2px);
 }
 .secondary-btn {
-    background-color: #ccc;
-    color: #333;
+    background-color: #bdc3c7;
+    color: #34495e;
+    border: none;
 }
 
-/* 2. KEY METRICS */
+/* 2. KEY METRICS (EL DASHBOARD PERSONAL) */
 .metrics {
-    background-color: white; /* Contraste con el Hero */
-    padding: 40px 0;
+    background-color: white;
+    padding: 50px 0;
     text-align: center;
+}
+.metrics h2:first-of-type {
+    text-align: center; 
+    font-size: 2.5em; 
+    margin-bottom: 40px; 
+    color: #2c3e50; 
 }
 .grid-3 {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
 }
+
+
 .metric-card {
-    border: 1px solid #ddd;
-    padding: 20px;
-    border-left: 5px solid #1f3a93; /* Toque de color */
+    border: 1px solid #dcdcdc;
+    padding: 25px;
+    border-bottom: 5px solid #16a085; /* Verde azulado intenso - Acento */
+    background-color: #fcfcfc;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+.metric-card i {
+    font-size: 3em;
+    color: #16a085; /* Iconos en acento */
+    margin-bottom: 10px;
 }
 .metric-card h2 {
-    color: #1f3a93;
-    font-size: 2em;
+    color: #2c3e50;
+    font-size: 2.5em;
     margin-bottom: 0.1em;
 }
 
 /* 3. PORTFOLIO SHOWCASE */
 .showcase {
-    padding: 60px 0;
+    padding: 70px 0;
     text-align: center;
+    background-color: #ecf0f1;
+}
+.showcase h2 {
+    font-family: 'Lato', sans-serif;
+    color: #2c3e50;
+    font-size: 2.5em;
+    margin-bottom: 40px;
 }
 .project-box {
     margin-top: 30px;
@@ -89,19 +131,301 @@ body {
     padding: 30px;
     text-align: left;
     background-color: white;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-radius: 8px;
+    margin-bottom: 20px;
 }
-.project-box img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
+.project-box p.role {
+    font-weight: bold;
+    font-size: 1.3em;
+    color: #34495e;
+    margin-bottom: 5px;
+}
+.project-box p.company {
+    font-style: italic;
+    color: #16a085; /* Nombre de la empresa en acento */
+    margin-top: 0;
     margin-bottom: 15px;
+}
+.project-box ul {
+    list-style-type: none;
+    padding-left: 0;
+    line-height: 1.5em;
+}
+.project-box li {
+    padding-left: 1.5em;
+    text-indent: -0.5em;
+    margin-bottom: 8px;
+}
+.project-box li::before {
+    content: "•";
+    color: #f39c12; /* Viñeta en color mostaza */
+    font-weight: bold;
+    font-size: x-large;
+    display: inline-block;
+    width: 0.5em;
+}
+
+/* -------------------------------------------------------------------- */
+/* 4. PROYECTOS DESTACADOS (NUEVA SECCIÓN) */
+/* -------------------------------------------------------------------- */
+.projects-section {
+    background-color: #f4f4f9; /* Un fondo ligeramente diferente para contraste */
+}
+.project-card-full {
+    display: flex;
+    flex-wrap: wrap; /* Permite que la imagen y el detalle se apilen en móvil */
+    background-color: white;
+    margin-bottom: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    overflow: hidden; /* Oculta cualquier cosa que se salga del borde redondeado */
+    text-align: left;
+}
+.project-image {
+    flex: 1; 
+    min-width: 300px; 
+    overflow: hidden;
+    
+    /* ALTURA FIJA: El espacio disponible para centrar */
+    height: 550px; 
+    
+    /* PROPIEDADES DE CENTRADO */
+    display: flex;
+    align-items: center;    /* CENTRADO VERTICAL */
+    justify-content: center; /* CENTRADO HORIZONTAL */
+    
+    /* Mantenemos el padding y fondo */
+    padding: 20px;
+    background-color: #f4f4f9; 
+}
+
+/* -------------------------------------------------------------------- */
+/* 2. LA IMAGEN (img) */
+/* La imagen se ajusta al ancho, pero no se fuerza a la altura, lo que permite el centrado */
+/* -------------------------------------------------------------------- */
+.project-image img {
+    /* Ocupa todo el ancho del contenedor */
+    width: 100%;
+    
+    /* ¡CORRECCIÓN CLAVE! height: auto, NO height: 100% */
+    /* Si era height: 100%, el Flexbox no puede centrarla. */
+    height: auto; 
+    
+    /* Asegura que la imagen se vea completa sin recortarse */
+    object-fit: contain; 
+    
+    display: block;
+}
+.project-details {
+    flex: 1; /* Ocupa el otro 50% en escritorio */
+    padding: 30px;
+}
+.project-details h3 {
+    color: #2c3e50;
+    font-size: 1.8em;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+.project-details p {
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+.project-details .project-stack {
+    font-style: italic;
+    color: #16a085; /* Herramientas en Verde Azulado */
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.project-details .btn {
+    margin-right: 15px;
+    margin-bottom: 10px; /* Espacio para móvil */
+}
+
+/* -------------------------------------------------------------------- */
+/* ESTILOS PARA ICONOS DE HERRAMIENTAS DENTRO DE LA TARJETA DE PROYECTO */
+/* -------------------------------------------------------------------- */
+.project-details .tool-icons {
+    margin-bottom: 20px; 
+    /* Si la línea de iconos se extiende, usa flexbox para mejor alineación */
+    display: flex;
+    align-items: center;
+}
+
+/* Aplica el estilo y tamaño a las IMÁGENES dentro de .tool-icons */
+.project-details .tool-icons img {
+    /* Define el tamaño de los iconos de proyecto */
+    width: 35px; 
+    height: 35px;
+    
+    /* Espacio entre iconos */
+    margin-right: 15px; 
+    
+    /* Transición para el efecto hover */
+    transition: opacity 0.2s, transform 0.2s;
+    
+    /* Asegura que los logos (a menudo cuadrados) se vean bien */
+    object-fit: contain; 
+}
+
+.project-details .tool-icons img:hover {
+    /* Efecto hover: lo hace ligeramente más grande y visible */
+    transform: scale(1.1);
+    opacity: 0.9;
+}
+
+/* **OPCIONAL:** Si deseas eliminar el borde oscuro en hover para los iconos de Font Awesome, también puedes eliminar esta regla si solo usarás imágenes:
+.project-details .tool-icons i:hover {
+    color: #f39c12; 
+    transform: scale(1.1);
+}
+*/
+
+/* MEDIAS QUERIES para Responsiveness */
+/* Asegura que en pantallas pequeñas (móviles) las secciones se apilen */
+@media (max-width: 768px) {
+    .project-card-full {
+        flex-direction: column;
+    }
+    .project-image {
+        /* En móvil, la imagen ocupa todo el ancho superior */
+        min-width: 100%;
+    }
+}
+
+
+
+
+
+/* -------------------------------------------------------------------- */
+/* AJUSTE PARA EL BOTÓN "VER MÁS PROYECTOS" */
+/* -------------------------------------------------------------------- */
+
+.see-more-btn-container {
+    text-align: center; /* Centra el botón */
+    margin-top: 20px;
+    padding-bottom: 20px; /* Espacio antes de la siguiente sección */
+}
+
+.large-btn {
+    padding: 15px 35px; /* Hace el botón más grande y llamativo */
+    font-size: 1.2em;
+    font-weight: 700;
+}
+.large-btn i {
+    margin-left: 10px;
+}
+
+
+/* -------------------------------------------------------------------- */
+/* 3. TECNOLOGÍAS Y HERRAMIENTAS (TECH STACK) */
+/* -------------------------------------------------------------------- */
+.tech-stack {
+    padding: 70px 0;
+    text-align: center;
+    background-color: white; /* Contraste con la sección Showcase */
+}
+.tech-stack h2 {
+    font-family: 'Lato', sans-serif;
+    color: #2c3e50;
+    font-size: 2.5em;
+    margin-bottom: 40px;
+}
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    text-align: left;
+}
+.tech-card {
+    background-color: #ecf0f1; /* Gris claro de fondo */
+    padding: 30px;
+    border-radius: 8px;
+    border-top: 5px solid #f39c12; /* Borde superior Mostaza/Dorado */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.tech-card h3 {
+    color: #16a085; /* Verde azulado para subtítulos */
+    font-size: 1.5em;
+    margin-top: 0;
+    border-bottom: 1px solid #bdc3c7; /* Línea gris sutil */
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+.tech-card ul {
+    list-style: none;
+    padding: 0;
+}
+.tech-card li {
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #34495e; /* Texto gris oscuro */
+}
+.tech-card li i {
+    color: #2c3e50; /* Iconos en Azul Oscuro/Grisáceo */
+    margin-right: 10px;
+    width: 20px; /* Asegura alineación de los iconos */
+    text-align: center;
+}
+
+/* Estilos para la imagen dentro de la lista de herramientas */
+.tech-card li img {
+    /* Define el tamaño exacto del icono para que se vea bien */
+    width: 20px; 
+    height: 20px;
+    
+    /* Asegura que el icono esté alineado verticalmente con el texto */
+    vertical-align: middle; 
+    
+    /* Pequeño margen a la derecha para separar el icono del texto */
+    margin-right: 10px; 
+    
+    /* Asegúrate de que los bordes no sean un problema si la imagen no es cuadrada */
+    border: none; 
 }
 
 /* FOOTER */
 footer {
-    background-color: #333;
+    background-color: #34495e;
     color: white;
     text-align: center;
-    padding: 30px 0;
+    padding: 40px 0;
+}
+footer h3 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+footer p {
+    margin-bottom: 25px;
+    font-size: 1.1em;
+}
+.social-links {
+    margin-top: 20px;
+}
+.social-links a {
+    color: white;
+    font-size: 1.8em;
+    margin: 0 15px;
+    transition: color 0.3s ease;
+}
+.social-links a:hover {
+    color: #f39c12;
+}
+
+/* -------------------------------------------------------------------- */
+/* AJUSTE PARA CABECERA DE PÁGINAS SECUNDARIAS */
+/* -------------------------------------------------------------------- */
+
+.secondary-header {
+    /* Reduce el padding para que sea menos dominante */
+    padding: 60px 0; 
+}
+.secondary-header h1 {
+    /* Reduce el tamaño del título */
+    font-size: 3em; 
+}
+.secondary-header .subtitle {
+    /* Reduce el tamaño del subtítulo */
+    font-size: 1.5em; 
 }
