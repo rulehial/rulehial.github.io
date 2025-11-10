@@ -22,8 +22,8 @@ body {
 }
 
 /* 1. HERO SECTION (La más llamativa) */
-.hero {
-    background-color: #2c3e50; /* Azul oscuro/grisáceo principal */
+/* .hero {
+    background-color: #2c3e50;
     color: white;
     padding: 100px 0;
     text-align: center;
@@ -37,7 +37,7 @@ body {
     font-size: 1.8em;
     font-weight: 300;
     margin-top: 0;
-    color: #bdc3c7; /* Gris claro azulado */
+    color: #bdc3c7; 
 }
 .hero .tagline {
     font-size: 1.3em;
@@ -45,7 +45,77 @@ body {
     color: #ecf0f1;
     max-width: 800px;
     margin: 0 auto 2em;
+} */
+
+
+/* -------------------------------------------------------------------- */
+/* ESTILOS PARA EL VIDEO DE FONDO (BACKGROUND VIDEO) - CORRECCIÓN FINAL */
+/* -------------------------------------------------------------------- */
+
+.hero {
+    /* El contenedor principal debe ser relativo y usar Flexbox */
+    position: relative;
+    height: 100vh; 
+    overflow: hidden; 
+    background-color: #2c3e50; /* Fondo de respaldo */
+
+    /* PROPIEDADES CLAVE PARA CENTRAR EL CONTENIDO SOBRE EL VIDEO */
+    display: flex;
+    flex-direction: column; /* Apila el contenido verticalmente */
+    justify-content: center; /* Centrado Vertical del contenido */
+    align-items: center;     /* Centrado Horizontal del contenido */
+    text-align: center;      /* Asegura que el texto interno también se centre */
+    color: white; /* Asegura que el texto sea blanco */
 }
+
+/* El elemento del video permanece igual: absoluto y en el fondo */
+#bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    /* z-index: -1;  */
+}
+
+/* El contenido (texto, botones) necesita solo posicionamiento relativo para estar sobre el overlay */
+.hero-content {
+    position: relative; 
+    z-index: 10; 
+    /* ELIMINAMOS las propiedades 'display: flex', etc., ya que el .hero lo está haciendo */
+    /* Aseguramos que ocupe todo el ancho para centrar elementos internos si los hay */
+    width: 100%; 
+    max-width: 1200px;
+    padding: 0 20px;
+}
+
+/* Opcional: Capa de Oscurecimiento (Overlay) */
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Capa semi-transparente para mejorar la legibilidad del texto */
+    background: rgba(0, 0, 0, 0.5); /* Aumenté la opacidad a 0.5 para más contraste */
+    z-index: 0; /* Lo coloco entre el video (-1) y el contenido (10) */
+}
+
+.hero-content h1 {
+    font-family: 'Lato', sans-serif;
+    font-size: 3.5em;
+    margin-bottom: 0.1em;
+    color: white; /* Asegura color blanco */
+}
+.hero-content .subtitle {
+    font-size: 1.8em;
+    font-weight: 300;
+    margin-top: 0;
+    color: #ddd; 
+}
+/*... y ajusta cualquier estilo para botones y enlaces dentro de .hero-content*/
 
 /* BOTONES */
 .btn {
@@ -167,6 +237,39 @@ body {
 }
 
 /* -------------------------------------------------------------------- */
+/* 3. SECCIÓN: ACERCA DE MÍ / PERFIL PROFESIONAL */
+/* -------------------------------------------------------------------- */
+.about-me {
+    /* Un color neutro para separar esta sección del hero y de las métricas */
+    background-color: #f9f9f9; 
+    padding: 80px 0;
+    text-align: center;
+}
+
+.about-me h2 {
+    /* Estilo del título principal de la sección */
+    font-size: 2.5em;
+    color: #2c3e50; /* Color oscuro para contraste */
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.about-me p {
+    /* Estilo del párrafo descriptivo */
+    font-size: 1.2em; /* Un tamaño de fuente grande para fácil lectura */
+    line-height: 1.8; /* Espaciado entre líneas amplio */
+    color: #555;
+    max-width: 900px; /* Limita el ancho del texto para que no se estire demasiado */
+    margin: 0 auto; /* Centra el párrafo */
+}
+
+/* Opcional: Resaltar palabras en negrita para impacto visual */
+.about-me p strong {
+    color: #16a085; /* Un color de acento, el mismo que usas en el resto del portafolio */
+    font-weight: 700;
+}
+
+/* -------------------------------------------------------------------- */
 /* 4. PROYECTOS DESTACADOS (NUEVA SECCIÓN) */
 /* -------------------------------------------------------------------- */
 .projects-section {
@@ -181,21 +284,25 @@ body {
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
     overflow: hidden; /* Oculta cualquier cosa que se salga del borde redondeado */
     text-align: left;
+    
 }
 .project-image {
     flex: 1; 
     min-width: 300px; 
     overflow: hidden;
     
-    /* ALTURA FIJA: El espacio disponible para centrar */
+    /* SOLUCIÓN CLAVE: Incluye el padding dentro del ancho/alto */
+    box-sizing: border-box; 
+    
+    /* ALTURA FIJA: Se mantiene el espacio disponible para centrar */
     height: 550px; 
     
-    /* PROPIEDADES DE CENTRADO */
+    /* PROPIEDADES DE CENTRADO (Correctas, ahora funcionan con box-sizing) */
     display: flex;
     align-items: center;    /* CENTRADO VERTICAL */
     justify-content: center; /* CENTRADO HORIZONTAL */
     
-    /* Mantenemos el padding y fondo */
+    /* Mantenemos el padding deseado */
     padding: 20px;
     background-color: #f4f4f9; 
 }
@@ -205,16 +312,11 @@ body {
 /* La imagen se ajusta al ancho, pero no se fuerza a la altura, lo que permite el centrado */
 /* -------------------------------------------------------------------- */
 .project-image img {
-    /* Ocupa todo el ancho del contenedor */
-    width: 100%;
-    
-    /* ¡CORRECCIÓN CLAVE! height: auto, NO height: 100% */
-    /* Si era height: 100%, el Flexbox no puede centrarla. */
-    height: auto; 
-    
-    /* Asegura que la imagen se vea completa sin recortarse */
-    object-fit: contain; 
-    
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
     display: block;
 }
 .project-details {
@@ -291,6 +393,7 @@ body {
     .project-image {
         /* En móvil, la imagen ocupa todo el ancho superior */
         min-width: 100%;
+        /* padding: 0; */
     }
 }
 
