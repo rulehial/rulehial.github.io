@@ -87,6 +87,7 @@ body {
     /* Aseguramos que ocupe todo el ancho para centrar elementos internos si los hay */
     width: 100%; 
     max-width: 1200px;
+    box-sizing: border-box; 
     padding: 0 20px;
 }
 
@@ -138,9 +139,9 @@ body {
 }
 .secondary-btn {
     background-color: #006791;
-    color: #34495e;
+    color: white;
     border: none;
-    color: #ddd;
+
 }
 
 /* 2. KEY METRICS (EL DASHBOARD PERSONAL) */
@@ -312,7 +313,7 @@ body {
 /* 2. LA IMAGEN (img) */
 /* La imagen se ajusta al ancho, pero no se fuerza a la altura, lo que permite el centrado */
 /* -------------------------------------------------------------------- */
-.project-image img {
+.project-image img, video {
     max-width: 100%;
     max-height: 100%;
     width: auto;
