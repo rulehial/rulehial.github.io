@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rubén Hidalgo - Data Analyst & BI</title>
 
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="icon" type="image/png" sizes="64x64" href="images/favicon-64.png">
+
     <!-- SEO básico -->
     <meta name="description" content="Portafolio de Rubén Hidalgo — Data Analyst y especialista en BI con +7 años de experiencia. Power BI, Tableau, Python, SQL y ETL.">
     <meta name="author" content="Rubén Hidalgo">
@@ -32,6 +35,12 @@
     <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
+
+    <button class="theme-toggle" id="themeToggle" aria-label="Cambiar tema">
+        <span class="icon-moon">🌙</span>
+        <span class="icon-sun">☀️</span>
+        <span class="toggle-label">Modo Oscuro</span>
+    </button>
 
     <header class="hero">
         <!-- <div class="container">
@@ -283,12 +292,29 @@
 
     
 
-    <section id="proyectos" class="showcase reveal">
+    <section id="experience" class="showcase reveal">
         <div class="container">
             <h2>Experiencia Clave</h2>
             <div class="project-box">
-                <p class="role">Ingeniero y Analista de Datos (Oct 2020 - Actualidad)</p>
-                <p class="company">Universidad de Atacama</p>
+                
+                <!-- <p class="role">Ingeniero y Analista de Datos (Oct 2020 - Actualidad)</p>
+                <div class="company-logo">
+                    <img src="images/UDA_64.png" alt="Microsoft">
+                </div>
+                <p class="company">Universidad de Atacama</p> -->
+
+                <div class="project-header">
+                    <div class="company-logo">
+                        <img src="images/UDA_64.png" alt="Universidad de Atacama">
+                    </div>
+
+                    <div class="project-info">
+                        <p class="role">Ingeniero y Analista de Datos</p>
+                        <p class="company">Universidad de Atacama</p>
+                        <p class="date">(Oct 2020 - Actualidad)</p>
+                    </div>
+                </div>
+
                 <ul>
                     <!-- <li>Automatización y optimización de procesos de integración de datos (ETL) utilizando KNIME y Pentaho Data Integration.</li>
                     <li>Creación y mantenimiento de dashboards y reportes interactivos en Power BI y Tableau para apoyar la toma de decisiones estratégicas.</li>
@@ -300,16 +326,28 @@
                     <li>Administración del entorno organizacional de Power BI, incluyendo seguridad, acceso y gestión de espacios de trabajo.</li>
                     <li>Desarrollo y actualización continua de dashboards automatizados para distintas unidades de negocio.</li>
                     <li>Automatización de procesos rutinarios y operativos mediante herramientas de análisis y scripting.</li> -->
-                    <li>Liderazgo en la <b>automatización de flujos ETL</b> y optimización de procesos utilizando <b>KNIME y Pentaho Data Integration</b>.</li>
-                    <li>Desarrollo de <b>dashboards interactivos</b> en <b>Power BI y Tableau</b> para la toma de decisiones estratégicas.</li>
-                    <li><b>Modelado, administración y optimización de bases de datos</b> relacionales (SQL Server, MySQL).</li>
-                    <li>Análisis exploratorio avanzado de datos mediante <b>Python y SQL avanzado</b>.</li>
+                    <li>Liderazgo en la <b>automatización de flujos ETL</b> y optimización de procesos utilizando <span class="tag">KNIME</span> y <span class="tag">Pentaho Data Integration</span>.</li>
+                    <li>Desarrollo de <b>dashboards interactivos</b> en <span class="tag">Power BI</span> y <span class="tag">Tableau</span> para la toma de decisiones estratégicas.</li>
+                    <li><b>Modelado, administración y optimización de bases de datos</b> relacionales <span class="tag">SQL Server</span>, <span class="tag">MySQL</span>.</li>
+                    <li>Análisis exploratorio avanzado de datos mediante  <span class="tag">Python</span> y <span class="tag">SQL avanzado</span>.</li>
 
                 </ul>
             </div>
              <div class="project-box">
-                <p class="role">Ingeniero de Sistemas y Programador Web (Abr 2019 - May 2020)</p>
-                <p class="company">MDTech Ltda</p>
+
+                <div class="project-header">
+                    <div class="company-logo">
+                        <img src="images/MDTECH_64.png" alt="MDTech Ltda">
+                    </div>
+
+                    <div class="project-info">
+                        <p class="role">Ingeniero de Sistemas y Programador Web</p>
+                        <p class="company">MD Tech Ltda</p>
+                        <p class="date">(Abr 2019 - May 2020)</p>
+                    </div>
+                </div>
+
+              
                 <ul>
                     <!-- <li>Desarrollo y mantenimiento de la intranet corporativa de la Municipalidad de Copiapó, utilizando ASP.NET (C#), Entity Framework y SQL Server 2008 R2.</li>
                     <li>Implementación de análisis de datos y soluciones de Business Intelligence (BI) con Python y herramientas de visualización para la Municipalidad de Copiapó</li>
@@ -318,15 +356,27 @@
                     <li>Programación front-end utilizando HTML5, CSS3, JavaScript y TypeScript, garantizando una experiencia de usuario eficiente y moderna.</li>
                     <li>Capacitación y soporte técnico a nuevos usuarios sobre el uso de software desarrollado internamente.</li>
                     <li>Interacción directa con clientes y contratistas para la definición, desarrollo y entrega de soluciones tecnológicas.</li> -->
-                    <li>Implementación de soluciones de <b>Análisis de Datos y BI</b> con <b>Python</b> y herramientas de visualización para la Municipalidad de Copiapó.</li>
+                    <li>Implementación de soluciones de <span class="tag">Análisis de Datos y BI</span> con <span class="tag">Python</span> y herramientas de visualización para la Municipalidad de Copiapó.</li>
                     <li>Diseño, modelado y <b>optimización de estructuras de datos</b> para proyectos de análisis institucional.</li>
-                    <li>Desarrollo y mantenimiento de la intranet corporativa con <b>ASP.NET (C#) y SQL Server</b>.</li>
+                    <li>Desarrollo y mantenimiento de la intranet corporativa con <span class="tag">ASP.NET (C#)</span> y <span class="tag">SQL Server</span>.</li>
             
                 </ul>
             </div>
             <div class="project-box">
-                <p class="role">Ingeniero de Sistemas y Encargado de Sistemas Corporativos (Oct 2016 - Dic 2018)</p>
-                <p class="company">Aguas Chañar S.A</p>
+
+                <div class="project-header">
+                    <div class="company-logo">
+                        <img src="images/aca_64.png" alt="MDTech Ltda">
+                    </div>
+
+                    <div class="project-info">
+                        <p class="role">Ingeniero de Sistemas y Encargado de Sistemas Corporativos</p>
+                        <p class="company">Aguas Chañar S.A</p>
+                        <p class="date">(Oct 2016 - Dic 2018)</p>
+                    </div>
+                </div>
+
+      
                 <ul>
                     <!-- <li>Administración y mantenimiento del software de gestión corporativo y de la seguridad de usuarios en SQL Server.</li>
                     <li>Desarrollo y soporte de aplicaciones web en ASP.NET (C#) y PHP, con motores de base de datos SQL Server y MySQL.</li>
@@ -337,11 +387,76 @@
                     <li>Levantamiento de requerimientos, análisis funcional y desarrollo de nuevas aplicaciones web según necesidades de los usuarios.</li>
                     <li>Programación en ASP.NET (C#) con base de datos SQL Server 2008 R2, y en PHP (framework Laravel, WordPress) con MySQL.</li>
                     <li>Desarrollo de aplicaciones Android utilizando SQLite para la gestión de información móvil y en terreno.</li> -->
-                    <li>Desarrollo y soporte de aplicaciones web en <b>ASP.NET (C#) y PHP</b> con bases de datos <b>SQL Server y MySQL</b>.</li>
-                    <li>Administración del software de gestión y <b>seguridad de usuarios en SQL Server</b>.</li>
-                    <li>Implementación de soluciones de gestión operativa con <b>Power Apps y SharePoint</b>.</li>
-            
+                    <li>Desarrollo y soporte de aplicaciones web en <span class="tag">ASP.NET (C#)</span> y <span class="tag">PHP</span> con bases de datos <span class="tag">SQL Server</span> y <span class="tag">MySQL</span>.</li>
+                    <li>Administración del software de gestión y seguridad de usuarios en <span class="tag"> SQL Server</span>.</li>
+                    <li>Implementación de soluciones de gestión operativa con <span class="tag">Power Apps y SharePoint</span>.</li>
+
                 </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓN CERTIFICACIONES -->
+    <section id="certificaciones" class="certifications reveal">
+        <div class="container">
+            <h2>Cursos & Certificaciones</h2>
+            <div class="cert-grid">
+
+                <div class="cert-card reveal reveal-delay-1">
+                    <div class="cert-logo">
+                        <img src="https://img.icons8.com/color/64/microsoft.png" alt="Microsoft">
+                    </div>
+                    <div class="cert-info">
+                        <span class="cert-issuer">Microsoft</span>
+                        <h4>Azure Fundamentals</h4>
+                        <span class="cert-badge cert-badge--microsoft">Certificado Oficial · 2023</span>
+                    </div>
+                </div>
+
+                <div class="cert-card reveal reveal-delay-2">
+                    <div class="cert-logo">
+                        <img src="images/power-bi-2021-48.png" alt="Power BI">
+                    </div>
+                    <div class="cert-info">
+                        <span class="cert-issuer">Kibernum IT Academy</span>
+                        <h4>Power BI Avanzado</h4>
+                        <span class="cert-badge cert-badge--course">Curso · 2021</span>
+                    </div>
+                </div>
+
+                <div class="cert-card reveal reveal-delay-3">
+                    <div class="cert-logo">
+                        <img src="images/power-bi-2021-48.png" alt="Power BI">
+                    </div>
+                    <div class="cert-info">
+                        <span class="cert-issuer">Instituto ISEC</span>
+                        <h4>Power BI Básico</h4>
+                        <span class="cert-badge cert-badge--course">Curso · 2020</span>
+                    </div>
+                </div>
+
+                <div class="cert-card reveal reveal-delay-1">
+                    <div class="cert-logo">
+                        <img src="images/puc_48.png" alt="PUC Chile">
+                    </div>
+                    <div class="cert-info">
+                        <span class="cert-issuer">PUC Chile</span>
+                        <h4>Herramientas de Ciencias de Datos para Analítica Avanzada</h4>
+                        <span class="cert-badge cert-badge--university">Certificado · 2022</span>
+                    </div>
+                </div>
+
+                <div class="cert-card reveal reveal-delay-2">
+                    <div class="cert-logo">
+                        <img src="images/cinda_48.png" alt="CINDA">
+                    </div>
+                    <div class="cert-info">
+                        <span class="cert-issuer">CINDA</span>
+                        <h4>Diplomado en Aseguramiento de la Calidad en Educación Superior</h4>
+                        <span class="cert-badge cert-badge--university">Diplomado · 2022</span>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
@@ -387,7 +502,46 @@
         <span class="floating-cta-label">Contacto</span>
     </a>
 
+    <!-- BOTÓN VOLVER ARRIBA -->
+    <button class="back-to-top" id="backToTop" aria-label="Volver arriba">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
     <script>
+
+
+         // Modo oscuro: auto + toggle + localStorage
+        const toggle = document.getElementById('themeToggle');
+        const label  = toggle.querySelector('.toggle-label');
+
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            label.textContent = theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro';
+        }
+
+        // 1. Leer preferencia guardada, si no hay usar la del sistema
+        const saved = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        applyTheme(saved || (prefersDark ? 'dark' : 'light'));
+
+        // 2. Toggle manual
+        toggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            localStorage.setItem('theme', next);
+        });
+
+        // 3. Escuchar cambios del sistema (si no hay preferencia guardada)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+        
+         // Animaciones de scroll con Intersection Observer
+
+
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -399,6 +553,16 @@
 
         document.querySelectorAll('.reveal, .reveal-left, .reveal-right')
             .forEach(el => observer.observe(el));
+
+
+        // Botón volver arriba
+        const backBtn = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            backBtn.classList.toggle('visible', window.scrollY > 400);
+        });
+        backBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     </script>
 
 </body>
