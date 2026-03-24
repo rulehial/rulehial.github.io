@@ -998,8 +998,15 @@ footer p {
     color: var(--accent-green);
 }
 
+.cert-badge--certificate {
+    background-color: rgba(255, 182, 193, 0.2);
+    color: #d16a7a;
+}
+
 [data-theme="dark"] .cert-badge--microsoft { color: #5ab4f5; background-color: rgba(90,180,245,0.12); }
 [data-theme="dark"] .cert-badge--course    { color: #f39c12; background-color: rgba(243,156,18,0.12); }
+[data-theme="dark"] .cert-badge--certificate { color: #ff8aa1; background-color: rgba(255,138,161,0.15);
+}
 
 /* -------------------------------------------------------------------- */
 /* BOTÓN VOLVER ARRIBA                                                   */
