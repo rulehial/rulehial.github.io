@@ -538,3 +538,181 @@ footer p {
     /* Reduce el tamaño del subtítulo */
     font-size: 1.5em; 
 }
+/* -------------------------------------------------------------------- */
+/* SECCIÓN CTA DEDICADA                                                  */
+/* -------------------------------------------------------------------- */
+
+.cta-section {
+    position: relative;
+    background-color: #2c3e50;
+    padding: 90px 0;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* Patrón de fondo decorativo */
+.cta-bg-pattern {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image:
+        radial-gradient(circle at 15% 50%, rgba(22, 160, 133, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 85% 30%, rgba(243, 156, 18, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.cta-content {
+    position: relative;
+    z-index: 1;
+}
+
+.cta-badge {
+    display: inline-block;
+    background-color: rgba(243, 156, 18, 0.15);
+    color: #f39c12;
+    border: 1px solid rgba(243, 156, 18, 0.4);
+    padding: 6px 18px;
+    border-radius: 50px;
+    font-size: 0.9em;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.cta-title {
+    font-family: 'Lato', sans-serif;
+    font-size: 3em;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 20px;
+}
+
+.cta-description {
+    font-size: 1.2em;
+    color: #bdc3c7;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+}
+
+.cta-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.cta-primary-btn {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    padding: 15px 35px;
+    font-size: 1.1em;
+    font-weight: 700;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+    box-shadow: 0 4px 20px rgba(243, 156, 18, 0.35);
+}
+.cta-primary-btn:hover {
+    background-color: #e67e22;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(243, 156, 18, 0.5);
+}
+
+.cta-secondary-btn {
+    background-color: transparent;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.35);
+    padding: 13px 35px;
+    font-size: 1.1em;
+    font-weight: 600;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: border-color 0.3s, background-color 0.3s, transform 0.2s;
+}
+.cta-secondary-btn:hover {
+    background-color: rgba(255,255,255,0.08);
+    border-color: white;
+    transform: translateY(-3px);
+}
+
+.cta-note {
+    color: #7f8c8d;
+    font-size: 0.9em;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+}
+.cta-note i {
+    color: #16a085;
+}
+
+/* -------------------------------------------------------------------- */
+/* BOTÓN FLOTANTE DE CONTACTO                                            */
+/* -------------------------------------------------------------------- */
+
+.floating-cta {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 999;
+    background-color: #f39c12;
+    color: white;
+    border-radius: 50px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.95em;
+    box-shadow: 0 4px 20px rgba(243, 156, 18, 0.5);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.floating-cta i {
+    font-size: 1.1em;
+    flex-shrink: 0;
+}
+
+.floating-cta-label {
+    max-width: 80px;
+    overflow: hidden;
+    transition: max-width 0.4s ease, opacity 0.3s ease;
+}
+
+/* En reposo: solo muestra el ícono */
+.floating-cta:not(:hover) .floating-cta-label {
+    max-width: 0;
+    opacity: 0;
+}
+
+.floating-cta:hover {
+    background-color: #e67e22;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(243, 156, 18, 0.6);
+    border-radius: 50px;
+    padding-right: 24px;
+}
+
+/* Responsive: ocultar label en móvil para no solapar */
+@media (max-width: 480px) {
+    .floating-cta-label {
+        display: none;
+    }
+    .floating-cta {
+        border-radius: 50%;
+        padding: 16px;
+    }
+}
