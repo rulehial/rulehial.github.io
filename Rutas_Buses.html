@@ -149,6 +149,15 @@
       .titulo p {
         font-size: 11px;
       }
+
+      .leaflet-bottom {
+        bottom: env(safe-area-inset-bottom, 10px);
+        padding-bottom: 8px;
+      }
+
+      .leaflet-bottom.leaflet-right {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+      }
     }
 
     @media (min-width: 769px) {
