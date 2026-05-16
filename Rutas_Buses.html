@@ -114,6 +114,11 @@
         line-height: 1;
       }
 
+      .leaflet-control-layers {
+        border: none !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+      }
+
     @media (max-width: 768px) {
       .legend {
         font-size: 11px;
@@ -144,6 +149,16 @@
 
       .titulo p {
         font-size: 11px;
+      }
+
+      .leaflet-control-layers {
+        max-height: 1.3em;
+        overflow: hidden;
+        transition: max-height 0.3s ease;        
+      }
+
+      .leaflet-control-layers.abierto {
+        max-height: 300px;
       }
 
       .leaflet-bottom {
@@ -1131,13 +1146,22 @@
 
 
       const tituloCapas = document.createElement('div');
+      tituloCapas.style.display = 'flex';
+      tituloCapas.style.justifyContent = 'space-between';
+      tituloCapas.style.alignItems = 'center';
+      tituloCapas.innerHTML = `
+        <h4 style="margin:0 0 8px;">Capas</h4>
+        <button 
+          class="legend-toggle"
+          style="margin-bottom:8px;"
+          onclick="
+            this.closest('.leaflet-control-layers').classList.toggle('abierto');
+            this.textContent = this.closest('.leaflet-control-layers').classList.contains('abierto') ? '▲' : '▼';
+          "
+        >▼</button>
+      `;
 
-      tituloCapas.innerHTML =
-        '<h4 style="margin:0 0 8px;">Capas</h4>';
-
-      const container =
-        controlCapas.getContainer();
-
+      const container = controlCapas.getContainer();
       container.prepend(tituloCapas);
 
       //Control rutas de buses con leaflet
