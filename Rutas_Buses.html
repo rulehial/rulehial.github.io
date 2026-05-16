@@ -65,84 +65,36 @@
         line-height: 20px;
       }
 
-      .tooltip-buses {
-        z-index: 9999 !important;
-        background: white;
-        border: none;
-        border-radius: 8px;
-        padding: 6px 10px;
-        box-shadow:
-          0 2px 10px rgba(0,0,0,0.2);
-      }
+    .tooltip-buses {
+      z-index: 9999 !important;
+      background: white;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 10px;
+      box-shadow:
+        0 2px 10px rgba(0,0,0,0.2);
+    }
 
-      .leaflet-interactive {
-        transition:
-          opacity 0.3s ease,
-          stroke-width 0.3s ease,
-          fill-opacity 0.3s ease;
-      }
+    path:focus {
+      outline: none;
+    }
 
-      /* .linea-base {
-        stroke-dasharray: 3000;
-      } */
+    .leaflet-interactive {
+      transition:
+        opacity 0.3s ease,
+        stroke-width 0.3s ease,
+        fill-opacity 0.3s ease;
+    }
 
-      .linea-animada {
+    .linea-base {
+      stroke-linejoin: round;
+      stroke-linecap:  round;
+      paint-order:     stroke fill;
+      -webkit-text-stroke: 0;
+      filter: drop-shadow(0px 0px 0.1px rgb(97, 95, 95));
+    }
 
-      animation:
-        dibujarLinea 4s ease forwards;
-      }
-
-      @keyframes dibujarLinea {
-        to {
-          stroke-dashoffset: 0;
-        }
-      }
-
-
-      @media (max-width: 768px) {
-        .legend {
-          font-size: 11px;
-          padding: 8px;
-          max-width: 140px;
-        }
-
-        .legend h4 {
-          margin: 0 0 4px;
-          font-size: 12px;
-        }
-
-        .legend-toggle {
-          display: inline-block;
-        }
-
-        .legend-body {
-          display: none;
-        }
-
-        .legend-body.abierto {
-          display: block;
-        }
-
-        .titulo h2 {
-          font-size: 14px;
-        }
-
-        .titulo p {
-          font-size: 11px;
-        }
-      }
-
-      @media (min-width: 769px) {
-        .legend-toggle {
-          display: none;
-        }
-
-        .legend-body {
-          display: block !important;
-        }
-      }
-
-      .legend-toggle {
+    .legend-toggle {
         background: none;
         border: none;
         cursor: pointer;
@@ -152,6 +104,72 @@
         float: right;
         line-height: 1;
       }
+
+    .linea-sin-sombra {
+      filter: none !important;
+    }
+
+    .linea-animada {
+      animation: dibujarLinea 1s linear forwards;
+    }
+    @keyframes dibujarLinea {
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+
+    @media (max-width: 768px) {
+      .legend {
+        font-size: 11px;
+        padding: 8px;
+        max-width: 140px;
+      }
+
+      .legend h4 {
+        margin: 0 0 4px;
+        font-size: 12px;
+      }
+
+      .legend-toggle {
+        display: inline-block;
+      }
+
+      .legend-body {
+        display: none;
+      }
+
+      .legend-body.abierto {
+        display: block;
+      }
+
+      .titulo h2 {
+        font-size: 14px;
+      }
+
+      .titulo p {
+        font-size: 11px;
+      }
+    
+      .legend-toggle {
+        display: none;
+      }
+
+      .legend-body {
+        display: block !important;
+      }
+
+      .leaflet-bottom {
+        bottom: env(safe-area-inset-bottom, 10px);
+        padding-bottom: 8px;
+      }
+
+      .leaflet-bottom.leaflet-right {
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+      }
+    }
+
+      
   </style>
 </head>
 <body>
@@ -271,92 +289,129 @@
       return coloresManzanas[6];
     }
 
+    function sincronizarMaestro() {
 
-   function toggleLinea(nombreLinea) {
+      const checks = document.querySelectorAll('.check-linea');
+      const total   = checks.length;
+      const activas = [...checks].filter(c => c.checked).length;
 
-  const layers = capasLineas[nombreLinea];
+      const maestro = document.querySelector(
+        'input[onchange="toggleTodasLineas(this)"]'
+      );
 
-  if (!layers) return;
+      if (!maestro) return;
 
-  const visible = map.hasLayer(layers[0]);
+      if (activas === 0) {
+        maestro.checked       = false;
+        maestro.indeterminate = false;
+      } else if (activas === total) {
+        maestro.checked       = true;
+        maestro.indeterminate = false;
+      } else {
+        maestro.checked       = false;
+        maestro.indeterminate = true;
+      }
+    }
 
-  layers.forEach(layer => {
+    function sincronizarMaestro() {
 
-    // =========================
-    // OCULTAR
-    // =========================
+      const checks = document.querySelectorAll('.check-linea');
+      const total   = checks.length;
+      const activas = [...checks].filter(c => c.checked).length;
 
-    if (visible) {
+      const maestro = document.querySelector(
+        'input[onchange="toggleTodasLineas(this)"]'
+      );
 
-      const el = layer.getElement();
+      if (!maestro) return;
 
-      if (el) {
+      if (activas === 0) {
+        maestro.checked       = false;
+        maestro.indeterminate = false;
+      } else if (activas === total) {
+        maestro.checked       = true;
+        maestro.indeterminate = false;
+      } else {
+        maestro.checked       = false;
+        maestro.indeterminate = true;
+      }
+    }
 
-        el.style.transition =
-          'opacity 0.4s ease';
 
-        el.style.opacity = 0;
+  function toggleLinea(nombreLinea) {
+
+    const layers = capasLineas[nombreLinea];
+
+    if (!layers) return;
+
+    const visible = map.hasLayer(layers[0]);
+
+    layers.forEach(layer => {
+
+      // =========================
+      // OCULTAR
+      // =========================
+
+      if (visible) {
+        const el = layer.getElement();
+        if (el) {
+
+          el.style.transition = 'opacity 0.4s ease';
+          el.style.opacity = 0;
+        }
+
+        setTimeout(() => {
+          map.removeLayer(layer);
+        }, 400);
 
       }
 
-      setTimeout(() => {
+      // =========================
+      // MOSTRAR
+      // =========================
+      else {
 
-        map.removeLayer(layer);
+        map.addLayer(layer);
 
-      }, 400);
+        const elInmediato = layer.getElement();
+        if (elInmediato) {
+          elInmediato.style.opacity = 0;
+        }
 
-    }
+        // Marcar como animando
+        layer._animando = true;
 
-    // =========================
-    // MOSTRAR
-    // =========================
-else {
+        setTimeout(() => {
+          const el = layer.getElement();
 
-  map.addLayer(layer);
+          if (el) {
+            const length = el.getTotalLength();
 
-  const elInmediato = layer.getElement();
-  if (elInmediato) {
-    elInmediato.style.opacity = 0;
+            el.style.strokeDasharray = length;
+            el.style.strokeDashoffset = length;
+            el.style.opacity = 1;
+
+            el.classList.remove('linea-animada');
+            void el.offsetWidth;
+            el.classList.add('linea-animada');
+
+            setTimeout(() => {
+              el.style.strokeDashoffset = 0;
+              el.classList.remove('linea-animada');
+
+              // Animación terminada, habilitar hover
+              layer._animando = false;
+            }, 1000);
+          }
+        }, 10);
+
+      }
+
+    });
+
+    // Sincronizar maestro después del cambio
+    setTimeout(() => sincronizarMaestro(), 450);
   }
-
-  // Marcar como animando
-  layer._animando = true;
-
-  setTimeout(() => {
-
-    const el = layer.getElement();
-
-    if (el) {
-
-      const length = el.getTotalLength();
-
-      el.style.strokeDasharray = length;
-      el.style.strokeDashoffset = length;
-      el.style.opacity = 1;
-
-      el.classList.remove('linea-animada');
-      void el.offsetWidth;
-      el.classList.add('linea-animada');
-
-      setTimeout(() => {
-
-        el.style.strokeDashoffset = 0;
-        el.classList.remove('linea-animada');
-
-        // Animación terminada, habilitar hover
-        layer._animando = false;
-
-      }, 4000);
-
-    }
-
-  }, 10);
-
-}
-
-  });
-
-}
 
 
 
@@ -437,7 +492,7 @@ else {
             fillColor: getColorManzana(valor),
             color: '#ffffff',
             weight: 0.3,
-            fillOpacity: 0.2
+            fillOpacity: 0.3
           };
         }
       },
@@ -497,21 +552,18 @@ else {
     // ======================
     const coloresLineas = {
 
-      'Línea 1':  '#E15759', // rojo suave
-      'Línea 2':  '#4E79A7', // azul tableau
-      'Línea 3':  '#76B7B2', // turquesa pastel
-      'Línea 4':  '#F28E2B', // naranja suave
-      'Línea 5':  '#B07AA1', // morado pastel
-
-      'Línea 6':  '#59A14F', // verde suave
-      'Línea 7':  '#EDC948', // amarillo mostaza
-      'Línea 8':  '#9C755F', // café suave
-      'Línea 9':  '#BAB0AC', // gris cálido
-      'Línea 10': '#86BCB6', // aqua pastel
-
-      'Línea 11': '#FFBE7D', // durazno
-      'Línea 12': '#D4A6C8', // lila pastel
-      
+      'Línea 1':  '#4e79a7', // blue
+      'Línea 2':  '#a0cbe8', // ligth blue
+      'Línea 3':  '#f28e2b', // orange
+      'Línea 4':  '#ffbe7d', // light orange
+      'Línea 5':  '#c8a400', // yellow-gold
+      'Línea 6':  '#f1ce63', // yellow
+      'Línea 7':  '#e15759', // red
+      'Línea 8':  '#d37295', // ping
+      'Línea 9':  '#499894', // teal
+      'Línea 10': '#86bcb6', // light teal
+      'Línea 11': '#59a14f', // green
+      'Línea 12': '#8cd17d', // light green
 
     };
 
@@ -610,9 +662,9 @@ else {
                     // Apagar otras líneas
                     layer.eachLayer(function(l) {
                       
-                      l.setStyle({
-                        opacity: 0.15
-                      });
+                      l.setStyle({opacity: 0.15});
+                      const el = l.getElement();
+                      if (el) el.classList.add('linea-sin-sombra');
                       
                     });
                     
@@ -657,7 +709,10 @@ else {
                       layer.eachLayer(function(l) {
                         layer.resetStyle(l);
                         const el = l.getElement();
-                        if (el) el.style.opacity = 1;
+                        if (el) {
+                          el.classList.remove('linea-sin-sombra');
+                          el.style.opacity = 1;
+                        }
                       });
 
                     } else {
@@ -911,6 +966,35 @@ else {
         controlCapas.getContainer();
 
       container.prepend(tituloCapas);
+
+      //Control rutas de buses con leaflet
+      map.on('overlayadd', function(e) {
+        if (e.name === 'Recorridos Buses') {
+
+          Object.values(capasLineas).forEach(layers => {
+            layers.forEach(l => {
+              if (!map.hasLayer(l)) map.addLayer(l);
+            });
+          });
+
+          actualizarCheckboxes(true);
+          sincronizarMaestro();
+        }
+      });
+
+      map.on('overlayremove', function(e) {
+        if (e.name === 'Recorridos Buses') {
+
+          Object.values(capasLineas).forEach(layers => {
+            layers.forEach(l => {
+              if (map.hasLayer(l)) map.removeLayer(l);
+            });
+          });
+
+          actualizarCheckboxes(false);
+          sincronizarMaestro();
+        }
+      });
 
     }, 1000);
 
