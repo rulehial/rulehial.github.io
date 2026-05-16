@@ -142,11 +142,13 @@
       }
 
       .legend-body {
-        display: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
       }
 
       .legend-body.abierto {
-        display: block;
+        max-height: 500px;
       }
 
       .titulo h2 {
@@ -183,7 +185,7 @@
       }
 
       .legend-body {
-        display: block !important;
+        max-height: 500px !important;
       }
     }
 
