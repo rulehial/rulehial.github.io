@@ -2,3 +2,13 @@ index_old.html
 style_old.css
 files.zip
 images/favicon_io.zip
+
+# ---- Mapa de recorridos (Rutas_Buses.html) ----
+# Respaldos locales de capas
+inputs/Respaldos/
+
+# Metadatos que QGIS crea al exportar
+*.qmd
+
+# Manzanas antiguas (reemplazadas por manzanas_copiapo_V2.geojson, Censo 2024)
+inputs/manzanas_copiapo.geojson

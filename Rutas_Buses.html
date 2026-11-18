@@ -42,6 +42,12 @@
     #map {
       width: 100%;
       height: 100vh;
+      height: 100dvh; /* en celular descuenta la barra del navegador */
+    }
+
+    /* Agarradera del panel (solo celular) */
+    .panel-agarre {
+      display: none;
     }
 
     /* ======================
@@ -60,7 +66,9 @@
       background: var(--fondo-panel);
       border-radius: 12px;
       box-shadow: var(--sombra);
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
+      overscroll-behavior: contain;
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
@@ -71,12 +79,16 @@
     }
 
     .panel-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
       padding: 14px 12px 14px 16px;
       border-bottom: 1px solid var(--borde);
+      background: #fff;
     }
 
     .panel-marca {
@@ -111,8 +123,7 @@
     }
 
     .panel-contenido {
-      overflow-y: auto;
-      flex: 1;
+      flex: none;
     }
 
     .seccion {
@@ -250,6 +261,811 @@
     }
 
     /* ======================
+       COBERTURA DE TRANSPORTE
+       ====================== */
+
+    .cobertura-titular {
+      margin: 0 0 10px;
+      line-height: 1.4;
+    }
+
+    .cobertura-titular strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.2;
+    }
+
+    .barra-cobertura {
+      display: flex;
+      height: 8px;
+      margin: 6px 0 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--borde);
+    }
+
+    .fila-banda {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 2px 0;
+    }
+
+    .valor {
+      margin-left: auto;
+      font-variant-numeric: tabular-nums;
+      color: var(--texto-suave);
+    }
+
+    .etiqueta-seccion {
+      margin: 14px 0 4px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--texto);
+    }
+
+    .etiqueta-seccion span {
+      font-weight: 400;
+      color: var(--texto-suave);
+    }
+
+    .ranking {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .ranking button {
+      all: unset;
+      box-sizing: border-box;
+      display: flex;
+      gap: 8px;
+      padding: 6px 8px;
+      margin: 0 -8px;
+      width: calc(100% + 16px);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .ranking button:hover {
+      background: var(--hover);
+    }
+
+    .ranking button:focus-visible {
+      outline: 2px solid var(--acento);
+    }
+
+    .boton-secundario {
+      width: 100%;
+      margin-top: 10px;
+      padding: 7px 10px;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      background: #fff;
+      font: inherit;
+      font-size: 13px;
+      color: var(--texto);
+      cursor: pointer;
+    }
+
+    .boton-secundario:hover {
+      background: var(--hover);
+    }
+
+    .boton-secundario.activo {
+      border-color: var(--acento);
+      color: var(--acento);
+    }
+
+    .popup-cobertura {
+      margin: 10px 0 6px;
+      min-width: 210px;
+    }
+
+    /* ======================
+       FICHA DE UNIDAD VECINAL
+       ====================== */
+
+    .popup-ficha-uv .leaflet-popup-content {
+      margin: 14px 14px 10px;
+    }
+
+    /* Barras de desplazamiento delgadas y discretas (ficha, panel y listas) */
+    /* Firefox (Chrome/Safari/Edge usan las reglas ::-webkit-scrollbar de abajo) */
+    @supports not selector(::-webkit-scrollbar) {
+      .leaflet-popup-scrolled,
+      #panel,
+      .buscador-resultados {
+        scrollbar-width: thin;
+        scrollbar-color: #d1d5db transparent;
+      }
+    }
+
+    .leaflet-popup-scrolled {
+      border: none;            /* Leaflet agrega bordes arriba/abajo al desplazar */
+    }
+
+    /* Botón cerrar de la ficha: circular, separado del borde y de la barra */
+    .popup-ficha-uv a.leaflet-popup-close-button {
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--hover);
+      color: var(--texto-suave);
+      font: 18px/1 system-ui, sans-serif;
+      z-index: 1;
+    }
+
+    .popup-ficha-uv a.leaflet-popup-close-button:hover {
+      background: #e5e7eb;
+      color: var(--texto);
+    }
+
+    /* Si la ficha tiene barra de desplazamiento, correr la X a su izquierda */
+    .popup-ficha-uv:has(.leaflet-popup-scrolled) a.leaflet-popup-close-button {
+      right: 26px;
+    }
+
+    .popup-ficha-uv .ficha-cabecera {
+      padding-right: 36px; /* espacio para la X */
+    }
+
+    /* Separación entre el contenido de la ficha y su barra de desplazamiento */
+    .popup-ficha-uv .leaflet-popup-scrolled .ficha-uv {
+      padding-right: 12px;
+    }
+
+    .leaflet-popup-scrolled::-webkit-scrollbar,
+    #panel::-webkit-scrollbar,
+    .buscador-resultados::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .leaflet-popup-scrolled::-webkit-scrollbar-button,
+    #panel::-webkit-scrollbar-button,
+    .buscador-resultados::-webkit-scrollbar-button {
+      display: none;           /* sin flechas */
+    }
+
+    .leaflet-popup-scrolled::-webkit-scrollbar-track,
+    #panel::-webkit-scrollbar-track,
+    .buscador-resultados::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .leaflet-popup-scrolled::-webkit-scrollbar-thumb,
+    #panel::-webkit-scrollbar-thumb,
+    .buscador-resultados::-webkit-scrollbar-thumb {
+      background: #e5e7eb;
+      border-radius: 3px;
+    }
+
+    .leaflet-popup-scrolled:hover::-webkit-scrollbar-thumb,
+    #panel:hover::-webkit-scrollbar-thumb,
+    .buscador-resultados:hover::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+    }
+
+    .ficha-uv {
+      font-size: 13px;
+      color: var(--texto);
+    }
+
+    .ficha-cabecera {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #eff6ff, #f8fafc);
+    }
+
+    .ficha-icono {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--acento);
+      font-size: 15px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+
+    .ficha-tipo {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--texto-suave);
+    }
+
+    .ficha-cabecera h3 {
+      margin: 2px 0 0;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .ficha-kpis,
+    .ficha-par {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .ficha-par {
+      grid-template-columns: repeat(2, 1fr);
+      margin: 8px 0 14px;
+    }
+
+    .ficha-kpis > div,
+    .ficha-par > div {
+      padding: 8px;
+      border-radius: 8px;
+      background: var(--hover);
+      text-align: center;
+    }
+
+    .ficha-kpis b,
+    .ficha-par b {
+      display: block;
+      font-size: 15px;
+    }
+
+    .ficha-kpis i {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+      color: var(--acento);
+    }
+
+    .ficha-par .comparacion {
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* "Copiapó 24,6 %" debajo de cada porcentaje */
+    .comparacion {
+      font-size: 10.5px;
+      font-weight: 400;
+      color: var(--texto-suave);
+      white-space: nowrap;
+    }
+
+    .comparacion i {
+      margin-right: 3px;
+      font-size: 9px;
+      color: var(--texto);
+    }
+
+    /* Aviso destacado (usuarios de bus lejos de un recorrido) */
+    .ficha-alerta {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      margin: 8px 0 4px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #fff7ed;
+      color: #9a3412;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .ficha-alerta i {
+      margin-top: 2px;
+    }
+
+    .ficha-tipo .insignia-ficticia {
+      margin-left: 4px;
+      background: #ede9fe;
+      color: #5b21b6;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .ficha-aviso-ficticia {
+      margin: 4px 0 14px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f5f3ff;
+      color: #4c1d95;
+      line-height: 1.45;
+    }
+
+    .ranking-detalle {
+      display: block;
+      font-size: 11px;
+      color: var(--texto-suave);
+    }
+
+    .ficha-par {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    .ficha-kpis .comparacion,
+    .ficha-par .comparacion {
+      display: block;
+      margin-top: 2px;
+      white-space: normal;
+    }
+
+    .fila-ficha {
+      align-items: flex-start;
+      padding: 3px 0;
+    }
+
+    .fila-ficha .muestra-area {
+      margin-top: 2px;
+    }
+
+    .fila-ficha .valor {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      line-height: 1.25;
+      color: var(--texto);
+    }
+
+    .barra-ficha {
+      height: 10px;
+      border-radius: 5px;
+    }
+
+    .ficha-kpis span,
+    .ficha-par span {
+      font-size: 11px;
+      color: var(--texto-suave);
+    }
+
+    .ficha-anio {
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--hover);
+      letter-spacing: 0;
+    }
+
+    .ficha-servicios {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .servicio {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      padding: 8px;
+      border: 1px solid var(--borde);
+      border-radius: 10px;
+      line-height: 1.3;
+    }
+
+    .servicio b {
+      display: block;
+      font-size: 15px;
+      line-height: 1.1;
+    }
+
+    .servicio > i {
+      display: grid;
+      place-items: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #eff6ff;
+      color: var(--acento);
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .servicio span {
+      font-size: 11.5px;
+      color: var(--texto-suave);
+    }
+
+    .servicio small {
+      display: block;
+      font-size: 11px;
+      color: var(--texto-suave);
+    }
+
+    .servicio-cero {
+      opacity: 0.5;
+      border-style: dashed;
+    }
+
+    .servicio-cero > i {
+      background: var(--hover);
+      color: var(--texto-suave);
+    }
+
+    .ficha-uv .chip .frecuencia {
+      font-size: 11px;
+      color: var(--texto-suave);
+    }
+
+    .ficha-subtitulo {
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .ficha-fuente {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--borde);
+      font-size: 10.5px;
+      line-height: 1.45;
+    }
+
+    .ficha-fuente i {
+      margin-right: 3px;
+    }
+
+    /* ======================
+       CÓMO LLEGAR (A → B)
+       ====================== */
+
+    .modos {
+      display: flex;
+      gap: 4px;
+      padding: 3px;
+      margin-bottom: 10px;
+      border-radius: 9px;
+      background: var(--hover);
+    }
+
+    .modo {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 6px 8px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--texto-suave);
+      cursor: pointer;
+    }
+
+    .modo.activo {
+      background: #fff;
+      color: var(--texto);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    }
+
+    .modo:focus-visible {
+      outline: 2px solid var(--acento);
+    }
+
+    .viaje-campos {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .viaje-filas {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .viaje-fila {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .viaje-fila .buscador-campo {
+      flex: 1;
+      min-width: 0;
+      padding-left: 10px;
+    }
+
+    .viaje-filas .buscador-resultados {
+      margin: 0 0 0 30px;
+    }
+
+    .pin-viaje {
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .pin-a { background: #16a34a; }
+    .pin-b { background: #dc2626; }
+
+    .pin-mapa {
+      width: 26px;
+      height: 26px;
+      font-size: 13px;
+      border: 3px solid #fff;
+      box-sizing: border-box;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+
+    .boton-invertir {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+    }
+
+    .viaje-resultados {
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    .viaje-aviso {
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f0fdf4;
+      color: #166534;
+    }
+
+    .opciones-viaje {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .opcion-viaje {
+      display: block;
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--borde);
+      border-radius: 10px;
+      background: #fff;
+      font: inherit;
+      text-align: left;
+      color: var(--texto);
+      cursor: pointer;
+    }
+
+    .opcion-viaje:hover {
+      background: var(--hover);
+    }
+
+    .opcion-viaje.activo {
+      border-color: var(--acento);
+      box-shadow: inset 0 0 0 1px var(--acento);
+    }
+
+    .opcion-viaje-cabecera {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .opcion-viaje-lineas {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .opcion-viaje-lineas .separador {
+      font-size: 9px;
+      color: var(--texto-suave);
+    }
+
+    .opcion-viaje-tiempo {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .opcion-viaje-detalle {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--texto-suave);
+    }
+
+    .chip-estatico {
+      cursor: inherit;
+      pointer-events: none;
+    }
+
+    .opcion-viaje .chip {
+      padding: 2px 8px;
+    }
+
+    .ver-mas-viaje {
+      display: none;
+    }
+
+    .boton-elegir.activo {
+      background: var(--acento);
+      color: #fff;
+    }
+
+    .sub-tooltip {
+      font-size: 11px;
+      color: var(--texto-suave);
+    }
+
+    /* Aviso flotante mientras se elige un punto */
+    .aviso-mapa {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1002;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: calc(100vw - 32px);
+      padding: 9px 10px 9px 14px;
+      border-radius: 999px;
+      background: var(--texto);
+      color: #fff;
+      font-size: 13px;
+      box-shadow: var(--sombra);
+    }
+
+    .aviso-mapa[hidden] {
+      display: none;
+    }
+
+    .aviso-mapa button {
+      padding: 5px 12px;
+      border: none;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.18);
+      color: #fff;
+      font: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    body.eligiendo-punto .leaflet-container,
+    body.eligiendo-punto .leaflet-interactive {
+      cursor: crosshair !important;
+    }
+
+    /* Los pines se arrastran: cursor de mano */
+    .leaflet-marker-draggable {
+      cursor: grab;
+    }
+
+    .viaje-seccion-titulo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 4px 0 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--texto-suave);
+    }
+
+    .viaje-seccion-titulo i {
+      margin-right: 4px;
+    }
+
+    .viaje-seccion-titulo .contador {
+      min-width: 20px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: var(--hover);
+      text-align: center;
+      letter-spacing: 0;
+    }
+
+    .viaje-detalle .viaje-seccion-titulo .opcion-viaje-tiempo {
+      font-size: 13px;
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--texto);
+    }
+
+    .cargando-calles {
+      margin-right: 6px;
+      font-size: 11px;
+      color: var(--acento);
+    }
+
+    .insignia {
+      display: inline-block;
+      margin-right: 4px;
+      padding: 1px 7px;
+      border-radius: 999px;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Recuadro del detalle: separado visualmente de la lista de opciones */
+    .viaje-detalle {
+      margin-top: 16px;
+      padding: 12px 12px 6px;
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+
+    .viaje-detalle .viaje-seccion-titulo {
+      margin-top: 0;
+    }
+
+    .viaje-detalle .chip {
+      background: #fff;
+    }
+
+    .viaje-pasos {
+      list-style: none;
+      margin: 12px 0 0;
+      padding: 0;
+    }
+
+    .viaje-pasos li {
+      position: relative;
+      display: flex;
+      gap: 10px;
+      padding: 0 0 12px;
+      line-height: 1.4;
+    }
+
+    /* Línea vertical que une los pasos */
+    .viaje-pasos li:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: 11px;
+      top: 24px;
+      bottom: 0;
+      border-left: 2px dotted #cbd5e1;
+    }
+
+    .viaje-pasos li > i {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid var(--borde);
+      font-size: 11px;
+      color: var(--texto-suave);
+      flex-shrink: 0;
+    }
+
+    .viaje-pasos li > span,
+    .viaje-pasos li {
+      padding-top: 2px;
+    }
+
+    .viaje-pasos .sub {
+      display: block;
+      font-size: 11.5px;
+      color: var(--texto-suave);
+    }
+
+    /* ======================
        BUSCADOR DE CALLES
        ====================== */
 
@@ -332,6 +1148,15 @@
     .buscador-resultados li.vacio {
       cursor: default;
       color: var(--texto-suave);
+    }
+
+    .buscador-resultados li.cargando-fila i,
+    .buscador-lupa.cargando {
+      color: var(--acento);
+    }
+
+    .buscador-resultados li.cargando-fila i {
+      margin-right: 6px;
     }
 
     .buscador-info {
@@ -510,18 +1335,188 @@
         display: none;
       }
 
+    /* ======================
+       CELULAR: panel inferior deslizable
+       ====================== */
     @media (max-width: 768px) {
+
       #panel {
-        top: 8px;
-        left: 8px;
-        right: 8px;
+        z-index: 1001; /* por encima de los créditos del mapa */
+        top: auto;
+        left: 0;
+        right: 0;
+        bottom: 0;
         width: auto;
-        max-height: calc(100vh - 16px);
+        max-height: 82dvh;
+        border-radius: 16px 16px 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.18);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        transition: transform 0.3s ease;
       }
 
+      /* Minimizado: solo se ve agarradera + título + buscador */
+      body.panel-oculto #panel {
+        transform: translateY(calc(100% - var(--alto-mini, 150px)));
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      body.panel-oculto #panel {
+        overflow-y: hidden;
+      }
+
+      body.panel-oculto .panel-contenido {
+        visibility: hidden;
+      }
+
+      .panel-agarre {
+        display: block;
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        height: 15px;
+        box-sizing: border-box;
+        padding: 8px 0 2px;
+        background: #fff;
+        cursor: grab;
+        touch-action: none;
+      }
+
+      .panel-agarre::before {
+        content: "";
+        display: block;
+        width: 40px;
+        height: 5px;
+        margin: 0 auto;
+        border-radius: 3px;
+        background: #d1d5db;
+      }
+
+      .panel-header {
+        top: 15px; /* debajo de la agarradera, que también queda fija */
+        padding: 6px 12px 10px 16px;
+        cursor: pointer;
+        touch-action: none;
+      }
+
+      .panel-icono {
+        width: 32px;
+        height: 32px;
+      }
+
+      /* « apunta hacia abajo (minimizar) o arriba (expandir) */
+      .panel-header .boton-icono i {
+        transform: rotate(-90deg);
+        transition: transform 0.3s ease;
+      }
+
+      body.panel-oculto .panel-header .boton-icono i {
+        transform: rotate(90deg);
+      }
+
+      /* En celular no se usa el botón flotante */
       .boton-flotante {
-        top: 8px;
-        left: 8px;
+        display: none;
+      }
+
+      /* Que los controles del mapa no queden bajo el panel */
+      .leaflet-bottom {
+        bottom: var(--alto-mini, 150px);
+      }
+
+      /* Zonas táctiles más grandes */
+      .seccion-titulo {
+        padding: 14px 16px;
+      }
+
+      .seccion-cuerpo {
+        font-size: 14px;
+      }
+
+      .opcion {
+        padding: 7px 0;
+        gap: 10px;
+      }
+
+      .opcion input {
+        width: 18px;
+        height: 18px;
+      }
+
+      .ranking button {
+        padding: 10px 8px;
+      }
+
+      .chip {
+        padding: 6px 12px;
+        font-size: 13px;
+      }
+
+      .buscador-resultados li {
+        padding: 10px 8px;
+      }
+
+      /* 16px evita que iPhone haga zoom al escribir */
+      .buscador-campo input,
+      .selector {
+        font-size: 16px;
+      }
+
+      .boton-secundario {
+        padding: 10px;
+        font-size: 14px;
+      }
+
+      .label-uv {
+        font-size: 10px;
+      }
+
+      .modo {
+        padding: 9px 8px;
+        font-size: 13.5px;
+      }
+
+      /* Panel minimizado: solo la opción elegida; el resto al expandir */
+      body.panel-oculto .opcion-viaje:not(.activo),
+      body.panel-oculto .viaje-resultados .viaje-seccion-titulo,
+      body.panel-oculto .viaje-detalle,
+      body.panel-oculto .viaje-resultados .nota {
+        display: none;
+      }
+
+      body.panel-oculto .ver-mas-viaje {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        margin-top: 6px;
+        padding: 8px;
+        border: none;
+        background: none;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--acento);
+        cursor: pointer;
+      }
+
+      .opcion-viaje {
+        padding: 11px 12px;
+      }
+
+      .aviso-mapa {
+        top: calc(10px + env(safe-area-inset-top, 0px));
+        font-size: 14px;
+      }
+
+      .aviso-mapa button {
+        padding: 8px 14px;
+      }
+
+      /* Pines más grandes para arrastrarlos con el dedo */
+      .pin-mapa {
+        transform: scale(1.2);
       }
     }
 
@@ -533,8 +1528,17 @@
   <!-- Botón para volver a mostrar el panel -->
   <button id="abrir-panel" class="boton-flotante" onclick="togglePanel(true)" aria-label="Mostrar panel" title="Mostrar panel"><i class="fa-solid fa-bars"></i></button>
 
+  <!-- Aviso mientras se elige un punto en el mapa -->
+  <div id="aviso-mapa" class="aviso-mapa" role="status" hidden>
+    <i class="fa-solid fa-map-pin"></i>
+    <span id="aviso-mapa-texto"></span>
+    <button onclick="cancelarEleccion()">Cancelar</button>
+  </div>
+
   <!-- Panel lateral -->
   <aside id="panel">
+
+    <div class="panel-agarre" aria-hidden="true"></div>
 
     <header class="panel-header">
       <div class="panel-marca">
@@ -544,13 +1548,62 @@
           <p>Comuna de Copiapó</p>
         </div>
       </div>
-      <button class="boton-icono" onclick="togglePanel(false)" aria-label="Ocultar panel" title="Ocultar panel"><i class="fa-solid fa-angles-left"></i></button>
+      <button class="boton-icono" onclick="event.stopPropagation(); togglePanel(document.body.classList.contains('panel-oculto'))" aria-label="Ocultar o mostrar panel" title="Ocultar o mostrar panel"><i class="fa-solid fa-angles-left"></i></button>
     </header>
 
     <!-- Buscador de calles (solo Copiapó) -->
     <div class="buscador">
+
+      <!-- Pestañas: buscar un lugar / cómo llegar de A a B -->
+      <div class="modos" role="tablist" aria-label="Tipo de búsqueda">
+        <button class="modo activo" role="tab" aria-selected="true" data-modo="lugar" onclick="cambiarModo('lugar')">
+          <i class="fa-solid fa-magnifying-glass"></i> Buscar lugar
+        </button>
+        <button class="modo" role="tab" aria-selected="false" data-modo="viaje" onclick="cambiarModo('viaje')">
+          <i class="fa-solid fa-diamond-turn-right"></i> Cómo llegar
+        </button>
+      </div>
+
+      <!-- Modo "Cómo llegar" -->
+      <div id="modo-viaje" hidden>
+        <div class="viaje-campos">
+          <div class="viaje-filas">
+            <div class="viaje-fila">
+              <span class="pin-viaje pin-a" aria-hidden="true">A</span>
+              <div class="buscador-campo">
+                <input id="viaje-origen" type="search" placeholder="Origen" autocomplete="off" aria-label="Origen del viaje">
+                <button class="boton-icono boton-limpiar boton-elegir" data-elegir="origen" onclick="elegirEnMapa('origen')" aria-label="Elegir el origen en el mapa" title="Elegir en el mapa">
+                  <i class="fa-solid fa-map-pin"></i>
+                </button>
+                <button class="boton-icono boton-limpiar" onclick="usarMiUbicacion()" aria-label="Usar mi ubicación como origen" title="Usar mi ubicación">
+                  <i class="fa-solid fa-location-crosshairs"></i>
+                </button>
+              </div>
+            </div>
+            <ul id="viaje-origen-lista" class="buscador-resultados" role="listbox" aria-live="polite" hidden></ul>
+
+            <div class="viaje-fila">
+              <span class="pin-viaje pin-b" aria-hidden="true">B</span>
+              <div class="buscador-campo">
+                <input id="viaje-destino" type="search" placeholder="Destino" autocomplete="off" aria-label="Destino del viaje">
+                <button class="boton-icono boton-limpiar boton-elegir" data-elegir="destino" onclick="elegirEnMapa('destino')" aria-label="Elegir el destino en el mapa" title="Elegir en el mapa">
+                  <i class="fa-solid fa-map-pin"></i>
+                </button>
+              </div>
+            </div>
+            <ul id="viaje-destino-lista" class="buscador-resultados" role="listbox" aria-live="polite" hidden></ul>
+          </div>
+          <button class="boton-icono boton-invertir" onclick="invertirViaje()" aria-label="Invertir origen y destino" title="Invertir origen y destino">
+            <i class="fa-solid fa-arrow-right-arrow-left fa-rotate-90"></i>
+          </button>
+        </div>
+        <div id="viaje-resultados" class="viaje-resultados" aria-live="polite" hidden></div>
+      </div>
+
+      <!-- Modo "Buscar lugar" -->
+      <div id="modo-lugar">
       <div class="buscador-campo">
-        <i class="fa-solid fa-magnifying-glass buscador-lupa" aria-hidden="true"></i>
+        <i id="buscar-icono" class="fa-solid fa-magnifying-glass buscador-lupa" aria-hidden="true"></i>
         <input
           id="buscar-calle"
           type="search"
@@ -561,8 +1614,9 @@
         >
         <button id="buscar-limpiar" class="boton-icono boton-limpiar" onclick="limpiarBusqueda()" aria-label="Limpiar búsqueda" title="Limpiar búsqueda" hidden><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <ul id="buscador-resultados" class="buscador-resultados" role="listbox" hidden></ul>
+      <ul id="buscador-resultados" class="buscador-resultados" role="listbox" aria-live="polite" hidden></ul>
       <div id="buscador-info" class="buscador-info" hidden></div>
+      </div>
     </div>
 
     <div class="panel-contenido">
@@ -587,6 +1641,16 @@
             <i class="fa-solid fa-city icono-capa" style="--color-capa:#e0715a" aria-hidden="true"></i>
             Manzanas
           </label>
+          <label class="opcion">
+            <input type="checkbox" class="check-capa" data-capa="Cobertura de transporte" onchange="toggleCapa('Cobertura de transporte', this.checked)">
+            <i class="fa-solid fa-person-walking icono-capa" style="--color-capa:#1a9850" aria-hidden="true"></i>
+            Cobertura de transporte
+          </label>
+          <label class="opcion">
+            <input type="checkbox" class="check-capa" data-capa="Uso de transporte público" onchange="toggleCapa('Uso de transporte público', this.checked)">
+            <i class="fa-solid fa-bus-simple icono-capa" style="--color-capa:#2563eb" aria-hidden="true"></i>
+            Uso de transporte público
+          </label>
         </div>
       </section>
 
@@ -595,7 +1659,7 @@
           Filtrar por UV <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
         </button>
         <div class="seccion-cuerpo">
-          <select id="filtro-uv" class="selector" onchange="filtrarPorUV(this.value)">
+          <select id="filtro-uv" class="selector" onchange="filtrarPorUV(this.value); colapsarEnMovil()">
             <option value="">Todas las UVs</option>
           </select>
         </div>
@@ -611,6 +1675,28 @@
             Mostrar todas
           </label>
           <div id="lista-lineas" class="grilla-lineas"></div>
+        </div>
+      </section>
+
+      <section class="seccion">
+        <button class="seccion-titulo" onclick="toggleSeccion(this)" aria-expanded="true">
+          Cobertura de transporte <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+        </button>
+        <div class="seccion-cuerpo">
+          <div id="cobertura-resumen"><p class="nota" style="margin:0">Cargando análisis…</p></div>
+        </div>
+      </section>
+
+      <section class="seccion cerrada" id="seccion-uso-tp">
+        <button class="seccion-titulo" onclick="toggleSeccion(this)" aria-expanded="false">
+          Uso de transporte público <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+        </button>
+        <div class="seccion-cuerpo">
+          <p class="nota" style="margin:0 0 8px">% de quienes se trasladan a trabajar o estudiar en transporte público, por manzana (Censo 2024).</p>
+          <div id="leyenda-tp"></div>
+          <button id="btn-uso-tp" class="boton-secundario" onclick="mostrarCapaExclusiva('Uso de transporte público')">
+            <i class="fa-solid fa-eye"></i> Ver en el mapa
+          </button>
         </div>
       </section>
 
@@ -1012,11 +2098,107 @@
     // CONFIGURACIÓN CAPAS
     // ======================
 
+    // ======================
+    // BANDAS DE COBERTURA (mismos límites que scripts/calcular_cobertura.mjs)
+    // ======================
+    // Tiempo que el mouse debe quedarse sobre una ruta para mostrar su ficha
+    const RETRASO_TOOLTIP_MS = 1000;
+
+    // Pantalla táctil (celular/tablet): no hay "pasar el mouse"
+    const ES_TACTIL = window.matchMedia('(hover: none)').matches;
+
+    // Línea resaltada por pasar el mouse (null si ninguna)
+    let lineaEnHover = null;
+
+    // ¿La línea forma parte de lo destacado (chip o viaje)?
+    const esLineaDestacada = nombre =>
+      lineaDestacada !== null && [].concat(lineaDestacada).includes(nombre);
+
+    // Red de seguridad: si el mouse ya no está sobre la línea resaltada
+    // (el navegador a veces no avisa la salida), restaurar
+    map.getContainer().addEventListener('mousemove', e => {
+      if (!lineaEnHover) return;
+      const el = lineaEnHover.getElement && lineaEnHover.getElement();
+      if (!el || e.target !== el) lineaEnHover.fire('mouseout');
+    });
+
+    // Ficha única para todas las rutas: así nunca quedan varias pegadas
+    // cuando muchas líneas pasan por la misma calle.
+    const fichaRuta = (() => {
+      const tooltip = L.tooltip({
+        sticky: true,
+        opacity: 0.95,
+        className: 'tooltip-buses',
+        pane: 'pane_tooltips'
+      });
+      let dueno = null;        // línea (capa) que pidió la ficha
+      let temporizador = null;
+      let posicion = null;
+
+      const cerrar = () => {
+        clearTimeout(temporizador);
+        temporizador = null;
+        dueno = null;
+        if (map.hasLayer(tooltip)) map.removeLayer(tooltip);
+      };
+
+      // Red de seguridad: si el mouse ya no está sobre la línea dueña
+      // (el navegador a veces no avisa la salida), cerrar la ficha
+      map.getContainer().addEventListener('mousemove', e => {
+        if (!dueno) return;
+        const el = dueno.getElement && dueno.getElement();
+        if (!el || e.target !== el) cerrar();
+      });
+      map.on('movestart zoomstart popupopen', cerrar);
+
+      return {
+        programar(capa, contenido, latlng) {
+          if (dueno === capa) return;
+          cerrar();
+          dueno = capa;
+          posicion = latlng;
+          tooltip.setContent(contenido);
+          temporizador = setTimeout(() => {
+            if (dueno === capa) tooltip.setLatLng(posicion).addTo(map);
+          }, RETRASO_TOOLTIP_MS);
+        },
+        mover(capa, latlng) {
+          if (dueno !== capa) return;
+          posicion = latlng;
+          if (map.hasLayer(tooltip)) tooltip.setLatLng(latlng);
+        },
+        cancelar(capa) {
+          if (dueno === capa) cerrar();
+        }
+      };
+    })();
+
+    const COBERTURA_BANDAS = [
+      { clave: 'menos_200',     etiqueta: 'Menos de 200 m', color: '#1a9850' },
+      { clave: 'entre_200_400', etiqueta: '200 a 400 m',    color: '#f4a92a' },
+      { clave: 'mas_400',       etiqueta: 'Más de 400 m',   color: '#d73027' }
+    ];
+
+    // Uso de transporte público por manzana (% de quienes se trasladan)
+    const USO_TP = {
+      limites: [15, 25, 35, 45],
+      colores: ['#dbeafe', '#93c5fd', '#60a5fa', '#2563eb', '#1e3a8a'],
+      sinDato: '#e5e7eb'
+    };
+    function colorUsoTP(tp) {
+      if (tp == null) return USO_TP.sinDato;
+      let i = 0;
+      while (i < USO_TP.limites.length && tp >= USO_TP.limites[i]) i++;
+      return USO_TP.colores[i];
+    }
+
     const capasConfig = [
 
       {
         nombre: 'Unidades Vecinales',
         archivo: 'inputs/UV_COPIAPO.geojson',
+        // UV ficticias (áreas urbanas que no tienen UV propia), ver scripts/calcular_cobertura.mjs
+        archivosExtra: ['inputs/UV_FICTICIAS.geojson'],
         interactivo: true,
         estilo: {
           color: '#a0cbe7',
@@ -1032,7 +2214,7 @@
       },
       {
         nombre: 'Manzanas',
-        archivo: 'inputs/manzanas_copiapo.geojson',
+        archivo: 'inputs/manzanas_cobertura.geojson', // generado por scripts/calcular_cobertura.mjs
         interactivo: false,
         pane: 'pane_manzanas',
         estilo: function(feature) {
@@ -1045,6 +2227,30 @@
             fillOpacity: 0.3
           };
         }
+      },
+      {
+        nombre: 'Cobertura de transporte',
+        archivo: 'inputs/manzanas_cobertura.geojson', // mismo archivo que Manzanas (se descarga una vez)
+        interactivo: false,
+        pane: 'pane_cobertura',
+        estilo: feature => ({
+          fillColor: COBERTURA_BANDAS[feature.properties.banda].color,
+          color: '#ffffff',
+          weight: 0.3,
+          fillOpacity: 0.55
+        })
+      },
+      {
+        nombre: 'Uso de transporte público',
+        archivo: 'inputs/manzanas_cobertura.geojson', // mismo archivo (se descarga una vez)
+        interactivo: false,
+        pane: 'pane_cobertura',
+        estilo: feature => ({
+          fillColor: colorUsoTP(feature.properties.tp),
+          color: '#ffffff',
+          weight: 0.3,
+          fillOpacity: feature.properties.tp == null ? 0.35 : 0.65
+        })
       },
       {
         nombre: 'Recorridos Buses',
@@ -1123,12 +2329,14 @@
     // ======================
 
     map.createPane('pane_manzanas');
+    map.createPane('pane_cobertura');
     map.createPane('pane_uv');
     map.createPane('pane_buses');
     map.createPane('pane_flechas');
     map.createPane('pane_tooltips');
 
     map.getPane('pane_manzanas').style.zIndex = 200;
+    map.getPane('pane_cobertura').style.zIndex = 210;
     map.getPane('pane_uv').style.zIndex = 400;
     map.getPane('pane_buses').style.zIndex = 600;
     map.getPane('pane_flechas').style.zIndex = 650;
@@ -1157,10 +2365,66 @@
     // FUNCIÓN CARGAR CAPAS
     // ======================
 
+    // Cada archivo se descarga una sola vez aunque lo usen varias capas
+    const cacheArchivos = {};
+    function obtenerGeoJSON(url) {
+      if (!cacheArchivos[url]) cacheArchivos[url] = fetch(url).then(r => r.json());
+      return cacheArchivos[url];
+    }
+
+    // Punto dentro de la parte más grande de un MultiPolygon (null si tiene una sola parte)
+    function centroParteMayor(feature) {
+      const g = feature.geometry;
+      if (!g || g.type !== 'MultiPolygon' || g.coordinates.length < 2) return null;
+      try {
+        const partes = g.coordinates.map(c => turf.polygon(c));
+        const mayor = partes.reduce((a, b) => turf.area(b) > turf.area(a) ? b : a);
+        let p = turf.centerOfMass(mayor);
+        if (!turf.booleanPointInPolygon(p, mayor)) p = turf.pointOnFeature(mayor);
+        const [lng, lat] = p.geometry.coordinates;
+        return L.latLng(lat, lng);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Quita agujeros diminutos (< 500 m²) que dejan las uniones de polígonos
+    function sinHuecosPequenos(geom) {
+      const limpiar = anillos => [anillos[0], ...anillos.slice(1).filter(h => {
+        try { return turf.area(turf.polygon([h])) >= 500; } catch (e) { return true; }
+      })];
+      if (geom.type === 'Polygon') return { type: 'Polygon', coordinates: limpiar(geom.coordinates) };
+      if (geom.type === 'MultiPolygon') return { type: 'MultiPolygon', coordinates: geom.coordinates.map(limpiar) };
+      return geom;
+    }
+
+    // Elementos con "extension: true" se unen al polígono de la UV del mismo nombre
+    // (p. ej. una manzana que quedaba en una UV rural y se agrega a LOS MINERALES)
+    function unirExtensiones(fc) {
+      const extensiones = fc.features.filter(f => f.properties.extension);
+      if (!extensiones.length) return fc;
+      const resto = fc.features.filter(f => !f.properties.extension);
+      extensiones.forEach(ext => {
+        const base = resto.find(f => f.properties.NOMBRE_UV === ext.properties.NOMBRE_UV);
+        if (!base) { resto.push({ ...ext, properties: { ...ext.properties, extension: false } }); return; }
+        try {
+          // +2 m para que se traslape con la UV: sin esto quedan costuras
+          // (huecos microscópicos a lo largo del límite común)
+          const extAmpliada = turf.buffer(ext, 0.002, { units: 'kilometers' });
+          const unida = turf.union(base, extAmpliada);
+          if (unida) base.geometry = sinHuecosPequenos(unida.geometry);
+        } catch (e) { /* si falla la unión, la UV queda como estaba */ }
+      });
+      return { ...fc, features: resto };
+    }
+
     function cargarCapas() {
       capasConfig.forEach(capa => {
-        fetch(capa.archivo)
-          .then(response => response.json())
+        Promise.all([capa.archivo, ...(capa.archivosExtra || [])].map(a =>
+          obtenerGeoJSON(a).catch(() => ({ features: [] }))))
+          .then(([principal, ...extras]) => extras.length
+            ? unirExtensiones({ ...principal, features: [...principal.features, ...extras.flatMap(x => x.features)] })
+            : principal)
           .then(data => {
             // console.log(`Capa "${capa.nombre}" cargada:`, capa.estilo);
 
@@ -1310,20 +2574,41 @@
                   }
                   decoradoresCapas.get(leafletLayer).push(decorator);
 
-                  // Tooltip hover buses
-                  leafletLayer.bindTooltip(
-                    capa.popup(feature),
-                    {
-                      sticky: true,
-                      opacity: 0.95,
-                      className: 'tooltip-buses',
-                      pane: 'pane_tooltips'
-                    }
-                  );
+                  // Ficha de la ruta: UNA sola compartida por todas las líneas
+                  // (ver fichaRuta). Aparece si el mouse se queda RETRASO_TOOLTIP_MS.
+                  leafletLayer.on('mouseover', e => {
+                    if (ES_TACTIL) return; // en pantallas táctiles se usa el toque
+                    if (lineaDestacada && !esLineaDestacada(nombreLinea)) return;
+                    fichaRuta.programar(leafletLayer, capa.popup(feature), e.latlng);
+                  });
+                  leafletLayer.on('mousemove', e => fichaRuta.mover(leafletLayer, e.latlng));
+                  leafletLayer.on('mouseout', () => fichaRuta.cancelar(leafletLayer));
+
+                  // Pantalla táctil: tocar la línea la destaca y abre su ficha
+                  // (tocar un espacio vacío del mapa quita el destacado)
+                  leafletLayer.on('click', e => {
+                    if (!ES_TACTIL) return;
+                    destacarLinea(nombreLinea);
+                    L.popup({ className: 'popup-ruta', offset: [0, -4] })
+                      .setLatLng(e.latlng)
+                      .setContent(capa.popup(feature))
+                      .openOn(map);
+                  });
+
+                  // Si la línea se oculta mientras espera, cancelar
+                  leafletLayer.on('remove', () => fichaRuta.cancelar(leafletLayer));
 
                   // Hover buses
                   leafletLayer.on({
                     mouseover: function(e) {
+
+                      // En pantallas táctiles el resaltado se hace al tocar (ver 'click')
+                      if (ES_TACTIL) return;
+
+                      // Con un viaje o una línea destacada, las atenuadas no reaccionan
+                      if (lineaDestacada && !esLineaDestacada(nombreLinea)) return;
+
+                      lineaEnHover = e.target;
 
                       const estaAnimando = Object.values(capasLineas)
                         .flat()
@@ -1356,6 +2641,10 @@
 
                     },
                     mouseout: function(e) {
+
+                      if (ES_TACTIL) return;
+                      if (lineaEnHover !== e.target) return; // no estaba resaltada por hover
+                      lineaEnHover = null;
 
                       const estaAnimando = Object.values(capasLineas)
                         .flat()
@@ -1400,6 +2689,14 @@
                     }
                   );
 
+                  // UV con varias partes: el nombre va en la parte más grande
+                  // (Leaflet lo pondría en la primera, que puede ser un trocito)
+                  const centroEtiqueta = centroParteMayor(feature);
+                  if (centroEtiqueta) {
+                    leafletLayer.on('add', () =>
+                      setTimeout(() => leafletLayer.openTooltip(centroEtiqueta), 0));
+                  }
+
                   // Hover
                   leafletLayer.on({
                     mouseover: function(e) {
@@ -1415,8 +2712,8 @@
                       });
                     },
                     mouseout: function(e) {
-                      layer.resetStyle(e.target);
-                      map.closePopup();
+                      // Mantener el resaltado mientras su ficha esté abierta
+                      if (!leafletLayer.isPopupOpen()) layer.resetStyle(e.target);
                       
                     }
                   });
@@ -1434,6 +2731,18 @@
                       fillOpacity: 0.5
                     });
 
+                    // Datos precalculados (scripts/calcular_cobertura.mjs)
+                    const datosUV = coberturaUV && coberturaUV.uv[feature.properties.NOMBRE_UV];
+                    if (datosUV) {
+                      leafletLayer.unbindPopup();
+                      leafletLayer.bindPopup(
+                        htmlFichaUV(feature, datosUV.poblacion, datosUV),
+                        opcionesFichaUV()
+                      ).openPopup(e.latlng);
+                      return;
+                    }
+
+                    // Respaldo: cálculo en el navegador si no cargó el resumen
                     let totalHabitantes = 0;
 
                     if (geojsonManzanas) {
@@ -1446,13 +2755,11 @@
                       });
                     }
 
-                    leafletLayer.bindPopup(`
-                      <b>Unidad Vecinal</b><br>
-                      ${feature.properties.NOMBRE_UV || 'Sin nombre'}<br><br>
-                      <b>Habitantes estimados:</b> ${totalHabitantes.toLocaleString('es-CL')}
-                      <br>
-                      <small class='small'>Segun Censo 2024</small>
-                    `).openPopup();
+                    leafletLayer.unbindPopup();
+                    leafletLayer.bindPopup(
+                      htmlFichaUV(feature, totalHabitantes, null),
+                      opcionesFichaUV()
+                    ).openPopup(e.latlng);
 
                   });
 
@@ -1502,6 +2809,8 @@
     // Abrir / cerrar el panel completo
     function togglePanel(abrir) {
       document.body.classList.toggle('panel-oculto', !abrir);
+      // Al minimizar, volver arriba para que se vea el título y el buscador
+      if (!abrir) document.getElementById('panel').scrollTop = 0;
     }
 
     // Abrir / cerrar una sección del panel
@@ -1511,8 +2820,71 @@
       btn.setAttribute('aria-expanded', !seccion.classList.contains('cerrada'));
     }
 
-    // En pantallas pequeñas el panel parte escondido
-    if (window.innerWidth <= 768) togglePanel(false);
+    // ----- Celular: panel inferior deslizable -----
+
+    const esMovil = () => window.matchMedia('(max-width: 768px)').matches;
+
+    // En celular el panel parte minimizado (solo título + buscador)
+    if (esMovil()) togglePanel(false);
+
+    // Minimizar el panel en celular para dejar ver el resultado en el mapa
+    function colapsarEnMovil() {
+      if (esMovil()) togglePanel(false);
+    }
+
+    // Altura visible del panel minimizado = agarradera + título + buscador
+    const elPanel = document.getElementById('panel');
+    function actualizarAltoMini() {
+      const alto = ['.panel-agarre', '.panel-header', '.buscador']
+        .map(sel => elPanel.querySelector(sel).offsetHeight)
+        .reduce((a, b) => a + b, 0);
+      document.documentElement.style.setProperty('--alto-mini', alto + 'px');
+    }
+    new ResizeObserver(actualizarAltoMini)
+      .observe(elPanel.querySelector('.buscador'));
+    window.addEventListener('resize', actualizarAltoMini);
+    actualizarAltoMini();
+
+    // Tocar la agarradera o el título alterna; deslizar arriba/abajo expande/minimiza
+    ['.panel-agarre', '.panel-header'].forEach(sel => {
+      const el = elPanel.querySelector(sel);
+      let yInicio = null;
+
+      el.addEventListener('click', () => {
+        if (esMovil()) togglePanel(document.body.classList.contains('panel-oculto'));
+      });
+      el.addEventListener('touchstart', e => { yInicio = e.touches[0].clientY; }, { passive: true });
+      el.addEventListener('touchend', e => {
+        if (yInicio === null || !esMovil()) return;
+        const dy = e.changedTouches[0].clientY - yInicio;
+        yInicio = null;
+        if (Math.abs(dy) < 30) return; // fue un toque: lo maneja 'click'
+        e.preventDefault();             // evita el 'click' después del deslizamiento
+        togglePanel(dy < 0);
+      });
+    });
+
+    // Vista inicial en celular: un poco más alejada para ver el centro y sus barrios
+    if (esMovil()) map.setView([-27.378, -70.327], 13);
+
+    const CAPAS_MANZANAS = ['Manzanas', 'Cobertura de transporte', 'Uso de transporte público'];
+
+    // Activa/desactiva una capa de manzanas desde un botón del panel
+    function mostrarCapaExclusiva(nombre) {
+      const chk = document.querySelector(`.check-capa[data-capa="${nombre}"]`);
+      chk.checked = !chk.checked;
+      toggleCapa(nombre, chk.checked);
+    }
+
+    function actualizarBotonUsoTP() {
+      const btn = document.getElementById('btn-uso-tp');
+      if (!btn) return;
+      const activa = document.querySelector('.check-capa[data-capa="Uso de transporte público"]').checked;
+      btn.classList.toggle('activo', activa);
+      btn.innerHTML = activa
+        ? '<i class="fa-solid fa-eye-slash"></i> Ocultar del mapa'
+        : '<i class="fa-solid fa-eye"></i> Ver en el mapa';
+    }
 
     // Mostrar / ocultar una capa completa (sección "Capas")
     function toggleCapa(nombre, mostrar) {
@@ -1521,6 +2893,21 @@
 
       if (mostrar) map.addLayer(layer);
       else map.removeLayer(layer);
+
+      // Estas capas pintan las mismas manzanas: solo una a la vez
+      if (CAPAS_MANZANAS.includes(nombre)) {
+        if (mostrar) {
+          CAPAS_MANZANAS.filter(otra => otra !== nombre).forEach(otra => {
+            const chkOtra = document.querySelector(`.check-capa[data-capa="${otra}"]`);
+            if (chkOtra && chkOtra.checked) {
+              chkOtra.checked = false;
+              if (overlays[otra]) map.removeLayer(overlays[otra]);
+            }
+          });
+        }
+        actualizarBotonCobertura();
+        actualizarBotonUsoTP();
+      }
 
       // Recorridos: sincronizar también cada línea y sus checkboxes
       if (nombre === 'Recorridos Buses') {
@@ -1547,6 +2934,22 @@
         `)
         .join('');
 
+    // Leyenda uso de transporte público
+    document.getElementById('leyenda-tp').innerHTML =
+      USO_TP.colores.map((color, i) => {
+        const desde = i === 0 ? 0 : USO_TP.limites[i - 1];
+        const hasta = USO_TP.limites[i];
+        return `
+          <div class="leyenda-item">
+            <span class="muestra-area" style="background:${color};opacity:0.9"></span>
+            ${hasta ? `${desde} – ${hasta} %` : `${desde} % o más`}
+          </div>`;
+      }).join('') + `
+        <div class="leyenda-item">
+          <span class="muestra-area" style="background:${USO_TP.sinDato}"></span>
+          Sin dato (muy pocas personas)
+        </div>`;
+
     // Leyenda habitantes por manzana
     document.getElementById('leyenda-manzanas').innerHTML =
       binsManzanas
@@ -1560,6 +2963,128 @@
           `;
         })
         .join('');
+
+
+    // ======================
+    // COBERTURA DE TRANSPORTE (resumen precalculado)
+    // ======================
+
+    let coberturaUV = null; // contenido de inputs/cobertura_uv.json
+
+    const formatoPct = (parte, total) =>
+      (total ? (100 * parte / total) : 0).toLocaleString('es-CL', {
+        minimumFractionDigits: 1, maximumFractionDigits: 1
+      }) + ' %';
+
+    // Barra apilada + filas por banda (se usa en el panel y en el popup de UV)
+    function htmlBandas(datos) {
+      const barra = COBERTURA_BANDAS.map(b =>
+        `<span style="width:${datos.poblacion ? 100 * datos[b.clave] / datos.poblacion : 0}%;background:${b.color}"></span>`
+      ).join('');
+
+      const filas = COBERTURA_BANDAS.map(b => `
+        <div class="fila-banda">
+          <span class="muestra-area" style="background:${b.color};opacity:0.8"></span>
+          ${b.etiqueta}
+          <span class="valor">${formatoPct(datos[b.clave], datos.poblacion)}</span>
+        </div>
+      `).join('');
+
+      return `<div class="barra-cobertura">${barra}</div>${filas}`;
+    }
+
+    function mostrarCobertura(mostrar) {
+      const chk = document.querySelector('.check-capa[data-capa="Cobertura de transporte"]');
+      chk.checked = mostrar;
+      toggleCapa('Cobertura de transporte', mostrar);
+      if (mostrar) {
+        // Si Manzanas estaba activa, toggleCapa ya la apagó
+        actualizarBotonCobertura();
+      }
+    }
+
+    function actualizarBotonCobertura() {
+      const btn = document.getElementById('btn-cobertura');
+      if (!btn) return;
+      const activa = document.querySelector('.check-capa[data-capa="Cobertura de transporte"]').checked;
+      btn.classList.toggle('activo', activa);
+      btn.setAttribute('aria-pressed', activa);
+      btn.innerHTML = activa
+        ? '<i class="fa-solid fa-eye-slash"></i> Ocultar del mapa'
+        : '<i class="fa-solid fa-eye"></i> Ver en el mapa';
+    }
+
+    // Acercar el mapa a una UV y mostrar la capa de cobertura
+    function irAUV(nombre) {
+      const capaUV = overlays['Unidades Vecinales'];
+      if (capaUV) {
+        capaUV.eachLayer(l => {
+          if (l.feature.properties.NOMBRE_UV === nombre) {
+            map.fitBounds(l.getBounds(), { padding: [40, 40] });
+          }
+        });
+      }
+      mostrarCobertura(true);
+      colapsarEnMovil();
+    }
+
+    function renderizarCobertura(datos) {
+      const t = datos.total;
+
+      // UV prioritarias: más usuarios de transporte público viviendo lejos de un recorrido
+      const ranking = Object.entries(datos.uv)
+        .filter(([, v]) => v.tp_lejos_200 > 0)
+        .sort((a, b) => b[1].tp_lejos_200 - a[1].tp_lejos_200)
+        .slice(0, 3)
+        .map(([nombre, v]) => `
+          <li>
+            <button data-uv="${escaparHTML(nombre)}" title="Ver ${escaparHTML(nombre)} en el mapa">
+              <span>${escaparHTML(nombre)}
+                <small class="ranking-detalle">${formatoPct(v.menos_200, v.poblacion)} vive a menos de 200 m</small>
+              </span>
+              <span class="valor"><b>${v.tp_lejos_200.toLocaleString('es-CL')}</b></span>
+            </button>
+          </li>
+        `).join('');
+
+      document.getElementById('cobertura-resumen').innerHTML = `
+        <p class="cobertura-titular">
+          <strong>${formatoPct(t.menos_200, t.poblacion)}</strong>
+          de la población vive a menos de 200 m de un recorrido de bus
+        </p>
+        ${htmlBandas(t)}
+        ${t.tp_lejos_200 ? `
+          <div class="ficha-alerta" style="margin-top:12px">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span><b>${t.tp_lejos_200.toLocaleString('es-CL')}</b> personas que usan transporte público viven a 200 m o más de un recorrido</span>
+          </div>` : ''}
+        <div class="etiqueta-seccion">UV prioritarias <span>· usuarios de bus lejos de un recorrido</span></div>
+        <ol class="ranking">${ranking}</ol>
+        <button id="btn-cobertura" class="boton-secundario" aria-pressed="false"
+                onclick="mostrarCobertura(!document.querySelector('.check-capa[data-capa=&quot;Cobertura de transporte&quot;]').checked)"></button>
+        <p class="nota">
+          Distancia en línea recta desde el centro de cada manzana al recorrido más cercano
+          (no considera paraderos ni recorrido a pie por calles). Población: Censo 2024.
+        </p>
+      `;
+      actualizarBotonCobertura();
+    }
+
+    document.getElementById('cobertura-resumen').addEventListener('click', e => {
+      const btn = e.target.closest('.ranking button');
+      if (btn) irAUV(btn.dataset.uv);
+    });
+
+    fetch('inputs/cobertura_uv.json')
+      .then(r => r.json())
+      .then(datos => {
+        coberturaUV = datos;
+        renderizarCobertura(datos);
+      })
+      .catch(() => {
+        document.getElementById('cobertura-resumen').innerHTML =
+          '<p class="nota" style="margin:0">No se pudo cargar el análisis de cobertura.</p>';
+      });
 
 
     // ======================
@@ -1631,36 +3156,62 @@
       indiceActivo = -1;
     }
 
-    async function buscarCalle(texto) {
-      if (peticionBusqueda) peticionBusqueda.abort();
-      peticionBusqueda = new AbortController();
+    // Indicador de carga: la lupa se convierte en un círculo girando y,
+    // si aún no hay sugerencias en pantalla, aparece "Buscando…"
+    const iconoBuscar = document.getElementById('buscar-icono');
+    function setBuscando(activo) {
+      iconoBuscar.className = activo
+        ? 'fa-solid fa-circle-notch fa-spin buscador-lupa cargando'
+        : 'fa-solid fa-magnifying-glass buscador-lupa';
+      inputBuscar.setAttribute('aria-busy', activo);
 
+      if (activo && (listaResultados.hidden || !resultadosBusqueda.length)) {
+        resultadosBusqueda = [];
+        listaResultados.innerHTML = `
+          <li class="vacio cargando-fila">
+            <i class="fa-solid fa-circle-notch fa-spin"></i> Buscando en Copiapó…
+          </li>`;
+        listaResultados.hidden = false;
+      }
+    }
+
+    // Consulta a Photon limitada a Copiapó; devuelve hasta 6 lugares sin duplicados
+    async function consultarLugares(texto, signal) {
       const url = 'https://photon.komoot.io/api/?' + new URLSearchParams({
         q: texto,
         bbox: BBOX_COPIAPO.join(','),
         limit: 10
       });
+      const resp = await fetch(url, { signal });
+      const data = await resp.json();
+
+      // Quitar duplicados (misma calle y mismo sector)
+      const vistos = new Set();
+      return data.features
+        .map(formatearResultado)
+        .filter(r => {
+          const clave = r.titulo + '|' + r.sub;
+          if (vistos.has(clave)) return false;
+          vistos.add(clave);
+          return true;
+        })
+        .slice(0, 6);
+    }
+
+    async function buscarCalle(texto) {
+      if (peticionBusqueda) peticionBusqueda.abort();
+      peticionBusqueda = new AbortController();
+      const estaPeticion = peticionBusqueda;
 
       try {
-        const resp = await fetch(url, { signal: peticionBusqueda.signal });
-        const data = await resp.json();
-
-        // Quitar duplicados (misma calle y mismo sector)
-        const vistos = new Set();
-        const lista = data.features
-          .map(formatearResultado)
-          .filter(r => {
-            const clave = r.titulo + '|' + r.sub;
-            if (vistos.has(clave)) return false;
-            vistos.add(clave);
-            return true;
-          })
-          .slice(0, 6);
-
+        const lista = await consultarLugares(texto, peticionBusqueda.signal);
         mostrarResultados(lista, 'Sin resultados en Copiapó');
       } catch (err) {
         if (err.name === 'AbortError') return;
         mostrarResultados([], 'No se pudo buscar. Intente de nuevo.');
+      } finally {
+        // Solo la búsqueda más reciente apaga el indicador
+        if (peticionBusqueda === estaPeticion) setBuscando(false);
       }
     }
 
@@ -1691,6 +3242,8 @@
 
     function seleccionarResultado(r) {
       ocultarResultados();
+      inputBuscar.blur(); // en celular cierra el teclado
+      colapsarEnMovil();
       inputBuscar.value = r.titulo;
       btnLimpiar.hidden = false;
 
@@ -1741,28 +3294,36 @@
 
     let lineaDestacada = null;
 
+    // 'nombre' puede ser una línea ("Línea 3") o varias (["Línea 3", "Línea 9"])
     function aplicarDestacado(nombre) {
       const grupo = overlays['Recorridos Buses'];
       if (!grupo) return;
+      const nombres = [].concat(nombre);
 
       grupo.eachLayer(l => {
         grupo.resetStyle(l);
         const el = l.getElement();
 
-        if (l.feature.properties.linea === nombre) {
+        if (nombres.includes(l.feature.properties.linea)) {
           l.setStyle({
             weight:  l.options.weight + 2,
             color:   oscurecerColor(l.options.color, 5),
             opacity: 1
           });
-          if (el) el.classList.remove('linea-sin-sombra');
+          if (el) {
+            el.classList.remove('linea-sin-sombra');
+            el.style.pointerEvents = '';
+          }
           if (map.hasLayer(l)) l.bringToFront();
           (decoradoresCapas.get(l) || []).forEach(d => {
             if (map.hasLayer(l) && !map.hasLayer(d)) d.addTo(map);
           });
         } else {
           l.setStyle({ opacity: 0.15 });
-          if (el) el.classList.add('linea-sin-sombra');
+          if (el) {
+            el.classList.add('linea-sin-sombra');
+            el.style.pointerEvents = 'none'; // atenuada: sin ficha ni resaltado
+          }
           // Quitar flechas de las líneas que no están destacadas
           (decoradoresCapas.get(l) || []).forEach(d => {
             if (map.hasLayer(d)) map.removeLayer(d);
@@ -1777,11 +3338,12 @@
     function destacarLinea(nombre) {
       lineaDestacada = nombre;
 
-      // Si la línea estaba oculta (casilla o filtro UV), mostrarla
-      const layers = capasLineas[nombre] || [];
-      layers.forEach(l => { if (!map.hasLayer(l)) map.addLayer(l); });
-      const chk = document.querySelector(`.check-linea[onchange*="'${nombre}'"]`);
-      if (chk) chk.checked = true;
+      // Si alguna línea estaba oculta (casilla o filtro UV), mostrarla
+      [].concat(nombre).forEach(n => {
+        (capasLineas[n] || []).forEach(l => { if (!map.hasLayer(l)) map.addLayer(l); });
+        const chk = document.querySelector(`.check-linea[onchange*="'${n}'"]`);
+        if (chk) chk.checked = true;
+      });
       sincronizarMaestro();
 
       // Hay líneas visibles: la capa "Recorridos Buses" debe verse marcada
@@ -1804,6 +3366,7 @@
           if (el) {
             el.classList.remove('linea-sin-sombra');
             el.style.opacity = 1;
+            el.style.pointerEvents = '';
           }
         });
       }
@@ -1816,7 +3379,7 @@
     }
 
     function actualizarChips() {
-      infoBusqueda.querySelectorAll('.chip').forEach(chip => {
+      document.querySelectorAll('#buscador-info .chip, .ficha-uv .chip[data-linea]').forEach(chip => {
         const activa = chip.dataset.linea === lineaDestacada;
         chip.classList.toggle('activo', activa);
         chip.setAttribute('aria-pressed', activa);
@@ -1835,30 +3398,59 @@
     // Se mantiene si el clic fue sobre una UV, una ruta o el marcador de búsqueda.
     map.on('click', e => {
       if (!lineaDestacada) return;
+      if (modoActual === 'viaje' && viaje.opciones.length) return; // el viaje sigue a la vista
       const origen = e.sourceTarget;
       if (origen === marcadorBusqueda) return;
+      if (typeof capaViaje !== 'undefined' && capaViaje.hasLayer(origen)) return;
       const props = origen && origen.feature && origen.feature.properties;
       if (props && (props.NOMBRE_UV || props.linea)) return;
       quitarDestacado();
     });
+
+    // Pantalla táctil: detectar el toque en zona vacía directamente
+    // (algunos navegadores no generan 'click' al tocar el fondo del mapa)
+    if (ES_TACTIL) {
+      const contenedorMapa = map.getContainer();
+      let inicioToque = null;
+
+      contenedorMapa.addEventListener('pointerdown', e => {
+        inicioToque = { x: e.clientX, y: e.clientY, t: Date.now() };
+      });
+
+      contenedorMapa.addEventListener('pointerup', e => {
+        if (!inicioToque || !lineaDestacada) return;
+        if (modoActual === 'viaje' && viaje.opciones.length) { inicioToque = null; return; }
+        const movio = Math.hypot(e.clientX - inicioToque.x, e.clientY - inicioToque.y) > 10;
+        const largo = Date.now() - inicioToque.t > 500;
+        inicioToque = null;
+        if (movio || largo) return; // fue arrastre o toque largo, no un toque
+
+        const el = e.target;
+        const enMapa    = el.closest('.leaflet-map-pane') || el === contenedorMapa;
+        const enObjeto  = el.closest('.leaflet-interactive, .leaflet-popup, .leaflet-control');
+        if (enMapa && !enObjeto) quitarDestacado();
+      });
+    }
 
     // Tecla Escape: quitar destacado
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && lineaDestacada) quitarDestacado();
     });
 
-    function limpiarBusqueda() {
+    function limpiarBusqueda(enfocar = true) {
       quitarDestacado();
       inputBuscar.value = '';
       btnLimpiar.hidden = true;
       infoBusqueda.hidden = true;
-      ocultarResultados();
+      clearTimeout(temporizadorBusqueda);
       if (peticionBusqueda) peticionBusqueda.abort();
+      setBuscando(false);
+      ocultarResultados();
       if (marcadorBusqueda) {
         map.removeLayer(marcadorBusqueda);
         marcadorBusqueda = null;
       }
-      inputBuscar.focus();
+      if (enfocar) inputBuscar.focus();
     }
 
     // Buscar mientras escribe (con pausa para no saturar el servicio)
@@ -1868,9 +3460,12 @@
       clearTimeout(temporizadorBusqueda);
 
       if (texto.length < 3) {
+        if (peticionBusqueda) peticionBusqueda.abort();
+        setBuscando(false);
         ocultarResultados();
         return;
       }
+      setBuscando(true); // feedback inmediato, aunque la búsqueda parta en 350 ms
       temporizadorBusqueda = setTimeout(() => buscarCalle(texto), 350);
     });
 
@@ -1902,6 +3497,1115 @@
     document.addEventListener('click', e => {
       if (!e.target.closest('.buscador')) ocultarResultados();
     });
+
+
+    // ======================
+    // FICHA DE UNIDAD VECINAL
+    // ======================
+    // Habitantes y cobertura: Censo 2024 (manzanas, scripts/calcular_cobertura.mjs).
+    // Edades, inmigrantes, pueblos originarios, hogares y viviendas: Censo 2017
+    // (columnas del archivo de UV). Servicios: conteos del archivo de UV.
+
+    const numUV = v => Number(v) || 0;
+    const fmtEntero = v => Math.round(v).toLocaleString('es-CL');
+    const fmtPctUV = (a, b) => b
+      ? (100 * a / b).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' %'
+      : '–';
+
+    // Líneas cuyo recorrido pasa por la UV (se calcula una vez por UV)
+    const cacheLineasUV = new Map();
+    function lineasEnUV(feature) {
+      const nombre = feature.properties.NOMBRE_UV;
+      if (cacheLineasUV.has(nombre)) return cacheLineasUV.get(nombre);
+      if (!geojsonBuses) return [];
+
+      const lineas = new Map(); // línea → frecuencia
+      geojsonBuses.features.forEach(f => {
+        try {
+          if (!lineas.has(f.properties.linea) && turf.booleanIntersects(f, feature)) {
+            lineas.set(f.properties.linea, f.properties.frecuencia || '');
+          }
+        } catch (e) {}
+      });
+      const lista = [...lineas.entries()]
+        .sort((a, b) => parseInt(a[0].replace(/\D/g, '')) - parseInt(b[0].replace(/\D/g, '')));
+      cacheLineasUV.set(nombre, lista);
+      return lista;
+    }
+
+    // Promedios de Copiapó (suma de las UV urbanas) para comparar cada UV con la comuna
+    let promediosComunaUV = null;
+    function promediosComuna() {
+      if (promediosComunaUV) return promediosComunaUV;
+      if (!coberturaUV) return null;
+      const s = {};
+      Object.values(coberturaUV.uv).forEach(v => {
+        Object.entries(v.censo || {}).forEach(([k, n]) => { s[k] = (s[k] || 0) + (n || 0); });
+        s._pob = (s._pob || 0) + v.poblacion;
+      });
+      const ind = indicadoresCenso(s);
+      // Áreas verdes (archivo de UV) por habitante 2024
+      if (geojsonUV) {
+        const verde = geojsonUV.features.filter(f => f.properties.urbano === 1)
+          .reduce((a, f) => a + numUV(f.properties.AREA_VERDE), 0);
+        ind.m2hab = s._pob ? verde / s._pob : null;
+      }
+      promediosComunaUV = ind;
+      return ind;
+    }
+
+    // Fracciones (0–1) a partir de los conteos del Censo 2024
+    function indicadoresCenso(c) {
+      const div = (a, b) => b ? a / b : 0;
+      const per = c.n_per || 0;
+      const tras = ['publico', 'auto', 'camina', 'bicicleta', 'motocicleta', 'cab_lan_bote', 'otros']
+        .reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0);
+      return {
+        ninos:   div((c.n_edad_0_5 || 0) + (c.n_edad_6_13 || 0), per),
+        adolesc: div(c.n_edad_14_17 || 0, per),
+        adultos: div((c.n_edad_18_24 || 0) + (c.n_edad_25_44 || 0) + (c.n_edad_45_59 || 0), per),
+        mayores: div(c.n_edad_60_mas || 0, per),
+        inm:     div(c.n_inmigrantes || 0, per),
+        pueblo:  div(c.n_pueblos_orig || 0, per),
+        disc:    div(c.n_discapacidad || 0, per),
+        mujeres: div(c.n_mujeres || 0, per),
+        tp:      div(c.n_transporte_publico || 0, tras),
+        auto:    div(c.n_transporte_auto || 0, tras),
+        camina:  div(c.n_transporte_camina || 0, tras),
+        otros:   div((c.n_transporte_bicicleta || 0) + (c.n_transporte_motocicleta || 0)
+                   + (c.n_transporte_cab_lan_bote || 0) + (c.n_transporte_otros || 0), tras),
+        desoc:   div(c.n_desocupado || 0, (c.n_ocupado || 0) + (c.n_desocupado || 0)),
+        hacin:   div(c.n_viv_hacinadas || 0, c.n_vp_ocupada || 0),
+        sinInt:  div(Math.max(0, (c.n_hog || 0) - (c.n_internet || 0)), c.n_hog || 0),
+        jefa:    div(c.n_jefatura_mujer || 0, c.n_hog || 0),
+        tras
+      };
+    }
+
+    const fmtFraccion = f => (100 * f).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' %';
+
+    // "Copiapó 24,6 %" con flecha si la UV está claramente sobre/bajo el promedio
+    function comparacion(valor, promedio, fmt = fmtFraccion) {
+      if (promedio == null || !isFinite(promedio)) return '';
+      const rel = promedio ? valor / promedio : 1;
+      const flecha = rel > 1.15 ? '<i class="fa-solid fa-arrow-up"></i>'
+                   : rel < 0.85 ? '<i class="fa-solid fa-arrow-down"></i>' : '';
+      return `<small class="comparacion">${flecha}Copiapó ${fmt(promedio)}</small>`;
+    }
+
+    // Barra apilada + filas con comparación
+    function htmlBarraFilas(items, prom) {
+      const barra = items.map(e =>
+        `<span style="width:${100 * e.f}%;background:${e.color}"></span>`).join('');
+      const filas = items.map(e => `
+        <div class="fila-banda fila-ficha">
+          <span class="muestra-area" style="background:${e.color};opacity:1"></span>
+          ${e.etiqueta}
+          <span class="valor"><b>${fmtFraccion(e.f)}</b>${prom ? comparacion(e.f, prom[e.clave]) : ''}</span>
+        </div>`).join('');
+      return `<div class="barra-cobertura barra-ficha">${barra}</div>${filas}`;
+    }
+
+    // Mosaico con cifra, etiqueta y comparación
+    const tarjeta = (valor, etiqueta, extra = '') => `<div><b>${valor}</b><span>${etiqueta}</span>${extra}</div>`;
+
+    function htmlFichaUV(feature, poblacion2024, datosCobertura) {
+      const p = feature.properties;
+      const prom = promediosComuna();
+      const c = datosCobertura && datosCobertura.censo;
+      const ind = c ? indicadoresCenso(c) : null;
+      const cmp = (clave, v) => prom ? comparacion(v, prom[clave]) : '';
+
+      // --- Servicios (archivo de UV) ---
+      const salud = numUV(p.TOTAL_SALU);
+      const detalleSalud = salud
+        ? [[numUV(p.SALUD_PUBL), 'público', 'públicos'], [numUV(p.SALUD_PRIV), 'privado', 'privados'], [numUV(p.SALUD_OTRO), 'otro', 'otros']]
+            .filter(([n]) => n > 0).map(([n, uno, varios]) => `${n} ${n === 1 ? uno : varios}`).join(' · ')
+        : '';
+      const m2PorHab = poblacion2024 ? numUV(p.AREA_VERDE) / poblacion2024 : 0;
+      const fmtM2 = v => v.toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' m²/hab';
+      const servicios = [
+        { icono: 'fa-house-medical',               texto: 'Centros de salud',        valor: salud, detalle: detalleSalud },
+        { icono: 'fa-school',                      texto: 'Establec. educacionales', valor: numUV(p.T_EDUCACIO) },
+        { icono: 'fa-prescription-bottle-medical', texto: 'Farmacias',               valor: numUV(p.FARMACIAS) },
+        { icono: 'fa-cart-shopping',               texto: 'Supermercados',           valor: numUV(p.SUPERMERCA) },
+        { icono: 'fa-futbol',                      texto: 'Recintos deportivos',     valor: numUV(p.DEPORTE) },
+        { icono: 'fa-tree',                        texto: 'Áreas verdes',
+          valor: (numUV(p.AREA_VERDE) / 10000).toLocaleString('es-CL', { maximumFractionDigits: 1 }) + ' ha',
+          detalle: m2PorHab
+            ? `${fmtM2(m2PorHab)}${prom && prom.m2hab ? comparacion(m2PorHab, prom.m2hab, fmtM2).replace('<small class="comparacion">', ' <span class="comparacion">').replace('</small>', '</span>') : ''}`
+            : '' },
+        { icono: 'fa-shield-halved',               texto: 'Carabineros / PDI',       valor: numUV(p.CARABINERO) + numUV(p.PDI) },
+        { icono: 'fa-fire-extinguisher',           texto: 'Bomberos',                valor: numUV(p.BOMBEROS) }
+      ];
+      const htmlServicios = servicios.map(s => `
+        <div class="servicio ${s.valor === 0 ? 'servicio-cero' : ''}">
+          <i class="fa-solid ${s.icono}"></i>
+          <div>
+            <b>${s.valor}</b>
+            <span>${s.texto}</span>
+            ${s.detalle ? `<small>${s.detalle}</small>` : ''}
+          </div>
+        </div>`).join('');
+
+      // --- Líneas que recorren la UV ---
+      const lineas = lineasEnUV(feature);
+      const htmlLineas = lineas.length
+        ? `<div class="chips">${lineas.map(([l, frec]) => `
+            <button class="chip" data-linea="${escaparHTML(l)}" aria-pressed="${esLineaDestacada(l)}"
+                    style="--color-linea:${coloresLineas[l] || '#666'}" title="Destacar ${escaparHTML(l)} en el mapa">
+              <span class="muestra-linea" style="background:${coloresLineas[l] || '#666'}"></span>${escaparHTML(l)}
+              ${frec ? `<span class="frecuencia">${escaparHTML(frec.replace(/buses/i, 'buses'))}</span>` : ''}
+            </button>`).join('')}</div>`
+        : '<p class="nota" style="margin:0">Ninguna línea recorre esta UV.</p>';
+
+      // --- Secciones del Censo 2024 (si cargó el resumen) ---
+      let censo = '';
+      if (ind) {
+        const estudiantes = (c.n_asistencia_basica || 0) + (c.n_asistencia_media || 0) + (c.n_asistencia_superior || 0);
+        censo = `
+          <div class="viaje-seccion-titulo"><span><i class="fa-solid fa-people-group"></i> Población</span><span class="ficha-anio">Censo 2024</span></div>
+          ${htmlBarraFilas([
+            { etiqueta: 'Niños (0–13)',        f: ind.ninos,   color: '#60a5fa', clave: 'ninos' },
+            { etiqueta: 'Adolescentes (14–17)', f: ind.adolesc, color: '#a5b4fc', clave: 'adolesc' },
+            { etiqueta: 'Adultos (18–59)',     f: ind.adultos, color: '#cbd5e1', clave: 'adultos' },
+            { etiqueta: 'Mayores (60 y más)',  f: ind.mayores, color: '#f59e0b', clave: 'mayores' }
+          ], prom)}
+          <div class="ficha-par">
+            ${tarjeta(fmtFraccion(ind.inm), 'inmigrantes', cmp('inm', ind.inm))}
+            ${tarjeta(fmtFraccion(ind.pueblo), 'pueblos originarios', cmp('pueblo', ind.pueblo))}
+            ${tarjeta(fmtFraccion(ind.disc), 'con discapacidad', cmp('disc', ind.disc))}
+            ${tarjeta(fmtFraccion(ind.mujeres), 'mujeres', cmp('mujeres', ind.mujeres))}
+          </div>
+
+          <div class="viaje-seccion-titulo"><span><i class="fa-solid fa-person-walking-arrow-right"></i> Movilidad</span><span class="ficha-anio">Censo 2024</span></div>
+          <div class="ficha-subtitulo" style="margin-top:0">Cómo se trasladan a trabajar o estudiar</div>
+          ${htmlBarraFilas([
+            { etiqueta: 'Transporte público', f: ind.tp,     color: '#2563eb', clave: 'tp' },
+            { etiqueta: 'Auto',               f: ind.auto,   color: '#64748b', clave: 'auto' },
+            { etiqueta: 'A pie',              f: ind.camina, color: '#16a34a', clave: 'camina' },
+            { etiqueta: 'Bicicleta, moto y otros', f: ind.otros, color: '#e2e8f0', clave: 'otros' }
+          ], prom)}
+          ${datosCobertura.tp_lejos_200 > 0 ? `
+            <div class="ficha-alerta">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span><b>${fmtEntero(datosCobertura.tp_lejos_200)}</b> usuarios de transporte público viven a 200 m o más de un recorrido</span>
+            </div>` : ''}
+
+          <div class="viaje-seccion-titulo"><span><i class="fa-solid fa-briefcase"></i> Empleo y educación</span></div>
+          <div class="ficha-kpis">
+            ${tarjeta(fmtFraccion(ind.desoc), 'desocupación', cmp('desoc', ind.desoc))}
+            ${tarjeta(c.prom_escolaridad18 != null ? c.prom_escolaridad18.toLocaleString('es-CL') + ' años' : '–', 'escolaridad (18+)')}
+            ${tarjeta(fmtEntero(estudiantes), 'estudiantes',
+              `<small class="comparacion">${fmtEntero(c.n_asistencia_basica || 0)} básica · ${fmtEntero(c.n_asistencia_media || 0)} media · ${fmtEntero(c.n_asistencia_superior || 0)} sup.</small>`)}
+          </div>
+
+          <div class="viaje-seccion-titulo"><span><i class="fa-solid fa-house-chimney-user"></i> Hogares y vivienda</span></div>
+          <div class="ficha-kpis">
+            ${tarjeta(fmtFraccion(ind.hacin), 'viviendas hacinadas', cmp('hacin', ind.hacin))}
+            ${tarjeta(fmtFraccion(ind.sinInt), 'hogares sin internet', cmp('sinInt', ind.sinInt))}
+            ${tarjeta(fmtFraccion(ind.jefa), 'jefatura femenina', cmp('jefa', ind.jefa))}
+          </div>`;
+      }
+
+      const habitantes = c ? c.n_per : (poblacion2024 || numUV(p.PERSONAS));
+
+      return `
+        <div class="ficha-uv">
+          <div class="ficha-cabecera">
+            <span class="ficha-icono"><i class="fa-solid fa-map-location-dot"></i></span>
+            <div>
+              <span class="ficha-tipo">${p.ficticia
+                ? 'UV ficticia <span class="insignia insignia-ficticia">creada para el análisis</span>'
+                : `Unidad Vecinal${p.CODIGO_UV ? ` · N° ${escaparHTML(p.CODIGO_UV)}` : ''}`}</span>
+              <h3>${escaparHTML(p.NOMBRE_UV || 'Sin nombre')}</h3>
+            </div>
+          </div>
+
+          <div class="ficha-kpis">
+            <div><i class="fa-solid fa-users"></i><b>${fmtEntero(habitantes)}</b><span>habitantes</span></div>
+            <div><i class="fa-solid fa-house-chimney"></i><b>${fmtEntero(c ? c.n_hog : numUV(p.HOGARES))}</b><span>hogares</span></div>
+            <div><i class="fa-solid fa-cake-candles"></i><b>${c && c.prom_edad != null ? c.prom_edad.toLocaleString('es-CL') : '–'}</b><span>edad promedio</span></div>
+          </div>
+
+          ${censo}
+
+          ${p.ficticia ? `
+          <p class="nota ficha-aviso-ficticia">
+            <i class="fa-solid fa-circle-info"></i>
+            Área urbana (sectores altos y tomas) dentro de la UV rural "Copiapó Este". Se trazó a partir
+            de sus manzanas del Censo 2024 para incluirla en el análisis. No tiene datos de servicios.
+          </p>` : `
+          <div class="viaje-seccion-titulo"><span><i class="fa-solid fa-building-columns"></i> Servicios</span></div>
+          <div class="ficha-servicios">${htmlServicios}</div>`}
+
+          <div class="viaje-seccion-titulo"><span><i class="fa-solid fa-bus"></i> Transporte</span><span class="contador">${lineas.length} ${lineas.length === 1 ? 'línea' : 'líneas'}</span></div>
+          ${htmlLineas}
+          ${datosCobertura ? `
+            <div class="popup-cobertura">
+              <div class="ficha-subtitulo">Distancia de la población a un recorrido</div>
+              ${htmlBandas(datosCobertura)}
+            </div>` : ''}
+
+          <p class="nota ficha-fuente">
+            <i class="fa-solid fa-circle-info"></i>
+            Población, movilidad, empleo, hogares y vivienda: Censo 2024 (INE), por manzana.
+            Servicios: archivo de UV. "Copiapó" = total de las UV urbanas.
+            Inmigrantes y pueblos originarios pueden estar subestimados (el INE oculta cifras pequeñas).
+          </p>
+        </div>`;
+    }
+
+    // Opciones del popup: ancho y alto según la pantalla, sin quedar bajo el panel
+    function opcionesFichaUV() {
+      const movil = esMovil();
+      const altoMini = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--alto-mini')) || 150;
+      return {
+        className: 'popup-ficha-uv',
+        maxWidth: Math.min(330, window.innerWidth - 32),
+        minWidth: Math.min(280, window.innerWidth - 48),
+        maxHeight: Math.round(Math.min(560, window.innerHeight * (movil ? 0.55 : 0.7))),
+        autoPanPaddingTopLeft: [movil ? 12 : 320, 12],
+        autoPanPaddingBottomRight: [12, movil ? altoMini + 12 : 12]
+      };
+    }
+
+    // Chips de líneas dentro de la ficha: destacar / quitar destacado
+    document.addEventListener('click', e => {
+      const chip = e.target.closest('.ficha-uv .chip[data-linea]');
+      if (!chip) return;
+      if (chip.dataset.linea === lineaDestacada) quitarDestacado();
+      else destacarLinea(chip.dataset.linea);
+    });
+
+    // ======================
+    // CÓMO LLEGAR DE A a B
+    // ======================
+
+    const VIAJE = {
+      CAMINATA_MAX_M:   500, // distancia máxima caminando hasta/desde el bus
+      TRANSBORDO_MAX_M: 200, // distancia máxima caminando entre dos líneas
+      TRAMO_MIN_M:      150, // un viaje en bus más corto no tiene sentido
+      CAMINA_M_MIN:      80, // 4,8 km/h
+      BUS_M_MIN:        300, // 18 km/h promedio
+      TRANSBORDO_MIN:     5, // minutos de penalización por cambiar de bus
+      MUESTREO_M:        75  // cada cuántos metros se busca punto de transbordo
+    };
+
+    let modoActual = 'lugar';
+    const viaje = { origen: null, destino: null, opciones: [], elegida: 0, token: 0, calculandoCalles: false };
+    const capaViaje = L.layerGroup().addTo(map);
+    const resultadosViaje = document.getElementById('viaje-resultados');
+
+    // ----- Pestañas -----
+    function cambiarModo(modo) {
+      if (modo === modoActual) return;
+      modoActual = modo;
+      document.querySelectorAll('.modo').forEach(b => {
+        const activo = b.dataset.modo === modo;
+        b.classList.toggle('activo', activo);
+        b.setAttribute('aria-selected', activo);
+      });
+      document.getElementById('modo-lugar').hidden = modo !== 'lugar';
+      document.getElementById('modo-viaje').hidden = modo !== 'viaje';
+
+      // Cada modo limpia lo que dejó el otro en el mapa
+      if (modo === 'viaje') {
+        limpiarBusqueda(false);
+        if (viaje.opciones.length) dibujarOpcion(viaje.elegida);
+      } else {
+        cancelarEleccion();
+        capaViaje.clearLayers();
+        quitarDestacado();
+      }
+    }
+
+    // ----- Geometría rápida en metros (proyección local de Copiapó) -----
+    const R_TIERRA = 6371008.8;
+    const COS_LAT0 = Math.cos(-27.37 * Math.PI / 180);
+    const aXY = (lat, lng) => [
+      R_TIERRA * lng * Math.PI / 180 * COS_LAT0,
+      R_TIERRA * lat * Math.PI / 180
+    ];
+    const aLatLng = ([x, y]) => [
+      y / R_TIERRA * 180 / Math.PI,
+      x / (R_TIERRA * COS_LAT0) * 180 / Math.PI
+    ];
+
+    // Cada tramo (Ida / Regreso de cada línea) como polilínea con largo acumulado
+    let rutasViaje = null;
+    function prepararRutas() {
+      if (rutasViaje || !geojsonBuses) return rutasViaje;
+      rutasViaje = geojsonBuses.features.map(f => {
+        const partes = f.geometry.type === 'LineString'
+          ? [f.geometry.coordinates] : f.geometry.coordinates;
+        const pts = [];
+        partes.forEach(parte => parte.forEach(([lng, lat]) => {
+          const p = aXY(lat, lng);
+          const u = pts[pts.length - 1];
+          if (!u || u[0] !== p[0] || u[1] !== p[1]) pts.push(p);
+        }));
+        const acum = [0];
+        for (let i = 1; i < pts.length; i++) {
+          acum.push(acum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+        }
+        return { props: f.properties, linea: f.properties.linea, pts, acum, largo: acum[acum.length - 1] };
+      });
+      return rutasViaje;
+    }
+
+    // Punto de la ruta más cercano a p: distancia y posición a lo largo del recorrido
+    function masCercano(ruta, [px, py]) {
+      let mejor = { dist: Infinity, loc: 0 };
+      const { pts, acum } = ruta;
+      for (let i = 1; i < pts.length; i++) {
+        const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
+        const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+        let t = l2 ? ((px - ax) * dx + (py - ay) * dy) / l2 : 0;
+        t = Math.max(0, Math.min(1, t));
+        const d = Math.hypot(ax + t * dx - px, ay + t * dy - py);
+        if (d < mejor.dist) mejor = { dist: d, loc: acum[i - 1] + t * Math.sqrt(l2) };
+      }
+      return mejor;
+    }
+
+    // Coordenada en la posición 'loc' (metros desde el inicio del recorrido)
+    function puntoEn(ruta, loc) {
+      const { pts, acum } = ruta;
+      if (loc <= 0) return pts[0];
+      for (let i = 1; i < pts.length; i++) {
+        if (acum[i] >= loc) {
+          const t = (loc - acum[i - 1]) / ((acum[i] - acum[i - 1]) || 1);
+          return [pts[i - 1][0] + t * (pts[i][0] - pts[i - 1][0]), pts[i - 1][1] + t * (pts[i][1] - pts[i - 1][1])];
+        }
+      }
+      return pts[pts.length - 1];
+    }
+
+    // Parte del recorrido entre dos posiciones, como [lat, lng] para dibujar
+    function tramoEntre(ruta, desde, hasta) {
+      const salida = [puntoEn(ruta, desde)];
+      ruta.acum.forEach((a, i) => { if (a > desde && a < hasta) salida.push(ruta.pts[i]); });
+      salida.push(puntoEn(ruta, hasta));
+      return salida.map(aLatLng);
+    }
+
+    // ----- Cálculo de opciones -----
+    function crearOpcion(tramos, caminatas) {
+      const metrosBus = tramos.reduce((s, t) => s + (t.hasta - t.desde), 0);
+      const metrosCamina = caminatas.reduce((s, d) => s + d, 0);
+      return {
+        tramos,
+        caminatas,
+        metrosBus,
+        metrosCamina,
+        minutos: metrosCamina / VIAJE.CAMINA_M_MIN
+               + metrosBus / VIAJE.BUS_M_MIN
+               + (tramos.length - 1) * VIAJE.TRANSBORDO_MIN
+      };
+    }
+
+    function calcularOpciones(origen, destino) {
+      const rutas = prepararRutas();
+      if (!rutas) return null;
+
+      const A = aXY(origen.lat, origen.lng);
+      const B = aXY(destino.lat, destino.lng);
+      const info = rutas.map(r => ({ r, a: masCercano(r, A), b: masCercano(r, B) }));
+      let opciones = [];
+
+      // 1) Directo: la misma ruta pasa cerca de A y luego cerca de B (en ese orden)
+      info.forEach(({ r, a, b }) => {
+        if (a.dist <= VIAJE.CAMINATA_MAX_M && b.dist <= VIAJE.CAMINATA_MAX_M &&
+            b.loc - a.loc >= VIAJE.TRAMO_MIN_M) {
+          opciones.push(crearOpcion([{ r, desde: a.loc, hasta: b.loc }], [a.dist, b.dist]));
+        }
+      });
+
+      // 2) Con un transbordo (solo si no hay directas)
+      if (!opciones.length) {
+        const desdeA = info.filter(x => x.a.dist <= VIAJE.CAMINATA_MAX_M);
+        const haciaB = info.filter(x => x.b.dist <= VIAJE.CAMINATA_MAX_M);
+
+        desdeA.forEach(x1 => haciaB.forEach(x2 => {
+          if (x1.r.linea === x2.r.linea) return;
+          let mejor = null;
+          for (let l = x1.a.loc + VIAJE.TRAMO_MIN_M; l <= x1.r.largo; l += VIAJE.MUESTREO_M) {
+            const c = masCercano(x2.r, puntoEn(x1.r, l));
+            if (c.dist <= VIAJE.TRANSBORDO_MAX_M && x2.b.loc - c.loc >= VIAJE.TRAMO_MIN_M) {
+              const op = crearOpcion(
+                [{ r: x1.r, desde: x1.a.loc, hasta: l }, { r: x2.r, desde: c.loc, hasta: x2.b.loc }],
+                [x1.a.dist, c.dist, x2.b.dist]
+              );
+              if (!mejor || op.minutos < mejor.minutos) mejor = op;
+            }
+          }
+          if (mejor) opciones.push(mejor);
+        }));
+      }
+
+      // Una opción por combinación de líneas (la más rápida), las 3 mejores
+      const porLineas = {};
+      opciones.forEach(o => {
+        const clave = o.tramos.map(t => t.r.linea).join('>');
+        if (!porLineas[clave] || o.minutos < porLineas[clave].minutos) porLineas[clave] = o;
+      });
+      opciones = Object.values(porLineas).sort((a, b) => a.minutos - b.minutos).slice(0, 3);
+
+      return { opciones, distanciaDirecta: Math.hypot(A[0] - B[0], A[1] - B[1]) };
+    }
+
+    // ----- Formato -----
+    const fmtMetros = m => m < 1000
+      ? `${Math.max(10, Math.round(m / 10) * 10)} m`
+      : `${(m / 1000).toLocaleString('es-CL', { maximumFractionDigits: 1 })} km`;
+    const fmtMin = min => `${Math.max(1, Math.round(min))} min`;
+    const chipLinea = l => `
+      <span class="chip chip-estatico" style="--color-linea:${coloresLineas[l] || '#666'}">
+        <span class="muestra-linea" style="background:${coloresLineas[l] || '#666'}"></span>${escaparHTML(l)}
+      </span>`;
+
+    function htmlPasos(o) {
+      const pasos = [];
+      o.tramos.forEach((t, i) => {
+        const p = t.r.props;
+        pasos.push(`
+          <li><i class="fa-solid fa-person-walking"></i>
+            Camina ${fmtMetros(o.caminatas[i])} ${i === 0 ? 'hasta el recorrido' : 'para el transbordo'}
+          </li>
+          <li><i class="fa-solid fa-bus" style="color:${coloresLineas[t.r.linea] || '#666'}"></i>
+            <span>Toma la <b>${escaparHTML(t.r.linea)}</b> ${p.a ? `hacia <b>${escaparHTML(p.a)}</b>` : ''}
+            y viaja ${fmtMetros(t.hasta - t.desde)}
+            ${p.frecuencia ? `<span class="sub">Frecuencia: ${escaparHTML(p.frecuencia)}</span>` : ''}</span>
+          </li>`);
+      });
+      pasos.push(`
+        <li><i class="fa-solid fa-person-walking"></i>
+          Camina ${fmtMetros(o.caminatas[o.caminatas.length - 1])} hasta el destino
+        </li>`);
+      return `<ol class="viaje-pasos">${pasos.join('')}</ol>`;
+    }
+
+    // ----- Caminata por calles (OSRM de FOSSGIS, perfil peatón) -----
+    const cacheCaminatas = new Map();
+    let creditoCaminata = false;
+
+    // Ruta a pie entre a y b ([lat, lng]). Devuelve { metros, coords } o null si falla.
+    function caminataPorCalles(a, b) {
+      const clave = [a[0], a[1], b[0], b[1]].map(v => v.toFixed(5)).join(',');
+      if (!cacheCaminatas.has(clave)) {
+        const url = 'https://routing.openstreetmap.de/routed-foot/route/v1/foot/' +
+          `${a[1]},${a[0]};${b[1]},${b[0]}?overview=full&geometries=geojson`;
+        cacheCaminatas.set(clave, fetch(url, { signal: AbortSignal.timeout(8000) })
+          .then(r => r.json())
+          .then(d => {
+            if (d.code !== 'Ok' || !d.routes || !d.routes.length) throw new Error('sin ruta');
+            const r = d.routes[0];
+            if (!creditoCaminata) {
+              map.attributionControl.addAttribution('Caminata: <a href="https://routing.openstreetmap.de" target="_blank">FOSSGIS OSRM</a>');
+              creditoCaminata = true;
+            }
+            return { metros: r.distance, coords: r.geometry.coordinates.map(([lng, lat]) => [lat, lng]) };
+          })
+          .catch(() => { cacheCaminatas.delete(clave); return null; }));
+      }
+      return cacheCaminatas.get(clave);
+    }
+
+    // Tramos a pie de una opción: A → subida, bajada → subida (transbordo), bajada → B
+    function tramosAPie(o) {
+      const puntos = [[viaje.origen.lat, viaje.origen.lng]];
+      o.tramos.forEach(t => {
+        puntos.push(aLatLng(puntoEn(t.r, t.desde)));
+        puntos.push(aLatLng(puntoEn(t.r, t.hasta)));
+      });
+      puntos.push([viaje.destino.lat, viaje.destino.lng]);
+      const pares = [];
+      for (let i = 0; i < puntos.length; i += 2) pares.push([puntos[i], puntos[i + 1]]);
+      return pares;
+    }
+
+    // ----- Caminatas por calles y elección de subida/bajada -----
+    // La persona primero llega al camino caminable más cercano (punto de
+    // entrada a la red de calles) y desde ahí camina POR LAS CALLES hasta la
+    // ruta. Por eso la subida al bus se elige como el punto de la ruta más
+    // cercano a esa entrada (no a la ubicación original), y la caminata se
+    // pide al servicio de calles completa, sin recortarla ni cruzar en diagonal.
+
+    // Largo en metros de una lista de puntos [lat, lng]
+    function largoCamino(puntos) {
+      let total = 0;
+      for (let i = 1; i < puntos.length; i++) {
+        const [x0, y0] = aXY(...puntos[i - 1]), [x1, y1] = aXY(...puntos[i]);
+        total += Math.hypot(x1 - x0, y1 - y0);
+      }
+      return total;
+    }
+
+    // La caminata "toca" la ruta si pasa a menos de esto. Es estricto a propósito:
+    // la vereda del mismo lado está a menos de 15 m, la del otro lado de una
+    // avenida dividida a 25–40 m (y no se puede subir al bus desde ahí).
+    const TOCA_RUTA_M = 15;
+
+    // Corta cada caminata donde toca la ruta:
+    //  - al subir: en el PRIMER punto donde la caminata toca la ruta del bus
+    //  - al bajar: en el ÚLTIMO punto donde la caminata toca la ruta del bus anterior
+    // Así no se camina junto a la línea para tomarla (o dejarla) más allá.
+    function cortarDondeTocaRuta(o, caminos) {
+      const T = o.tramos, n = T.length, MIN = VIAJE.TRAMO_MIN_M;
+
+      return caminos.map((c, i) => {
+        const anterior  = i > 0 ? T[i - 1] : null; // bus del que se baja
+        const siguiente = i < n ? T[i] : null;     // bus al que se sube
+        const xy = c.coords.map(([lat, lng]) => aXY(lat, lng));
+        let inicio = 0, fin = xy.length - 1;
+
+        if (siguiente) {
+          for (let k = 0; k < xy.length; k++) {
+            const m = masCercano(siguiente.r, xy[k]);
+            if (m.dist <= TOCA_RUTA_M && m.loc < siguiente.hasta - MIN &&
+                (!anterior || m.loc >= 0)) {
+              fin = k;
+              siguiente.desde = m.loc;
+              break;
+            }
+          }
+        }
+
+        if (anterior) {
+          for (let k = fin; k >= 0; k--) {
+            const m = masCercano(anterior.r, xy[k]);
+            if (m.dist <= TOCA_RUTA_M && m.loc > anterior.desde + MIN) {
+              inicio = k;
+              anterior.hasta = m.loc;
+              break;
+            }
+          }
+        }
+
+        return { coords: c.coords.slice(inicio, fin + 1) };
+      });
+    }
+
+    // Punto de la ruta más cercano a p, respetando que quede dentro de [min, max]
+    function locCercano(ruta, p, min, max) {
+      const m = masCercano(ruta, aXY(...p));
+      return (m.loc >= min && m.loc <= max) ? m.loc : null;
+    }
+
+    // Recalcula subidas, bajadas y caminatas de una opción usando las calles.
+    // Devuelve false si el servicio no respondió (se mantiene la línea recta).
+    async function optimizarConCalles(o) {
+      const T = o.tramos, n = T.length;
+      const MIN = VIAJE.TRAMO_MIN_M;
+
+      // 1) Caminatas iniciales (con las subidas/bajadas estimadas en línea recta)
+      let caminos = await Promise.all(tramosAPie(o).map(([a, b]) => caminataPorCalles(a, b)));
+      if (!caminos.every(Boolean)) return false;
+
+      // 2) Subida: punto de la ruta más cercano a donde A entra a la red de calles
+      const entradaA = caminos[0].coords[0];
+      const nuevaSubida = locCercano(T[0].r, entradaA, 0, T[0].hasta - MIN);
+      let recalcular = false;
+      if (nuevaSubida !== null && Math.abs(nuevaSubida - T[0].desde) > 30) {
+        T[0].desde = nuevaSubida;
+        recalcular = true;
+      }
+
+      // 3) Bajada: punto de la ruta más cercano a donde B entra a la red de calles
+      const ultimo = caminos[caminos.length - 1];
+      const entradaB = ultimo.coords[ultimo.coords.length - 1];
+      const t = T[n - 1];
+      const nuevaBajada = locCercano(t.r, entradaB, t.desde + MIN, t.r.largo);
+      if (nuevaBajada !== null && Math.abs(nuevaBajada - t.hasta) > 30) {
+        t.hasta = nuevaBajada;
+        recalcular = true;
+      }
+
+      // 4) Si cambió la subida o la bajada, pedir de nuevo esas caminatas
+      if (recalcular) {
+        caminos = await Promise.all(tramosAPie(o).map(([a, b]) => caminataPorCalles(a, b)));
+        if (!caminos.every(Boolean)) return false;
+      }
+
+      // 5) Subir/bajar donde la caminata realmente toca la ruta
+      o.caminos = cortarDondeTocaRuta(o, caminos);
+
+      // Metros = desde el punto (A / bajada) hasta la calle, por las calles, y hasta el bus/destino
+      o.caminatas = tramosAPie(o).map(([a, b], i) => largoCamino([a, ...o.caminos[i].coords, b]));
+      return true;
+    }
+
+    function recalcularTotales(o) {
+      o.metrosBus = o.tramos.reduce((s, t) => s + (t.hasta - t.desde), 0);
+      o.metrosCamina = o.caminatas.reduce((a, b) => a + b, 0);
+      o.minutos = o.metrosCamina / VIAJE.CAMINA_M_MIN
+                + o.metrosBus / VIAJE.BUS_M_MIN
+                + (o.tramos.length - 1) * VIAJE.TRANSBORDO_MIN;
+    }
+
+    // Reemplaza las estimaciones en línea recta por caminatas reales por calles
+    async function mejorarCaminatas() {
+      const token = viaje.token;
+      viaje.calculandoCalles = true;
+      renderizarViaje();
+
+      const elegidaAntes = viaje.opciones[viaje.elegida];
+      // Primero la opción elegida (se dibuja apenas está lista), luego las demás
+      const orden = [elegidaAntes, ...viaje.opciones.filter(o => o !== elegidaAntes)];
+
+      for (const o of orden) {
+        const ok = await optimizarConCalles(o);
+        if (token !== viaje.token) return; // el viaje cambió mientras tanto
+        o.porCalles = ok;
+        if (!ok) o.caminos = null;
+        recalcularTotales(o);
+        if (o === elegidaAntes) dibujarOpcion(viaje.opciones.indexOf(o), false);
+      }
+
+      // Si se puede ir caminando, también por calles
+      if (viaje.caminando) {
+        const c = await caminataPorCalles([viaje.origen.lat, viaje.origen.lng], [viaje.destino.lat, viaje.destino.lng]);
+        if (token !== viaje.token) return;
+        if (c) viaje.caminando = c.metros;
+      }
+
+      // Reordenar con los tiempos reales, manteniendo la opción elegida
+      viaje.opciones.sort((a, b) => a.minutos - b.minutos);
+      viaje.elegida = viaje.usuarioEligio ? viaje.opciones.indexOf(elegidaAntes) : 0;
+      viaje.calculandoCalles = false;
+      renderizarViaje();
+      dibujarOpcion(viaje.elegida, false);
+    }
+
+    function renderizarViaje() {
+      const { opciones, elegida, caminando } = viaje;
+
+      const avisoCaminando = caminando
+        ? `<div class="viaje-aviso"><i class="fa-solid fa-person-walking"></i>
+             Está a ${fmtMetros(caminando)}: caminando son unos ${fmtMin(caminando / VIAJE.CAMINA_M_MIN)}.</div>`
+        : '';
+
+      if (!opciones.length) {
+        resultadosViaje.innerHTML = `${avisoCaminando}
+          <p class="nota" style="margin:0">
+            No encontramos un recorrido con hasta 1 transbordo y caminatas de hasta ${VIAJE.CAMINATA_MAX_M} m.
+          </p>`;
+        resultadosViaje.hidden = false;
+        return;
+      }
+
+      const lista = opciones.map((o, i) => `
+        <button class="opcion-viaje ${i === elegida ? 'activo' : ''}" data-i="${i}" aria-pressed="${i === elegida}">
+          <div class="opcion-viaje-cabecera">
+            <div class="opcion-viaje-lineas">
+              ${o.tramos.map(t => chipLinea(t.r.linea)).join('<i class="fa-solid fa-chevron-right separador"></i>')}
+            </div>
+            <span class="opcion-viaje-tiempo">≈ ${fmtMin(o.minutos)}</span>
+          </div>
+          <div class="opcion-viaje-detalle">
+            ${i === 0 && opciones.length > 1 ? '<span class="insignia">Más rápida</span>' : ''}
+            ${o.tramos.length === 1 ? 'Directo' : '1 transbordo'} ·
+            <i class="fa-solid fa-person-walking"></i> ${fmtMetros(o.metrosCamina)} ·
+            <i class="fa-solid fa-bus"></i> ${fmtMetros(o.metrosBus)}
+          </div>
+        </button>
+      `).join('');
+
+      const o = opciones[elegida];
+
+      resultadosViaje.innerHTML = `
+        ${avisoCaminando}
+
+        <div class="viaje-seccion-titulo">
+          <span><i class="fa-solid fa-list"></i> Opciones de viaje</span>
+          <span class="contador">${opciones.length}</span>
+        </div>
+        <div class="opciones-viaje">${lista}</div>
+
+        <button class="ver-mas-viaje" onclick="togglePanel(true)">
+          <i class="fa-solid fa-chevron-up"></i> Ver pasos${opciones.length > 1 ? ' y otras opciones' : ''}
+        </button>
+
+        <section class="viaje-detalle" aria-label="Detalle del viaje">
+          <div class="viaje-seccion-titulo">
+            <span><i class="fa-solid fa-route"></i> Detalle del viaje</span>
+            <span class="opcion-viaje-tiempo">${viaje.calculandoCalles
+              ? '<i class="fa-solid fa-circle-notch fa-spin cargando-calles" title="Calculando caminata por calles"></i>'
+              : ''}≈ ${fmtMin(o.minutos)}</span>
+          </div>
+          <div class="opcion-viaje-lineas">
+            ${o.tramos.map(t => chipLinea(t.r.linea)).join('<i class="fa-solid fa-chevron-right separador"></i>')}
+          </div>
+          ${htmlPasos(o)}
+        </section>
+
+        <p class="nota">${viaje.calculandoCalles
+          ? 'Calculando la caminata por calles…'
+          : o.porCalles
+            ? 'Caminata calculada por calles (OpenStreetMap). Bus estimado a 18 km/h, sin contar la espera.'
+            : 'Caminata estimada en línea recta (no se pudo calcular por calles). Bus a 18 km/h, sin contar la espera.'}</p>
+      `;
+      resultadosViaje.hidden = false;
+    }
+
+    // ----- Dibujo en el mapa -----
+    function iconoPin(letra) {
+      return L.divIcon({
+        className: '',
+        html: `<div class="pin-viaje pin-${letra.toLowerCase()} pin-mapa">${letra}</div>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      });
+    }
+
+    // Pin A o B que se puede arrastrar para ajustar la ubicación exacta
+    function crearPin(cual) {
+      const p = viaje[cual];
+      const pin = L.marker([p.lat, p.lng], {
+        icon: iconoPin(cual === 'origen' ? 'A' : 'B'),
+        pane: 'pane_busqueda',
+        draggable: true,
+        autoPan: true
+      }).bindTooltip(
+        `${escaparHTML(p.titulo)}<br><span class="sub-tooltip">Arrastre para ajustar</span>`,
+        { direction: 'top', offset: [0, -12] }
+      );
+      pin.on('dragend', () => fijarPunto(cual, pin.getLatLng(), false));
+      return pin;
+    }
+
+    function dibujarOpcion(i, encuadrar = true) {
+      capaViaje.clearLayers();
+      const { origen, destino } = viaje;
+      if (!origen || !destino) return;
+
+      const pinA = crearPin('origen');
+      const pinB = crearPin('destino');
+
+      const o = viaje.opciones[i];
+      const limites = [[origen.lat, origen.lng], [destino.lat, destino.lng]];
+
+      if (o) {
+        // Caminata k-ésima: por calles si ya llegó, si no en línea recta (más tenue)
+        let k = 0;
+        const estiloCalle = {
+          pane: 'pane_busqueda', color: '#374151', weight: 3, dashArray: '2 7',
+          lineCap: 'round', lineJoin: 'round', interactive: false
+        };
+        // Tramo sin calle mapeada (p. ej. dentro de un campus): más fino y tenue
+        const estiloSinCalle = { ...estiloCalle, weight: 2, opacity: 0.45, dashArray: '1 6' };
+
+        const caminata = (a, b) => {
+          const c = o.caminos && o.caminos[k++];
+          if (!c || !c.coords.length) {
+            L.polyline([a, b], { ...estiloCalle, opacity: 0.5 }).addTo(capaViaje);
+            return;
+          }
+          const ini = c.coords[0], fin = c.coords[c.coords.length - 1];
+          L.polyline([a, ini], estiloSinCalle).addTo(capaViaje);   // desde el punto hasta la calle
+          L.polyline(c.coords, estiloCalle).addTo(capaViaje);      // por las calles
+          L.polyline([fin, b], estiloSinCalle).addTo(capaViaje);   // desde la calle hasta el bus/destino
+        };
+
+        let anterior = [origen.lat, origen.lng];
+        o.tramos.forEach(t => {
+          const coords = tramoEntre(t.r, t.desde, t.hasta);
+          const color = coloresLineas[t.r.linea] || '#666';
+          caminata(anterior, coords[0]);
+          L.polyline(coords, { pane: 'pane_busqueda', color: '#ffffff', weight: 11, opacity: 0.95, interactive: false }).addTo(capaViaje);
+          const tramo = L.polyline(coords, { pane: 'pane_busqueda', color: oscurecerColor(color, 10), weight: 7, interactive: false }).addTo(capaViaje);
+          L.polylineDecorator(tramo, {
+            patterns: [{
+              offset: 40, repeat: 90,
+              symbol: L.Symbol.arrowHead({
+                pixelSize: 9, polygon: false,
+                pathOptions: { pane: 'pane_busqueda', color: '#ffffff', weight: 2.5, opacity: 1, interactive: false }
+              })
+            }]
+          }).addTo(capaViaje);
+
+          [[coords[0], 'Sube a la'], [coords[coords.length - 1], 'Baja de la']].forEach(([pt, texto]) => {
+            L.circleMarker(pt, { pane: 'pane_busqueda', radius: 6, color, weight: 3, fillColor: '#fff', fillOpacity: 1 })
+              .bindTooltip(`${texto} ${escaparHTML(t.r.linea)}`, { direction: 'top', offset: [0, -6] })
+              .addTo(capaViaje);
+          });
+
+          limites.push(...coords);
+          anterior = coords[coords.length - 1];
+        });
+        caminata(anterior, [destino.lat, destino.lng]);
+        (o.caminos || []).forEach(c => { if (c) limites.push(...c.coords); });
+
+        // Atenuar todas las rutas: lo que importa es el tramo dibujado
+        destacarLinea([]);
+      } else {
+        quitarDestacado();
+      }
+
+      pinA.addTo(capaViaje);
+      pinB.addTo(capaViaje);
+
+      if (!encuadrar) return;
+      const abajo = esMovil()
+        ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--alto-mini')) + 20 || 200
+        : 40;
+      const izquierda = !esMovil() && !document.body.classList.contains('panel-oculto') ? 320 : 40;
+      map.fitBounds(limites, { paddingTopLeft: [izquierda, 40], paddingBottomRight: [40, abajo], maxZoom: 16 });
+    }
+
+    function calcularViaje(encuadrar = true) {
+      const { origen, destino } = viaje;
+      viaje.token++;
+      viaje.calculandoCalles = false;
+      viaje.opciones = [];
+      viaje.elegida = 0;
+      viaje.caminando = 0;
+      capaViaje.clearLayers();
+
+      if (!origen || !destino) {
+        resultadosViaje.hidden = true;
+        if (origen || destino) crearPin(origen ? 'origen' : 'destino').addTo(capaViaje);
+        return;
+      }
+
+      const resultado = calcularOpciones(origen, destino);
+      if (!resultado) {
+        resultadosViaje.innerHTML = '<p class="nota" style="margin:0">Cargando recorridos, intente en unos segundos…</p>';
+        resultadosViaje.hidden = false;
+        return;
+      }
+
+      viaje.opciones = resultado.opciones;
+      viaje.usuarioEligio = false;
+      if (resultado.distanciaDirecta <= 800) viaje.caminando = resultado.distanciaDirecta;
+      viaje.token++;
+      if (viaje.opciones.length || viaje.caminando) setTimeout(mejorarCaminatas, 120);
+
+      renderizarViaje();
+      if (encuadrar) colapsarEnMovil();
+      // Esperar a que el panel termine de cambiar de tamaño antes de encuadrar
+      setTimeout(() => dibujarOpcion(0, encuadrar), 80);
+    }
+
+    resultadosViaje.addEventListener('click', e => {
+      const btn = e.target.closest('.opcion-viaje');
+      if (!btn) return;
+      viaje.elegida = +btn.dataset.i;
+      viaje.usuarioEligio = true;
+      renderizarViaje();
+      dibujarOpcion(viaje.elegida);
+    });
+
+    function invertirViaje() {
+      [viaje.origen, viaje.destino] = [viaje.destino, viaje.origen];
+      const o = document.getElementById('viaje-origen');
+      const d = document.getElementById('viaje-destino');
+      [o.value, d.value] = [d.value, o.value];
+      calcularViaje();
+    }
+
+    // ----- Autocompletado para origen y destino -----
+    function crearAutocompletar(input, lista, alElegir, alBorrar) {
+      let resultados = [], activo = -1, temporizador = null, peticion = null;
+
+      const pintar = (items, vacio) => {
+        resultados = items;
+        activo = -1;
+        lista.innerHTML = items.length
+          ? items.map((r, i) => `
+              <li role="option" data-i="${i}">
+                ${escaparHTML(r.titulo)}
+                ${r.sub ? `<span class="sub">${escaparHTML(r.sub)}</span>` : ''}
+              </li>`).join('')
+          : `<li class="vacio">${vacio}</li>`;
+        lista.hidden = false;
+      };
+      const cerrar = () => { lista.hidden = true; activo = -1; };
+      const elegir = r => {
+        cerrar();
+        input.value = r.titulo;
+        input.blur();
+        alElegir(r);
+      };
+
+      input.addEventListener('input', () => {
+        const texto = input.value.trim();
+        clearTimeout(temporizador);
+        if (peticion) peticion.abort();
+        alBorrar(); // el texto cambió: el punto elegido ya no vale
+
+        if (texto.length < 3) { cerrar(); return; }
+
+        if (lista.hidden || !resultados.length) {
+          resultados = [];
+          lista.innerHTML = `<li class="vacio cargando-fila"><i class="fa-solid fa-circle-notch fa-spin"></i> Buscando en Copiapó…</li>`;
+          lista.hidden = false;
+        }
+        temporizador = setTimeout(async () => {
+          peticion = new AbortController();
+          try {
+            pintar(await consultarLugares(texto, peticion.signal), 'Sin resultados en Copiapó');
+          } catch (err) {
+            if (err.name !== 'AbortError') pintar([], 'No se pudo buscar. Intente de nuevo.');
+          }
+        }, 350);
+      });
+
+      input.addEventListener('keydown', e => {
+        const n = resultados.length;
+        const marcar = () => lista.querySelectorAll('li[data-i]')
+          .forEach((li, i) => li.classList.toggle('activo', i === activo));
+        if (e.key === 'ArrowDown' && n && !lista.hidden) { e.preventDefault(); activo = (activo + 1) % n; marcar(); }
+        else if (e.key === 'ArrowUp' && n && !lista.hidden) { e.preventDefault(); activo = (activo - 1 + n) % n; marcar(); }
+        else if (e.key === 'Enter' && n && !lista.hidden) { e.preventDefault(); elegir(resultados[Math.max(activo, 0)]); }
+        else if (e.key === 'Escape') cerrar();
+      });
+
+      lista.addEventListener('click', e => {
+        const li = e.target.closest('li[data-i]');
+        if (li) elegir(resultados[+li.dataset.i]);
+      });
+
+      document.addEventListener('click', e => {
+        if (!e.target.closest('.viaje-fila') && !lista.contains(e.target)) cerrar();
+      });
+    }
+
+    crearAutocompletar(
+      document.getElementById('viaje-origen'),
+      document.getElementById('viaje-origen-lista'),
+      r => { viaje.origen = r; calcularViaje(); },
+      () => { if (viaje.origen) { viaje.origen = null; calcularViaje(); } }
+    );
+    crearAutocompletar(
+      document.getElementById('viaje-destino'),
+      document.getElementById('viaje-destino-lista'),
+      r => { viaje.destino = r; calcularViaje(); },
+      () => { if (viaje.destino) { viaje.destino = null; calcularViaje(); } }
+    );
+
+    // ----- Elegir origen/destino tocando el mapa -----
+
+    let eligiendo = null;          // 'origen' | 'destino' | null
+    let ignorarClicHasta = 0;
+    const avisoMapa = document.getElementById('aviso-mapa');
+
+    function elegirEnMapa(cual) {
+      if (eligiendo === cual) { cancelarEleccion(); return; }
+      eligiendo = cual;
+      document.body.classList.add('eligiendo-punto');
+      document.querySelectorAll('.boton-elegir').forEach(b =>
+        b.classList.toggle('activo', b.dataset.elegir === cual));
+      document.getElementById('aviso-mapa-texto').textContent =
+        `${ES_TACTIL ? 'Toque' : 'Haga clic en'} el mapa para fijar el ${cual === 'origen' ? 'origen (A)' : 'destino (B)'}`;
+      avisoMapa.hidden = false;
+      colapsarEnMovil();
+    }
+
+    function cancelarEleccion() {
+      eligiendo = null;
+      document.body.classList.remove('eligiendo-punto');
+      document.querySelectorAll('.boton-elegir').forEach(b => b.classList.remove('activo'));
+      avisoMapa.hidden = true;
+    }
+
+    // Guarda un punto puesto a mano (clic o arrastre) y recalcula el viaje
+    function fijarPunto(cual, latlng, encuadrar) {
+      const p = { titulo: 'Punto en el mapa', sub: '', lat: latlng.lat, lng: latlng.lng };
+      viaje[cual] = p;
+      document.getElementById(cual === 'origen' ? 'viaje-origen' : 'viaje-destino').value = p.titulo;
+      nombrarPunto(cual, p);
+      // Encuadrar solo cuando se completa el par
+      calcularViaje(encuadrar && !!(viaje.origen && viaje.destino));
+    }
+
+    // Busca el nombre de la calle más cercana (sin bloquear el cálculo)
+    async function nombrarPunto(cual, p) {
+      try {
+        const resp = await fetch('https://photon.komoot.io/reverse?' +
+          new URLSearchParams({ lat: p.lat, lon: p.lng, limit: 1 }));
+        const f = (await resp.json()).features[0];
+        const nombre = f && (f.properties.street || f.properties.name);
+        if (!nombre || viaje[cual] !== p) return; // el punto ya cambió
+        p.titulo = `Cerca de ${nombre}`;
+        document.getElementById(cual === 'origen' ? 'viaje-origen' : 'viaje-destino').value = p.titulo;
+        capaViaje.eachLayer(l => {
+          if (l instanceof L.Marker && l.getLatLng().lat === p.lat && l.getLatLng().lng === p.lng) {
+            l.setTooltipContent(`${escaparHTML(p.titulo)}<br><span class="sub-tooltip">Arrastre para ajustar</span>`);
+          }
+        });
+      } catch (e) { /* sin nombre: queda "Punto en el mapa" */ }
+    }
+
+    // Capturar el toque/clic antes que las capas (así no se abren fichas de UV)
+    (() => {
+      const cont = map.getContainer();
+      let inicio = null;
+
+      cont.addEventListener('pointerdown', e => {
+        inicio = eligiendo ? { x: e.clientX, y: e.clientY, t: Date.now() } : null;
+      }, true);
+
+      cont.addEventListener('pointerup', e => {
+        if (!eligiendo || !inicio) return;
+        const movio = Math.hypot(e.clientX - inicio.x, e.clientY - inicio.y) > 10;
+        const largo = Date.now() - inicio.t > 700;
+        inicio = null;
+        if (movio || largo) return; // fue un arrastre del mapa
+        if (e.target.closest('.leaflet-control')) return;
+
+        const cual = eligiendo;
+        const latlng = map.mouseEventToLatLng(e);
+        cancelarEleccion();
+        ignorarClicHasta = Date.now() + 500;
+        fijarPunto(cual, latlng, true);
+      }, true);
+
+      // Evitar que ese mismo clic abra la ficha de una UV o una ruta
+      cont.addEventListener('click', e => {
+        if (eligiendo || Date.now() < ignorarClicHasta) {
+          e.stopImmediatePropagation();
+          e.preventDefault();
+        }
+      }, true);
+    })();
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && eligiendo) cancelarEleccion();
+    });
+
+    // ----- Usar mi ubicación como origen -----
+    function usarMiUbicacion() {
+      const input = document.getElementById('viaje-origen');
+      if (!navigator.geolocation) {
+        resultadosViaje.innerHTML = '<p class="nota" style="margin:0">Su navegador no permite obtener la ubicación.</p>';
+        resultadosViaje.hidden = false;
+        return;
+      }
+      input.value = 'Obteniendo ubicación…';
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const { latitude: lat, longitude: lng } = pos.coords;
+          const [oeste, sur, este, norte] = BBOX_COPIAPO;
+          if (lng < oeste || lng > este || lat < sur || lat > norte) {
+            input.value = '';
+            resultadosViaje.innerHTML = '<p class="nota" style="margin:0">Su ubicación está fuera de Copiapó. Escriba el origen manualmente.</p>';
+            resultadosViaje.hidden = false;
+            return;
+          }
+          input.value = 'Mi ubicación';
+          viaje.origen = { titulo: 'Mi ubicación', sub: '', lat, lng };
+          calcularViaje();
+        },
+        () => {
+          input.value = '';
+          resultadosViaje.innerHTML = '<p class="nota" style="margin:0">No se pudo obtener su ubicación (permiso denegado o sin señal).</p>';
+          resultadosViaje.hidden = false;
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
 
 
     // ======================
