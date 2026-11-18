@@ -9,11 +9,34 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <!-- Font Awesome (íconos) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 
   <style>
+    :root {
+      --texto: #1f2937;
+      --texto-suave: #6b7280;
+      --borde: #e5e7eb;
+      --hover: #f3f4f6;
+      --acento: #2563eb;
+      --fondo-panel: rgba(255, 255, 255, 0.97);
+      --sombra: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--texto);
+      background: #f2efe9;
+    }
+
+    .leaflet-container {
+      font-family: inherit;
+    }
+
+    /* Mapa base en gris claro para que destaquen las rutas */
+    .leaflet-tile-pane {
+      filter: grayscale(1) brightness(1.08) contrast(0.85);
     }
 
     #map {
@@ -21,26 +44,401 @@
       height: 100vh;
     }
 
-    .titulo {
+    /* ======================
+       PANEL LATERAL
+       ====================== */
+
+    #panel {
       position: absolute;
-      top: 10px;
-      left: 0.6em;
+      top: 12px;
+      left: 12px;
       z-index: 1000;
-      background: white;
-      padding: 10px 14px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      width: 290px;
+      max-height: calc(100vh - 24px);
+      display: flex;
+      flex-direction: column;
+      background: var(--fondo-panel);
+      border-radius: 12px;
+      box-shadow: var(--sombra);
+      overflow: hidden;
+      transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
-    .titulo h2 {
+    body.panel-oculto #panel {
+      transform: translateX(calc(-100% - 24px));
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 14px 12px 14px 16px;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    .panel-marca {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-icono {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      background: #eff6ff;
+      color: var(--acento);
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .panel-header h1 {
       margin: 0;
-      font-size: 18px;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.25;
     }
 
-    .titulo p {
-      margin: 4px 0 0;
-      color: gray;
+    .panel-header p {
+      margin: 2px 0 0;
+      font-size: 12.5px;
+      color: var(--texto-suave);
+    }
+
+    .panel-contenido {
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .seccion {
+      border-bottom: 1px solid var(--borde);
+    }
+
+    .seccion:last-child {
+      border-bottom: none;
+    }
+
+    .seccion-titulo {
+      all: unset;
+      box-sizing: border-box;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--texto-suave);
+      cursor: pointer;
+    }
+
+    .seccion-titulo:hover {
+      color: var(--texto);
+    }
+
+    .seccion-titulo:focus-visible,
+    .boton-icono:focus-visible,
+    .boton-flotante:focus-visible {
+      outline: 2px solid var(--acento);
+      outline-offset: -2px;
+    }
+
+    .chevron {
+      font-size: 10px;
+      transition: transform 0.2s ease;
+    }
+
+    .seccion.cerrada .chevron {
+      transform: rotate(-90deg);
+    }
+
+    .seccion-cuerpo {
+      padding: 0 16px 14px;
       font-size: 13px;
+    }
+
+    .seccion.cerrada .seccion-cuerpo {
+      display: none;
+    }
+
+    .opcion {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      cursor: pointer;
+    }
+
+    .opcion input {
+      margin: 0;
+      accent-color: var(--acento);
+      cursor: pointer;
+    }
+
+    .icono-capa {
+      width: 16px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--color-capa);
+      transition: color 0.2s ease;
+    }
+
+    /* Capa apagada: ícono en gris */
+    .opcion input:not(:checked) + .icono-capa {
+      color: #c4c9d0;
+    }
+
+    .opcion-todas {
+      font-weight: 600;
+      padding-bottom: 8px;
+      margin-bottom: 6px;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    .grilla-lineas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 8px;
+    }
+
+    .muestra-linea {
+      width: 18px;
+      height: 5px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .muestra-area {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      opacity: 0.6;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      flex-shrink: 0;
+    }
+
+    .leyenda-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 3px 0;
+    }
+
+    .nota {
+      margin: 8px 0 0;
+      font-size: 11px;
+      color: var(--texto-suave);
+    }
+
+    .selector {
+      width: 100%;
+      font: inherit;
+      font-size: 13px;
+      padding: 7px 10px;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--texto);
+      cursor: pointer;
+    }
+
+    /* ======================
+       BUSCADOR DE CALLES
+       ====================== */
+
+    .buscador {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    .buscador-campo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 4px 0 10px;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .buscador-campo:focus-within {
+      border-color: var(--acento);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .buscador-lupa {
+      font-size: 13px;
+      color: var(--texto-suave);
+    }
+
+    .buscador-campo input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      outline: none;
+      padding: 8px 0;
+      font: inherit;
+      font-size: 13px;
+      color: var(--texto);
+      background: transparent;
+    }
+
+    .buscador-campo input::-webkit-search-cancel-button {
+      display: none;
+    }
+
+    .boton-limpiar {
+      width: 26px;
+      height: 26px;
+      font-size: 13px;
+    }
+
+    .buscador-resultados {
+      list-style: none;
+      margin: 6px 0 0;
+      padding: 4px;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    .buscador-resultados li {
+      padding: 7px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .buscador-resultados li:hover,
+    .buscador-resultados li.activo {
+      background: var(--hover);
+    }
+
+    .buscador-resultados .sub {
+      display: block;
+      font-size: 11.5px;
+      color: var(--texto-suave);
+    }
+
+    .buscador-resultados li.vacio {
+      cursor: default;
+      color: var(--texto-suave);
+    }
+
+    .buscador-info {
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .buscador-info .lugar {
+      font-weight: 600;
+    }
+
+    .buscador-info .lugar i {
+      color: var(--acento);
+      margin-right: 4px;
+    }
+
+    .buscador-info .etiqueta {
+      margin: 8px 0 6px;
+      font-size: 11.5px;
+      color: var(--texto-suave);
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border: 1px solid var(--borde);
+      border-radius: 999px;
+      font: inherit;
+      font-size: 12px;
+      color: var(--texto);
+      background: #fff;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .chip:hover {
+      background: var(--hover);
+      border-color: var(--color-linea);
+    }
+
+    .chip:focus-visible {
+      outline: 2px solid var(--acento);
+      outline-offset: 1px;
+    }
+
+    .chip.activo {
+      border-color: var(--color-linea);
+      box-shadow: inset 0 0 0 1px var(--color-linea);
+      font-weight: 600;
+    }
+
+    .boton-icono {
+      all: unset;
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      font-size: 18px;
+      color: var(--texto-suave);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .boton-icono:hover {
+      background: var(--hover);
+      color: var(--texto);
+    }
+
+    .boton-flotante {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 1000;
+      width: 42px;
+      height: 42px;
+      border: none;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: var(--sombra);
+      font-size: 18px;
+      color: var(--texto);
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .boton-flotante:hover {
+      background: var(--hover);
+    }
+
+    body.panel-oculto .boton-flotante {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .small{
+      color: #aaa;
     }
 
     .label-uv {
@@ -54,21 +452,26 @@
       text-align: center;
     }
 
-    .legend {
-      background: rgba(255,255,255,0.95);
-      padding: 12px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-      line-height: 20px;
-    }
-
     .tooltip-buses {
       z-index: 9999 !important;
       background: white;
       border: none;
-      border-radius: 8px;
-      padding: 6px 10px;
-      box-shadow:0 2px 10px rgba(0,0,0,0.2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--texto);
+      box-shadow: var(--sombra);
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 10px;
+      box-shadow: var(--sombra);
+    }
+
+    .leaflet-popup-content {
+      font-size: 13px;
+      line-height: 1.45;
     }
 
     path:focus {
@@ -103,89 +506,22 @@
       }
     }
 
-    .legend-toggle {
-        background: none;
-        border: none;
-        cursor: pointer;
-        font-size: 12px;
-        padding: 0;
-        color: #555;
-        float: right;
-        line-height: 1;
-      }
-
-      .leaflet-control-layers {
-        border: none !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
-        margin-top: 7em !important;
-      }
-
-      .leaflet-control-zoom{
+      .leaflet-control-zoom {
         display: none;
-
       }
 
     @media (max-width: 768px) {
-      .legend {
-        font-size: 11px;
-        padding: 8px;
-        max-width: 140px;
+      #panel {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        width: auto;
+        max-height: calc(100vh - 16px);
       }
 
-      .legend h4 {
-        margin: 0 0 4px;
-        font-size: 12px;
-      }
-
-      .legend-toggle {
-        display: inline-block;
-      }
-
-      .legend-body {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-      }
-
-      .legend-body.abierto {
-        max-height: 500px;
-      }
-
-      .titulo h2 {
-        font-size: 14px;
-      }
-
-      .titulo p {
-        font-size: 11px;
-      }
-
-      .leaflet-control-layers {
-        max-height: 1.3em;
-        overflow: hidden;
-        transition: max-height 0.3s ease;        
-      }
-
-      .leaflet-control-layers.abierto {
-        max-height: 300px;
-      }
-
-      .leaflet-bottom {
-        bottom: env(safe-area-inset-bottom, 10px);
-        padding-bottom: 2em;
-      }
-
-      .leaflet-bottom.leaflet-right {
-        bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
-      }
-    }
-
-    @media (min-width: 769px) {
-      .legend-toggle {
-        display: none;
-      }
-
-      .legend-body {
-        max-height: 500px !important;
+      .boton-flotante {
+        top: 8px;
+        left: 8px;
       }
     }
 
@@ -194,11 +530,102 @@
 </head>
 <body>
 
-  <!-- Título -->
-  <div class="titulo">
-    <h2>Recorridos Autobuses 🚌</h2>
-    <p>Comuna de Copiapó</p>
-  </div>
+  <!-- Botón para volver a mostrar el panel -->
+  <button id="abrir-panel" class="boton-flotante" onclick="togglePanel(true)" aria-label="Mostrar panel" title="Mostrar panel"><i class="fa-solid fa-bars"></i></button>
+
+  <!-- Panel lateral -->
+  <aside id="panel">
+
+    <header class="panel-header">
+      <div class="panel-marca">
+        <span class="panel-icono"><i class="fa-solid fa-bus"></i></span>
+        <div>
+          <h1>Recorridos Autobuses</h1>
+          <p>Comuna de Copiapó</p>
+        </div>
+      </div>
+      <button class="boton-icono" onclick="togglePanel(false)" aria-label="Ocultar panel" title="Ocultar panel"><i class="fa-solid fa-angles-left"></i></button>
+    </header>
+
+    <!-- Buscador de calles (solo Copiapó) -->
+    <div class="buscador">
+      <div class="buscador-campo">
+        <i class="fa-solid fa-magnifying-glass buscador-lupa" aria-hidden="true"></i>
+        <input
+          id="buscar-calle"
+          type="search"
+          placeholder="Buscar calle o lugar en Copiapó"
+          autocomplete="off"
+          aria-label="Buscar calle o lugar en Copiapó"
+          aria-controls="buscador-resultados"
+        >
+        <button id="buscar-limpiar" class="boton-icono boton-limpiar" onclick="limpiarBusqueda()" aria-label="Limpiar búsqueda" title="Limpiar búsqueda" hidden><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <ul id="buscador-resultados" class="buscador-resultados" role="listbox" hidden></ul>
+      <div id="buscador-info" class="buscador-info" hidden></div>
+    </div>
+
+    <div class="panel-contenido">
+
+      <section class="seccion">
+        <button class="seccion-titulo" onclick="toggleSeccion(this)" aria-expanded="true">
+          Capas <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+        </button>
+        <div class="seccion-cuerpo">
+          <label class="opcion">
+            <input type="checkbox" class="check-capa" data-capa="Unidades Vecinales" checked onchange="toggleCapa('Unidades Vecinales', this.checked)">
+            <i class="fa-solid fa-draw-polygon icono-capa" style="--color-capa:#4a90c2" aria-hidden="true"></i>
+            Unidades Vecinales
+          </label>
+          <label class="opcion">
+            <input type="checkbox" class="check-capa" data-capa="Recorridos Buses" checked onchange="toggleCapa('Recorridos Buses', this.checked)">
+            <i class="fa-solid fa-route icono-capa" style="--color-capa:#59a14f" aria-hidden="true"></i>
+            Recorridos Buses
+          </label>
+          <label class="opcion">
+            <input type="checkbox" class="check-capa" data-capa="Manzanas" checked onchange="toggleCapa('Manzanas', this.checked)">
+            <i class="fa-solid fa-city icono-capa" style="--color-capa:#e0715a" aria-hidden="true"></i>
+            Manzanas
+          </label>
+        </div>
+      </section>
+
+      <section class="seccion">
+        <button class="seccion-titulo" onclick="toggleSeccion(this)" aria-expanded="true">
+          Filtrar por UV <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+        </button>
+        <div class="seccion-cuerpo">
+          <select id="filtro-uv" class="selector" onchange="filtrarPorUV(this.value)">
+            <option value="">Todas las UVs</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="seccion">
+        <button class="seccion-titulo" onclick="toggleSeccion(this)" aria-expanded="true">
+          Recorridos <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+        </button>
+        <div class="seccion-cuerpo">
+          <label class="opcion opcion-todas">
+            <input type="checkbox" checked onchange="toggleTodasLineas(this)">
+            Mostrar todas
+          </label>
+          <div id="lista-lineas" class="grilla-lineas"></div>
+        </div>
+      </section>
+
+      <section class="seccion cerrada">
+        <button class="seccion-titulo" onclick="toggleSeccion(this)" aria-expanded="false">
+          Habitantes por manzana <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
+        </button>
+        <div class="seccion-cuerpo">
+          <div id="leyenda-manzanas"></div>
+          <p class="nota">Según Censo 2024</p>
+        </div>
+      </section>
+
+    </div>
+  </aside>
 
   <!-- Mapa -->
   <div id="map"></div>
@@ -207,6 +634,8 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <!-- Decorador de líneas para animación -->
   <script src="https://unpkg.com/leaflet-polylinedecorator/dist/leaflet.polylineDecorator.js"></script>
+  <!-- Turf.js para cálculos geoespaciales -->
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
   
 
   <script>
@@ -240,9 +669,10 @@
 
     // Base map
     L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+      'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       {
-        attribution: '&copy; OpenStreetMap &copy; CARTO'
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }
     ).addTo(map);
 
@@ -521,12 +951,61 @@
         });
     }
 
-    function toggleLegend(btn) {
-      const body = btn
-        .closest('.legend')
-        .querySelector('.legend-body');
-      body.classList.toggle('abierto');
-      btn.textContent = body.classList.contains('abierto') ? '▲' : '▼';
+    function filtrarPorUV(nombreUV) {
+
+      if (!nombreUV) {
+        // Restaurar todas las líneas
+        Object.entries(capasLineas).forEach(([nombre, layers]) => {
+          layers.forEach(l => {
+            if (!map.hasLayer(l)) map.addLayer(l);
+          });
+          const chk = document.querySelector(
+            `.check-linea[onchange*="'${nombre}'"]`
+          );
+          if (chk) chk.checked = true;
+        });
+        sincronizarMaestro();
+        return;
+      }
+
+      // Obtener polígono de la UV seleccionada
+      const featureUV = geojsonUV.features.find(
+        f => f.properties.NOMBRE_UV === nombreUV
+      );
+
+      if (!featureUV) return;
+
+      const poligonoUV = featureUV;
+
+      // Calcular qué líneas intersectan
+      const lineasQueIntersectan = new Set();
+
+      geojsonBuses.features.forEach(feature => {
+        try {
+          if (turf.booleanIntersects(feature, poligonoUV)) {
+            lineasQueIntersectan.add(feature.properties.linea);
+          }
+        } catch(e) {}
+      });
+
+      // Mostrar solo líneas que intersectan, ocultar las demás
+      Object.entries(capasLineas).forEach(([nombre, layers]) => {
+        const visible = lineasQueIntersectan.has(nombre);
+        layers.forEach(l => {
+          if (visible && !map.hasLayer(l)) map.addLayer(l);
+          if (!visible && map.hasLayer(l)) map.removeLayer(l);
+        });
+
+        // Sincronizar checkbox
+        const chk = document.querySelector(
+          `.check-linea[onchange*="'${nombre}'"]`
+        );
+        if (chk) chk.checked = visible;
+      });
+
+      // actualizarCheckboxes(true)
+      sincronizarMaestro();
+      return;
     }
 
    // ======================
@@ -540,9 +1019,9 @@
         archivo: 'inputs/UV_COPIAPO.geojson',
         interactivo: true,
         estilo: {
-          color: '#cccccc',
+          color: '#a0cbe7',
           weight: 0.8,
-          fillOpacity: 0.2
+          fillOpacity: 0.1
         },
         colorHover: '#c1e7ff',
         pane: 'pane_uv',
@@ -669,6 +1148,9 @@
     const capasLineas = {};
     const decoradoresCapas = new Map();
 
+    let geojsonUV    = null;  // GeoJSON completo de UVs
+    let geojsonBuses = null;  // GeoJSON completo de buses
+    let geojsonManzanas = null; // GeoJSON complero de manzanas
 
 
     // ======================
@@ -682,8 +1164,19 @@
           .then(data => {
             // console.log(`Capa "${capa.nombre}" cargada:`, capa.estilo);
 
+            // Guardar GeoJSON completo para capas interactivas
+            if (capa.nombre === 'Unidades Vecinales') geojsonUV = data;
+            if (capa.nombre === 'Recorridos Buses')   geojsonBuses = data;
+            if (capa.nombre === 'Manzanas')            geojsonManzanas = data;
+
             const layer = L.geoJSON(data, {
               pane: capa.pane,
+              filter: function(feature) {
+                if (capa.nombre === 'Unidades Vecinales') {
+                  return feature.properties.urbano === 1;
+                }
+                return true;
+              },
               style: function(feature) {
 
                 const estiloFinal =
@@ -706,17 +1199,16 @@
                 // NO interactiva
                 if (!capa.interactivo) return;
 
-
-
-                // SOLO recorridos buses
+                // ======================
+                // RECORRIDOS BUSES
+                // ======================
                 if (capa.nombre === 'Recorridos Buses') {
 
                   const nombreLinea = feature.properties.linea;
-                  console.log(JSON.stringify(nombreLinea)); // <-- temporal
+
                   if (!capasLineas[nombreLinea]) {
                     capasLineas[nombreLinea] = [];
                   }
-
                   capasLineas[nombreLinea].push(leafletLayer);
 
                   // Flechas de dirección
@@ -752,7 +1244,7 @@
                           }
                         })
                       },
-                      // Inicio 🚌
+                      // Inicio (ícono bus)
                       {
                         offset: 0,
                         repeat: 0,
@@ -771,16 +1263,16 @@
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
-                                font-size: 13px;
+                                font-size: 11px;
                                 box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-                              ">🚌</div>`,
+                              "><i class="fa-solid fa-bus"></i></div>`,
                               iconSize: [22, 22],
                               iconAnchor: [11, 11]
                             })
                           }
                         })
                       },
-                      // Final 🏁
+                      // Final (ícono bandera)
                       {
                         offset: '100%',
                         repeat: 0,
@@ -799,9 +1291,9 @@
                                 display: flex;
                                 align-items: center;
                                 justify-content: center;
-                                font-size: 13px;
+                                font-size: 11px;
                                 box-shadow: 0 1px 4px rgba(0,0,0,0.4);
-                              ">🏁</div>`,
+                              "><i class="fa-solid fa-flag-checkered"></i></div>`,
                               iconSize: [22, 22],
                               iconAnchor: [11, 11]
                             })
@@ -812,86 +1304,62 @@
                   });
 
                   decorator._linea = nombreLinea;
-                  // decorator.addTo(map);
-
-                  // if (!decoradoresLineas[nombreLinea]) {
-                  //   decoradoresLineas[nombreLinea] = [];
-                  // }
-                  // decoradoresLineas[nombreLinea].push(decorator);
 
                   if (!decoradoresCapas.has(leafletLayer)) {
                     decoradoresCapas.set(leafletLayer, []);
                   }
                   decoradoresCapas.get(leafletLayer).push(decorator);
 
-                }
-
-                // Hover
-                leafletLayer.on({
-                  mouseover: function(e) {
-
-                    // Bloquear hover si alguna línea del grupo está animando
-                    const estaAnimando = Object.values(capasLineas)
-                      .flat()
-                      .some(l => l._animando);
-
-                    if (estaAnimando) return;
-
-                    
-                    const colorOriginal = e.target.options.color;
-                    const pesoOriginal = e.target.options.weight;
-                    
-                    // Apagar otras líneas
-                    layer.eachLayer(function(l) {
-                      
-                      l.setStyle({opacity: 0.15});
-                      const el = l.getElement();
-                      if (el) el.classList.add('linea-sin-sombra');
-                      
-                    });
-                    
-                    // Destacar línea activa
-                    e.target.setStyle({
-                      
-                      opacity: 1,
-                      
-                      weight: pesoOriginal + 0.5,
-                      
-                      color: oscurecerColor(
-                        colorOriginal,
-                        5
-                      )
-                      
-                    });
-                    
-                    if (capa.nombre === 'Recorridos Buses') {
-                      e.target.bringToFront();
+                  // Tooltip hover buses
+                  leafletLayer.bindTooltip(
+                    capa.popup(feature),
+                    {
+                      sticky: true,
+                      opacity: 0.95,
+                      className: 'tooltip-buses',
+                      pane: 'pane_tooltips'
                     }
+                  );
 
-
-
-                    e.target.setStyle({
-                      weight: pesoOriginal + 2,
-                      color: oscurecerColor(
-                        colorOriginal,
-                        5
-                      ),
-                      opacity: 1
-                    });
-
-                    // Mostrar flechas solo del segmento activo
-                    (decoradoresCapas.get(e.target) || []).forEach(d => {
-                      if (!map.hasLayer(d)) d.addTo(map);
-                    });
-
-                  },
-                  mouseout: function(e) {
-                    if (capa.nombre === 'Recorridos Buses') {
+                  // Hover buses
+                  leafletLayer.on({
+                    mouseover: function(e) {
 
                       const estaAnimando = Object.values(capasLineas)
                         .flat()
                         .some(l => l._animando);
+                      if (estaAnimando) return;
 
+                      const colorOriginal = e.target.options.color;
+                      const pesoOriginal  = e.target.options.weight;
+
+                      // Apagar otras líneas
+                      layer.eachLayer(function(l) {
+                        l.setStyle({ opacity: 0.15 });
+                        const el = l.getElement();
+                        if (el) el.classList.add('linea-sin-sombra');
+                      });
+
+                      // Destacar línea activa
+                      e.target.setStyle({
+                        weight:  pesoOriginal + 2,
+                        color:   oscurecerColor(colorOriginal, 5),
+                        opacity: 1
+                      });
+
+                      e.target.bringToFront();
+
+                      // Mostrar flechas
+                      (decoradoresCapas.get(e.target) || []).forEach(d => {
+                        if (!map.hasLayer(d)) d.addTo(map);
+                      });
+
+                    },
+                    mouseout: function(e) {
+
+                      const estaAnimando = Object.values(capasLineas)
+                        .flat()
+                        .some(l => l._animando);
                       if (estaAnimando) return;
 
                       layer.eachLayer(function(l) {
@@ -903,57 +1371,96 @@
                         }
                       });
 
-                    } else {
-                      layer.resetStyle(e.target);
-                    }
-
-                    decoradoresCapas.forEach(decs => {
-                      decs.forEach(d => {
-                        if (map.hasLayer(d)) map.removeLayer(d);
+                      decoradoresCapas.forEach(decs => {
+                        decs.forEach(d => {
+                          if (map.hasLayer(d)) map.removeLayer(d);
+                        });
                       });
-                    });
-                  }
-                  
 
-                });
+                      // Mantener la línea destacada desde el buscador
+                      if (lineaDestacada) aplicarDestacado(lineaDestacada);
 
-                // // Popup
-                // leafletLayer.bindPopup(
-                //   capa.popup(feature)
-                // );
-
-
-
-                //Buses
-                if(capa.nombre ==='Recorridos Buses') {
-                  
-                  leafletLayer.bindTooltip(                   
-                    capa.popup(feature),
-                    {
-                      sticky: true,
-                      direction: 'top',
-                      opacity: 0.95,
-                      className: 'tooltip-buses',
-                      pane: 'pane_tooltips'
                     }
+                  });
 
-                  );
                 }
 
-                
-                // UV
+                // ======================
+                // UNIDADES VECINALES
+                // ======================
                 else if (capa.nombre === 'Unidades Vecinales') {
-                  // LABEL PERMANENTE
+
+                  // Label permanente
                   leafletLayer.bindTooltip(
                     feature.properties.NOMBRE_UV,
                     {
                       permanent: true,
                       direction: 'center',
                       className: 'label-uv'
+                    }
+                  );
 
+                  // Hover
+                  leafletLayer.on({
+                    mouseover: function(e) {
+                      
+                      const colorOriginal = e.target.options.color;
+                      const pesoOriginal  = e.target.options.weight;
+
+                      e.target.setStyle({
+                        weight:      pesoOriginal + 2,
+                        color:       oscurecerColor(colorOriginal, 5),
+                        fillColor:   '#a8d8f0',
+                        fillOpacity: 0.5
+                      });
+                    },
+                    mouseout: function(e) {
+                      layer.resetStyle(e.target);
+                      map.closePopup();
+                      
+                    }
+                  });
+
+                  // Clic: calcular habitantes y mostrar popup
+                  leafletLayer.on('click', function(e) {
+
+                    const colorOriginal = e.target.options.color;
+                    const pesoOriginal  = e.target.options.weight;
+
+                    leafletLayer.setStyle({
+                      weight:      pesoOriginal,
+                      color:       oscurecerColor(colorOriginal, 5),
+                      fillColor:   '#a8d8f0',
+                      fillOpacity: 0.5
+                    });
+
+                    let totalHabitantes = 0;
+
+                    if (geojsonManzanas) {
+                      geojsonManzanas.features.forEach(manzana => {
+                        try {
+                          if (turf.booleanIntersects(manzana, leafletLayer.feature)) {
+                            totalHabitantes += manzana.properties.n_per || 0;
+                          }
+                        } catch(err) {}
+                      });
                     }
 
-                  );
+                    leafletLayer.bindPopup(`
+                      <b>Unidad Vecinal</b><br>
+                      ${feature.properties.NOMBRE_UV || 'Sin nombre'}<br><br>
+                      <b>Habitantes estimados:</b> ${totalHabitantes.toLocaleString('es-CL')}
+                      <br>
+                      <small class='small'>Segun Censo 2024</small>
+                    `).openPopup();
+
+                  });
+
+                  // Al cerrar popup restaurar estilo
+                  leafletLayer.on('popupclose', function() {
+                    layer.resetStyle(leafletLayer);
+                  });
+
                 }
 
               }
@@ -963,245 +1470,445 @@
             // Guardar capa
             overlays[capa.nombre] = layer;
 
-            // Agregar automáticamente al mapa
-            layer.addTo(map);
+            // Agregar al mapa (salvo que el usuario ya la haya desmarcado en el panel)
+            const chkCapa = document.querySelector(`.check-capa[data-capa="${capa.nombre}"]`);
+            if (!chkCapa || chkCapa.checked) layer.addTo(map);
 
-            // Ajustar bounds SOLO primera capa
-            // if (Object.keys(overlays).length === 1) {
-            //   map.fitBounds(layer.getBounds());
-            // }
+            if (capa.nombre === 'Unidades Vecinales') {
+              geojsonUV = data;
+
+              // Poblar selector solo con las UV urbanas (las mismas que se dibujan)
+              const select = document.getElementById('filtro-uv');
+              data.features
+                .filter(f => f.properties.urbano === 1)
+                .map(f => f.properties.NOMBRE_UV)
+                .filter(Boolean)
+                .sort((a, b) => a.localeCompare(b, 'es'))
+                .forEach(nombre => {
+                  const opt = document.createElement('option');
+                  opt.value = nombre;
+                  opt.textContent = nombre;
+                  select.appendChild(opt);
+                });
+            }
           });
       });
     }
 
     // ======================
-    // LEYENDA manzanas
+    // PANEL LATERAL
     // ======================
 
+    // Abrir / cerrar el panel completo
+    function togglePanel(abrir) {
+      document.body.classList.toggle('panel-oculto', !abrir);
+    }
 
-      
-    const legend = L.control({
-      position: 'bottomright'
-    });
+    // Abrir / cerrar una sección del panel
+    function toggleSeccion(btn) {
+      const seccion = btn.closest('.seccion');
+      seccion.classList.toggle('cerrada');
+      btn.setAttribute('aria-expanded', !seccion.classList.contains('cerrada'));
+    }
 
-    legend.onAdd = function(map) {
+    // En pantallas pequeñas el panel parte escondido
+    if (window.innerWidth <= 768) togglePanel(false);
 
-  const div = L.DomUtil.create('div', 'info legend');
+    // Mostrar / ocultar una capa completa (sección "Capas")
+    function toggleCapa(nombre, mostrar) {
+      const layer = overlays[nombre];
+      if (!layer) return;
 
-  const labels = [];
+      if (mostrar) map.addLayer(layer);
+      else map.removeLayer(layer);
 
-  labels.push(`
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h4 style="margin:0;">Habitantes por manzana</h4>
-      <button class="legend-toggle" onclick="toggleLegend(this)">▼</button>
-    </div>
-    <div class="legend-body">
-  `);
-
-  for (let i = 0; i < binsManzanas.length; i++) {
-    const desde = i === 0 ? 0 : binsManzanas[i - 1];
-    const hasta = binsManzanas[i];
-    labels.push(`
-      <div>
-        <span style="
-          background:${coloresManzanas[i]};
-          opacity:0.3;
-          width:18px;
-          height:18px;
-          display:inline-block;
-          margin-right:8px;
-          border-radius:3px;
-        "></span>
-        ${desde} - ${hasta}
-      </div>
-    `);
-  }
-
-  labels.push('</div>'); // cierre legend-body
-
-  div.innerHTML = labels.join('');
-  return div;
-};
-
-
-
-    legend.addTo(map);
-
-
-
-    const legendLineas = L.control({
-      position: 'topright'
-    });
-
-    legendLineas.onAdd = function(map) {
-
-      const div = L.DomUtil.create(
-        'div',
-        'info legend'
-      );
-
-      const labels = [];
-
-      labels.push(`
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <h4 style="margin:0;">Recorridos</h4>
-          <button class="legend-toggle" onclick="toggleLegend(this)">▼</button>
-        </div>
-        <div class="legend-body">
-      `);
-
-
-      labels.push(`
-
-        <div style="
-          margin-bottom:10px;
-          border-bottom:1px solid #ddd;
-          padding-bottom:8px;
-        ">
-
-          <label style="
-            display:flex;
-            align-items:center;
-            gap:8px;
-            cursor:pointer;
-            font-weight:600;
-          ">
-
-            <input
-              type="checkbox"
-              checked
-              onchange="toggleTodasLineas(this)"
-            >
-
-            Mostrar todas
-
-          </label>
-
-        </div>
-
-      `);
-
-      Object.entries(coloresLineas)
-      
-        .forEach(([nombre, color]) => {
-
-          labels.push(`
-
-            <div style="margin-bottom:6px;">
-
-              <label style="
-                display:flex;
-                align-items:center;
-                gap:8px;
-                cursor:pointer;
-              ">
-
-                <input
-                  type="checkbox"
-                  class="check-linea"
-                  checked
-                  onchange="toggleLinea('${nombre}')"
-                >
-
-                <span style="
-                  background:${color};
-                  width:18px;
-                  height:6px;
-                  display:inline-block;
-                  border-radius:4px;
-                "></span>
-
-                ${nombre}
-
-              </label>
-
-            </div>
-
-          `);
-
+      // Recorridos: sincronizar también cada línea y sus checkboxes
+      if (nombre === 'Recorridos Buses') {
+        Object.values(capasLineas).forEach(layers => {
+          layers.forEach(l => {
+            if (mostrar && !map.hasLayer(l)) map.addLayer(l);
+            if (!mostrar && map.hasLayer(l)) map.removeLayer(l);
+          });
         });
+        actualizarCheckboxes(mostrar);
+        sincronizarMaestro();
+      }
+    }
 
-      labels.push('</div>'); // cierre legend-body
-     
-      div.innerHTML = labels.join('');
+    // Lista de líneas (sección "Recorridos")
+    document.getElementById('lista-lineas').innerHTML =
+      Object.entries(coloresLineas)
+        .map(([nombre, color]) => `
+          <label class="opcion">
+            <input type="checkbox" class="check-linea" checked onchange="toggleLinea('${nombre}')">
+            <span class="muestra-linea" style="background:${color}"></span>
+            ${nombre}
+          </label>
+        `)
+        .join('');
 
-      return div;
+    // Leyenda habitantes por manzana
+    document.getElementById('leyenda-manzanas').innerHTML =
+      binsManzanas
+        .map((hasta, i) => {
+          const desde = i === 0 ? 0 : binsManzanas[i - 1];
+          return `
+            <div class="leyenda-item">
+              <span class="muestra-area" style="background:${coloresManzanas[i]}"></span>
+              ${desde.toLocaleString('es-CL')} – ${hasta.toLocaleString('es-CL')}
+            </div>
+          `;
+        })
+        .join('');
 
-    };
 
-    legendLineas.addTo(map);
+    // ======================
+    // BUSCADOR DE CALLES (solo Copiapó)
+    // ======================
+
+    // Recuadro de Copiapó urbano: [oeste, sur, este, norte]
+    const BBOX_COPIAPO = [-70.42, -27.46, -70.20, -27.28];
+    const DISTANCIA_CERCANA_M = 300;
+
+    map.createPane('pane_busqueda');
+    map.getPane('pane_busqueda').style.zIndex = 680;
+
+    const inputBuscar     = document.getElementById('buscar-calle');
+    const listaResultados = document.getElementById('buscador-resultados');
+    const infoBusqueda    = document.getElementById('buscador-info');
+    const btnLimpiar      = document.getElementById('buscar-limpiar');
+
+    let resultadosBusqueda = [];
+    let indiceActivo = -1;
+    let temporizadorBusqueda = null;
+    let peticionBusqueda = null;
+    let marcadorBusqueda = null;
+
+    function escaparHTML(texto) {
+      return String(texto).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    // Convierte un resultado de Photon en { titulo, sub, lat, lng, extent }
+    function formatearResultado(f) {
+      const p = f.properties;
+      const titulo = p.name
+        || [p.street, p.housenumber].filter(Boolean).join(' ')
+        || 'Sin nombre';
+      const sub = [p.district || p.locality, p.city]
+        .filter(Boolean)
+        .filter((v, i, arr) => arr.indexOf(v) === i)
+        .join(', ');
+      return {
+        titulo,
+        sub,
+        lng: f.geometry.coordinates[0],
+        lat: f.geometry.coordinates[1],
+        extent: p.extent // [oeste, norte, este, sur] (solo calles y áreas)
+      };
+    }
+
+    function mostrarResultados(lista, mensajeVacio) {
+      resultadosBusqueda = lista;
+      indiceActivo = -1;
+
+      if (!lista.length) {
+        listaResultados.innerHTML = `<li class="vacio">${mensajeVacio}</li>`;
+      } else {
+        listaResultados.innerHTML = lista.map((r, i) => `
+          <li role="option" data-i="${i}">
+            ${escaparHTML(r.titulo)}
+            ${r.sub ? `<span class="sub">${escaparHTML(r.sub)}</span>` : ''}
+          </li>
+        `).join('');
+      }
+      listaResultados.hidden = false;
+    }
+
+    function ocultarResultados() {
+      listaResultados.hidden = true;
+      indiceActivo = -1;
+    }
+
+    async function buscarCalle(texto) {
+      if (peticionBusqueda) peticionBusqueda.abort();
+      peticionBusqueda = new AbortController();
+
+      const url = 'https://photon.komoot.io/api/?' + new URLSearchParams({
+        q: texto,
+        bbox: BBOX_COPIAPO.join(','),
+        limit: 10
+      });
+
+      try {
+        const resp = await fetch(url, { signal: peticionBusqueda.signal });
+        const data = await resp.json();
+
+        // Quitar duplicados (misma calle y mismo sector)
+        const vistos = new Set();
+        const lista = data.features
+          .map(formatearResultado)
+          .filter(r => {
+            const clave = r.titulo + '|' + r.sub;
+            if (vistos.has(clave)) return false;
+            vistos.add(clave);
+            return true;
+          })
+          .slice(0, 6);
+
+        mostrarResultados(lista, 'Sin resultados en Copiapó');
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        mostrarResultados([], 'No se pudo buscar. Intente de nuevo.');
+      }
+    }
+
+    function resaltarActivo() {
+      listaResultados.querySelectorAll('li[data-i]').forEach((li, i) => {
+        li.classList.toggle('activo', i === indiceActivo);
+        if (i === indiceActivo) li.scrollIntoView({ block: 'nearest' });
+      });
+    }
+
+    // Líneas cuyo recorrido pasa a menos de DISTANCIA_CERCANA_M del punto
+    function lineasCercanas(lat, lng) {
+      if (!geojsonBuses) return [];
+      const punto = turf.point([lng, lat]);
+      const cercanas = new Set();
+
+      geojsonBuses.features.forEach(f => {
+        try {
+          const d = turf.nearestPointOnLine(f, punto, { units: 'meters' }).properties.dist;
+          if (d <= DISTANCIA_CERCANA_M) cercanas.add(f.properties.linea);
+        } catch (e) {}
+      });
+
+      return [...cercanas].sort(
+        (a, b) => parseInt(a.replace(/\D/g, '')) - parseInt(b.replace(/\D/g, ''))
+      );
+    }
+
+    function seleccionarResultado(r) {
+      ocultarResultados();
+      inputBuscar.value = r.titulo;
+      btnLimpiar.hidden = false;
+
+      // Acercar el mapa
+      if (r.extent) {
+        map.fitBounds(
+          [[r.extent[3], r.extent[0]], [r.extent[1], r.extent[2]]],
+          { maxZoom: 17, padding: [40, 40] }
+        );
+      } else {
+        map.setView([r.lat, r.lng], 17);
+      }
+
+      // Marcador
+      if (marcadorBusqueda) map.removeLayer(marcadorBusqueda);
+      marcadorBusqueda = L.circleMarker([r.lat, r.lng], {
+        pane: 'pane_busqueda',
+        radius: 9,
+        color: '#ffffff',
+        weight: 3,
+        fillColor: '#2563eb',
+        fillOpacity: 1
+      })
+        .bindTooltip(escaparHTML(r.titulo), { direction: 'top', offset: [0, -8] })
+        .addTo(map);
+
+      // Líneas cercanas
+      quitarDestacado();
+      const lineas = lineasCercanas(r.lat, r.lng);
+      const chips = lineas.length
+        ? `<div class="chips">${lineas.map(l => `
+            <button class="chip" data-linea="${escaparHTML(l)}" aria-pressed="false"
+                    style="--color-linea:${coloresLineas[l] || '#666'}"
+                    title="Destacar ${escaparHTML(l)} en el mapa">
+              <span class="muestra-linea" style="background:${coloresLineas[l] || '#666'}"></span>${escaparHTML(l)}
+            </button>`).join('')}</div>`
+        : `<div class="nota" style="margin-top:0">Ninguna línea pasa a menos de ${DISTANCIA_CERCANA_M} m.</div>`;
+
+      infoBusqueda.innerHTML = `
+        <div class="lugar"><i class="fa-solid fa-location-dot"></i> ${escaparHTML(r.titulo)}${r.sub ? ', ' + escaparHTML(r.sub) : ''}</div>
+        <div class="etiqueta">Líneas a menos de ${DISTANCIA_CERCANA_M} m</div>
+        ${chips}
+      `;
+      infoBusqueda.hidden = false;
+    }
+
+    // ----- Destacar una línea desde las etiquetas de "líneas cercanas" -----
+
+    let lineaDestacada = null;
+
+    function aplicarDestacado(nombre) {
+      const grupo = overlays['Recorridos Buses'];
+      if (!grupo) return;
+
+      grupo.eachLayer(l => {
+        grupo.resetStyle(l);
+        const el = l.getElement();
+
+        if (l.feature.properties.linea === nombre) {
+          l.setStyle({
+            weight:  l.options.weight + 2,
+            color:   oscurecerColor(l.options.color, 5),
+            opacity: 1
+          });
+          if (el) el.classList.remove('linea-sin-sombra');
+          if (map.hasLayer(l)) l.bringToFront();
+          (decoradoresCapas.get(l) || []).forEach(d => {
+            if (map.hasLayer(l) && !map.hasLayer(d)) d.addTo(map);
+          });
+        } else {
+          l.setStyle({ opacity: 0.15 });
+          if (el) el.classList.add('linea-sin-sombra');
+          // Quitar flechas de las líneas que no están destacadas
+          (decoradoresCapas.get(l) || []).forEach(d => {
+            if (map.hasLayer(d)) map.removeLayer(d);
+          });
+        }
+      });
+
+      // Que el marcador de búsqueda quede siempre encima
+      if (marcadorBusqueda) marcadorBusqueda.bringToFront();
+    }
+
+    function destacarLinea(nombre) {
+      lineaDestacada = nombre;
+
+      // Si la línea estaba oculta (casilla o filtro UV), mostrarla
+      const layers = capasLineas[nombre] || [];
+      layers.forEach(l => { if (!map.hasLayer(l)) map.addLayer(l); });
+      const chk = document.querySelector(`.check-linea[onchange*="'${nombre}'"]`);
+      if (chk) chk.checked = true;
+      sincronizarMaestro();
+
+      // Hay líneas visibles: la capa "Recorridos Buses" debe verse marcada
+      const chkCapa = document.querySelector('.check-capa[data-capa="Recorridos Buses"]');
+      if (chkCapa) chkCapa.checked = true;
+
+      aplicarDestacado(nombre);
+      actualizarChips();
+    }
+
+    function quitarDestacado() {
+      if (!lineaDestacada) return;
+      lineaDestacada = null;
+
+      const grupo = overlays['Recorridos Buses'];
+      if (grupo) {
+        grupo.eachLayer(l => {
+          grupo.resetStyle(l);
+          const el = l.getElement();
+          if (el) {
+            el.classList.remove('linea-sin-sombra');
+            el.style.opacity = 1;
+          }
+        });
+      }
+
+      decoradoresCapas.forEach(decs => {
+        decs.forEach(d => { if (map.hasLayer(d)) map.removeLayer(d); });
+      });
+
+      actualizarChips();
+    }
+
+    function actualizarChips() {
+      infoBusqueda.querySelectorAll('.chip').forEach(chip => {
+        const activa = chip.dataset.linea === lineaDestacada;
+        chip.classList.toggle('activo', activa);
+        chip.setAttribute('aria-pressed', activa);
+      });
+    }
+
+    // Clic en una etiqueta: destacar; segundo clic en la misma: quitar
+    infoBusqueda.addEventListener('click', e => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      if (chip.dataset.linea === lineaDestacada) quitarDestacado();
+      else destacarLinea(chip.dataset.linea);
+    });
+
+    // Clic en una zona vacía del mapa: quitar destacado.
+    // Se mantiene si el clic fue sobre una UV, una ruta o el marcador de búsqueda.
+    map.on('click', e => {
+      if (!lineaDestacada) return;
+      const origen = e.sourceTarget;
+      if (origen === marcadorBusqueda) return;
+      const props = origen && origen.feature && origen.feature.properties;
+      if (props && (props.NOMBRE_UV || props.linea)) return;
+      quitarDestacado();
+    });
+
+    // Tecla Escape: quitar destacado
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && lineaDestacada) quitarDestacado();
+    });
+
+    function limpiarBusqueda() {
+      quitarDestacado();
+      inputBuscar.value = '';
+      btnLimpiar.hidden = true;
+      infoBusqueda.hidden = true;
+      ocultarResultados();
+      if (peticionBusqueda) peticionBusqueda.abort();
+      if (marcadorBusqueda) {
+        map.removeLayer(marcadorBusqueda);
+        marcadorBusqueda = null;
+      }
+      inputBuscar.focus();
+    }
+
+    // Buscar mientras escribe (con pausa para no saturar el servicio)
+    inputBuscar.addEventListener('input', () => {
+      const texto = inputBuscar.value.trim();
+      btnLimpiar.hidden = !inputBuscar.value;
+      clearTimeout(temporizadorBusqueda);
+
+      if (texto.length < 3) {
+        ocultarResultados();
+        return;
+      }
+      temporizadorBusqueda = setTimeout(() => buscarCalle(texto), 350);
+    });
+
+    // Teclado: flechas, Enter y Escape
+    inputBuscar.addEventListener('keydown', e => {
+      const n = resultadosBusqueda.length;
+      if (e.key === 'ArrowDown' && n && !listaResultados.hidden) {
+        e.preventDefault();
+        indiceActivo = (indiceActivo + 1) % n;
+        resaltarActivo();
+      } else if (e.key === 'ArrowUp' && n && !listaResultados.hidden) {
+        e.preventDefault();
+        indiceActivo = (indiceActivo - 1 + n) % n;
+        resaltarActivo();
+      } else if (e.key === 'Enter' && n && !listaResultados.hidden) {
+        e.preventDefault();
+        seleccionarResultado(resultadosBusqueda[Math.max(indiceActivo, 0)]);
+      } else if (e.key === 'Escape') {
+        ocultarResultados();
+      }
+    });
+
+    listaResultados.addEventListener('click', e => {
+      const li = e.target.closest('li[data-i]');
+      if (li) seleccionarResultado(resultadosBusqueda[+li.dataset.i]);
+    });
+
+    // Cerrar sugerencias al hacer clic fuera del buscador
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.buscador')) ocultarResultados();
+    });
+
+
     // ======================
     // EJECUTAR
     // ======================
 
     cargarCapas();
-
-
-    // ======================
-    // CONTROL CAPAS
-    // ======================
-
-    setTimeout(() => {
-
-      const controlCapas = L.control.layers(
-        null,
-        overlays,
-        {
-          position: 'topleft',
-          collapsed: false
-        }
-      ).addTo(map);
-
-
-      const tituloCapas = document.createElement('div');
-      tituloCapas.style.display = 'flex';
-      tituloCapas.style.justifyContent = 'space-between';
-      tituloCapas.style.alignItems = 'center';
-      tituloCapas.innerHTML = `
-        <h4 style="margin:0 0 8px;">Capas</h4>
-        <button 
-          class="legend-toggle"
-          style="margin-bottom:8px;"
-          onclick="
-            this.closest('.leaflet-control-layers').classList.toggle('abierto');
-            this.textContent = this.closest('.leaflet-control-layers').classList.contains('abierto') ? '▲' : '▼';
-          "
-        >▼</button>
-      `;
-
-      const container = controlCapas.getContainer();
-      container.prepend(tituloCapas);
-
-      //Control rutas de buses con leaflet
-      map.on('overlayadd', function(e) {
-        if (e.name === 'Recorridos Buses') {
-
-          Object.values(capasLineas).forEach(layers => {
-            layers.forEach(l => {
-              if (!map.hasLayer(l)) map.addLayer(l);
-            });
-          });
-
-          actualizarCheckboxes(true);
-          sincronizarMaestro();
-        }
-      });
-
-      map.on('overlayremove', function(e) {
-        if (e.name === 'Recorridos Buses') {
-
-          Object.values(capasLineas).forEach(layers => {
-            layers.forEach(l => {
-              if (map.hasLayer(l)) map.removeLayer(l);
-            });
-          });
-
-          actualizarCheckboxes(false);
-          sincronizarMaestro();
-        }
-      });
-
-    }, 1000);
 
   </script>
 
