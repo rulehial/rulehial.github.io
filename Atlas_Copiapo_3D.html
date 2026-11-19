@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <!-- Ícono del sitio -->
   <link rel="icon" href="images/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
@@ -58,6 +58,7 @@
     /* Se desplaza el documento completo (no el body): así la barra de
        desplazamiento es la del navegador y el mapa no se ve por detrás de ella */
     html {
+      touch-action: manipulation; /* sin zoom de página por doble toque: el mapa tiene su propio zoom */
       overflow-x: hidden;
       background: var(--fondo);
     }
@@ -97,7 +98,7 @@
        BARRA SUPERIOR
        ====================== */
     .barra {
-      position: absolute;
+      position: fixed; /* no se corre si la página se desplaza un poco; el análisis la tapa al bajar */
       top: 0; left: 0; right: 0;
       z-index: 20;
       display: flex;
@@ -1031,6 +1032,74 @@
       .pie-corte { padding: 14px 12px; }
       .subir { right: 12px; bottom: 16px; }
     }
+
+    /* =====================================================================
+       CELULAR: ajustes finales (van al final para tener prioridad)
+       ===================================================================== */
+    @media (max-width: 900px) {
+      /* Barra en 2 filas: marca + Satélite/Relieve arriba, menú deslizable abajo */
+      .barra {
+        flex-wrap: wrap;
+        gap: 6px 10px;
+        padding: 8px 10px 6px;
+        padding-top: calc(8px + env(safe-area-inset-top, 0px));
+        background: linear-gradient(to bottom, rgba(11, 15, 20, 0.95) 70%, rgba(11, 15, 20, 0));
+      }
+      .marca b { font-size: 12px; }
+      .marca span { font-size: 9px; }
+      .barra-derecha { margin-left: auto; gap: 0; }
+      .barra-derecha > .boton-sync { display: none; }     /* está en el panel ⚙ */
+      .boton-modo { padding: 9px 9px; font-size: 9.5px; letter-spacing: 0.08em; }
+      .grupo-modos .modos { min-height: 0; }
+
+      .nav {
+        order: 3;
+        width: calc(100% + 20px);
+        margin: 0 -10px;
+        padding: 0 4px;
+        overflow-x: auto;
+        overflow-y: visible;
+        scrollbar-width: none;
+      }
+      .nav::-webkit-scrollbar { display: none; }
+      .nav button { padding: 7px 8px; font-size: 10.5px; white-space: nowrap; }
+
+      /* El submenú "VER +" sale de la barra, no queda recortado */
+      .ver-mas { position: static; }
+      .submenu { position: fixed; top: calc(var(--alto-barra, 90px) + 2px); left: auto; right: 10px; }
+
+      /* Botones de capas: columna a la derecha, bajo la barra */
+      .capas-mapa {
+        position: fixed;
+        top: calc(var(--alto-barra, 90px) + 8px);
+        right: 10px;
+        gap: 6px;
+      }
+      .capa-mapa { width: 38px; height: 38px; font-size: 14px; }
+
+      /* Tarjeta de UV destacada: a la izquierda, sin chocar con los botones de capas */
+      .tarjeta-uv {
+        top: calc(var(--alto-barra, 90px) + 8px) !important;
+        left: 10px;
+        right: 58px;
+        width: auto;
+        transform: none;
+      }
+
+      /* Créditos y zoom sobre los filtros de abajo, no encima */
+      .maplibregl-ctrl-bottom-right { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }
+      .maplibregl-ctrl-bottom-right .maplibregl-ctrl-group { display: none; }  /* se hace zoom con los dedos */
+      .bajar { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); left: 50%; }  /* centrada, con su rebote */
+
+      /* Alfileres de UV: se ocultan al estar lejos (se encimarían) */
+      .etiqueta-uv.choca { display: none; }  /* no cabe sin encimarse: se muestra al acercarse */
+      .pin-texto { font-size: 8.5px; letter-spacing: 0.08em; }
+    }
+    /* Celulares angostos (≈360 px): el menú completo cabe en una línea */
+    @media (max-width: 380px) {
+      .nav { justify-content: space-between; padding: 0 6px; }
+      .nav button { padding: 7px 4px; font-size: 9.5px; letter-spacing: 0.08em; }
+    }
   </style>
 </head>
 <body>
@@ -1672,6 +1741,7 @@
         document.body.classList.toggle('sin-cortes', !ver);
       }
       if (clave === 'uv') document.body.classList.toggle('sin-nombres-uv', !ver);
+      if (clave === 'cortes') acomodarPines();
       marcarCapaMapa(clave, ver);
     }
     document.querySelectorAll('.capa-mapa').forEach(b => { b.dataset.estado = 'visible'; });
@@ -2695,21 +2765,38 @@
 
     // Alfileres de UV: cada uno elige la altura de tallo más baja que no choque
     // con las etiquetas ya ubicadas (se recalcula al mover o hacer zoom)
-    const ALTURAS_TALLO = esMovil() ? [18, 32, 46, 60, 74] : [26, 44, 62, 80, 98, 116];
+    const ALTURAS_TALLO = esMovil() ? [16, 30, 44, 58] : [26, 44, 62, 80, 98, 116];
     function acomodarPines() {
+      // Celular: si una etiqueta no cabe sin encimarse, se oculta (gana la UV más poblada)
+      const ocultarSiChoca = esMovil();
+      const pob = n => (resumenUV && resumenUV.uv[n] ? resumenUV.uv[n].poblacion : 0);
       const pines = Object.entries(etiquetasUV).map(([n, el]) => {
         const c = centrosUV[n];
         if (!c) return null;
+        el.classList.remove('choca');
         const pt = map.project(c);
         const t = el.querySelector('.pin-texto');
-        return { el, x: pt.x, y: pt.y, w: t.offsetWidth + 6, h: t.offsetHeight + 4 };
-      }).filter(Boolean).sort((a, b) => b.y - a.y); // primero los más cercanos (abajo en pantalla)
-      const cajas = [];
+        return { n, el, x: pt.x, y: pt.y, w: t.offsetWidth + 6, h: t.offsetHeight + 4 };
+      }).filter(Boolean).sort(ocultarSiChoca
+        ? (a, b) => (b.el.classList.contains('activa') - a.el.classList.contains('activa')) || pob(b.n) - pob(a.n)
+        : (a, b) => b.y - a.y); // escritorio: primero los más cercanos (abajo en pantalla)
+      // Las letras de los cortes (A, A′…) también ocupan espacio: los nombres las esquivan
+      const base = map.getContainer().getBoundingClientRect();
+      const cajas = document.body.classList.contains('sin-cortes') ? [] :
+        [...document.querySelectorAll('.etiqueta-corte')].map(e => {
+          const r = e.getBoundingClientRect();
+          return { x0: r.left - base.left - 2, x1: r.right - base.left + 2, y0: r.top - base.top - 2, y1: r.bottom - base.top + 2 };
+        });
+      const choca = caja => cajas.some(c => caja.x0 < c.x1 && caja.x1 > c.x0 && caja.y0 < c.y1 && caja.y1 > c.y0);
       pines.forEach(p => {
-        let elegida = ALTURAS_TALLO[ALTURAS_TALLO.length - 1];
+        let elegida = null;
         for (const alto of ALTURAS_TALLO) {
           const caja = { x0: p.x - p.w / 2, x1: p.x + p.w / 2, y1: p.y - alto, y0: p.y - alto - p.h };
-          if (!cajas.some(c => caja.x0 < c.x1 && caja.x1 > c.x0 && caja.y0 < c.y1 && caja.y1 > c.y0)) { elegida = alto; break; }
+          if (!choca(caja)) { elegida = alto; break; }
+        }
+        if (elegida === null) {
+          if (ocultarSiChoca) { p.el.classList.add('choca'); return; }
+          elegida = ALTURAS_TALLO[ALTURAS_TALLO.length - 1];
         }
         cajas.push({ x0: p.x - p.w / 2, x1: p.x + p.w / 2, y1: p.y - elegida, y0: p.y - elegida - p.h });
         p.el.querySelector('.pin-tallo').style.height = elegida + 'px';
@@ -2937,7 +3024,21 @@
     }
 
     // Celular: vista algo más alejada
-    if (esMovil()) map.jumpTo({ ...VISTA_3D, zoom: 11.9 });
+    if (esMovil()) map.jumpTo({ ...VISTA_3D, center: [-70.318, -27.380], zoom: 12.0, pitch: 55 });
+
+    // Celular: los nombres de UV aparecen al acercarse (de lejos se encimarían)
+    function pinesSegunZoom() {
+      acomodarPines();
+    }
+    map.on('zoomend', pinesSegunZoom);
+    window.addEventListener('resize', pinesSegunZoom);
+    pinesSegunZoom();
+
+    // Celular: créditos del mapa cerrados al inicio (se abren con la ⓘ)
+    if (esMovil()) map.once('load', () => {
+      const el = document.querySelector('.maplibregl-ctrl-attrib');
+      if (el) el.classList.remove('maplibregl-compact-show');
+    });
   </script>
 </body>
 </html>
