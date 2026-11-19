@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <title>Atlas Copiapó · Manzanas 3D</title>
+  <meta name="description" content="Atlas 3D de las manzanas censales de Copiapó (Censo 2024, INE): relieve, imagen satelital, perfiles socio-demográficos y transporte público." />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://rulehial.github.io/Manzanas_3D.html" />
+  <meta property="og:site_name" content="Rubén Hidalgo · Portafolio" />
+  <meta property="og:title" content="Atlas Copiapó · Manzanas 3D (Censo 2024)" />
+  <meta property="og:description" content="Las manzanas de Copiapó sobre el relieve en 3D, coloreadas por perfil socio-demográfico y levantadas según población, densidad o uso del bus." />
+  <meta property="og:image" content="https://rulehial.github.io/images/og-manzanas-3d.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:locale" content="es_CL" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Atlas Copiapó · Manzanas 3D (Censo 2024)" />
+  <meta name="twitter:description" content="Las manzanas de Copiapó sobre el relieve en 3D, coloreadas por perfil socio-demográfico." />
+  <meta name="twitter:image" content="https://rulehial.github.io/images/og-manzanas-3d.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <style>
+    :root {
+      --fondo: #0b0f14;
+      --panel: rgba(11, 15, 20, 0.88);
+      --panel-solido: #10161d;
+      --borde: rgba(255, 255, 255, 0.10);
+      --borde-fuerte: rgba(255, 255, 255, 0.22);
+      --texto: #e6e9ee;
+      --texto-suave: #8b95a3;
+      --acento: #c6f24e;          /* verde lima, como la referencia */
+      --acento-texto: #0b0f14;
+      --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+      --sans: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    /* Se desplaza el documento completo (no el body): así la barra de
+       desplazamiento es la del navegador y el mapa no se ve por detrás de ella */
+    html {
+      overflow-x: hidden;
+      background: var(--fondo);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow-x: clip;
+      background: var(--fondo);
+      color: var(--texto);
+      font-family: var(--sans);
+    }
+
+    html::-webkit-scrollbar { width: 10px; }
+    html::-webkit-scrollbar-track { background: var(--fondo); }
+    html::-webkit-scrollbar-thumb { background: #2a333e; border: 2px solid var(--fondo); border-radius: 5px; }
+    html::-webkit-scrollbar-thumb:hover { background: #3a4552; }
+
+    #mapa { position: absolute; inset: 0; }
+
+    button { font: inherit; color: inherit; }
+
+    .mono {
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .caja {
+      background: var(--panel);
+      border: 1px solid var(--borde);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    /* ======================
+       BARRA SUPERIOR
+       ====================== */
+    .barra {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 14px 18px;
+      pointer-events: none;
+      background: linear-gradient(to bottom, rgba(11, 15, 20, 0.85), rgba(11, 15, 20, 0));
+    }
+
+    .barra > * { pointer-events: auto; }
+
+    .marca b { display: block; font: 600 13px var(--mono); letter-spacing: 0.12em; color: var(--acento); }
+    .marca span { font: 400 10px var(--mono); letter-spacing: 0.14em; color: var(--texto-suave); }
+
+    .nav { display: flex; gap: 4px; }
+
+    .nav button {
+      padding: 6px 10px;
+      border: none;
+      background: none;
+      font: 500 11px var(--mono);
+      letter-spacing: 0.12em;
+      color: var(--texto);
+      cursor: pointer;
+    }
+
+    .nav button:hover { color: var(--acento); }
+
+    /* Menú "VER +" */
+    .ver-mas { position: relative; }
+    .ver-mas > button i { margin-left: 3px; font-size: 9px; transition: transform 0.2s; }
+    .ver-mas > button[aria-expanded="true"] { color: var(--acento); }
+    .ver-mas > button[aria-expanded="true"] i { transform: rotate(45deg); }
+
+    .submenu {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      z-index: 30;
+      min-width: 210px;
+      padding: 4px;
+    }
+
+    .submenu[hidden] { display: none; }
+
+    .submenu a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      font: 500 12.5px var(--sans);
+      color: var(--texto);
+      text-decoration: none;
+    }
+
+    .submenu a i { width: 14px; text-align: center; color: var(--acento); }
+    .submenu a:hover, .submenu a:focus-visible { background: rgba(255, 255, 255, 0.06); color: var(--acento); outline: none; }
+
+    @media (max-width: 900px) {
+      .nav { overflow: visible; }
+      .submenu { left: auto; right: 0; }
+    }
+
+    .barra-derecha { margin-left: auto; display: flex; gap: 8px; align-items: stretch; }
+
+    .control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 10px;
+    }
+
+    .control label { font: 500 10px var(--mono); letter-spacing: 0.12em; color: var(--texto-suave); white-space: nowrap; }
+
+    .control select {
+      min-width: 170px;
+      padding: 6px 28px 6px 10px;
+      border: 1px solid var(--borde-fuerte);
+      border-radius: 2px;
+      background: #0b0f14 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23e6e9ee' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+      color: var(--texto);
+      font: 500 12.5px var(--sans);
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .control select:focus-visible, .chip:focus-visible, .nav button:focus-visible, .boton-modo:focus-visible {
+      outline: 2px solid var(--acento);
+      outline-offset: 1px;
+    }
+
+    /* Botón sincronizar color ↔ altura */
+    .boton-sync {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      padding: 0;
+      font-size: 14px;
+      color: var(--texto-suave);
+      cursor: pointer;
+    }
+
+    .boton-sync:hover { color: var(--texto); border-color: var(--borde-fuerte); }
+
+    /* Tooltip del botón sincronizar (debajo del botón) */
+    .boton-sync[data-tip] { position: relative; }
+    .boton-sync[data-tip]::after {
+      content: attr(data-tip);
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      z-index: 40;
+      padding: 5px 9px;
+      transform: translateX(-50%);
+      background: var(--panel-solido);
+      border: 1px solid var(--borde-fuerte);
+      font: 500 10.5px var(--mono);
+      letter-spacing: 0.06em;
+      color: var(--texto);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+    .boton-sync[data-tip]:hover::after, .boton-sync[data-tip]:focus-visible::after { opacity: 1; }
+    @media (hover: none) { .boton-sync[data-tip]::after { display: none; } }
+    .boton-sync:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+    .boton-sync.activo { background: var(--acento); border-color: var(--acento); color: var(--acento-texto); }
+
+    .boton-sync-movil {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 9px;
+      border: 1px solid var(--borde-fuerte);
+      background: none;
+      font: 500 10.5px var(--mono);
+      letter-spacing: 0.1em;
+    }
+
+    .marca { white-space: nowrap; }
+
+    /* Pantallas medianas: el menú pasa a una segunda fila para no apretar los controles
+       (en una sola fila se necesitan ~1920 px: marca + menú + selectores + modos) */
+    @media (min-width: 901px) and (max-width: 1920px) {
+      .barra { flex-wrap: wrap; row-gap: 8px; }
+      .nav { order: 3; width: 100%; margin-left: -10px; }
+      .control select { min-width: 150px; }
+      body .leyenda { top: calc(var(--alto-barra, 104px) + 6px); max-height: calc(100% - var(--alto-barra, 104px) - 90px); }
+      body .tarjeta-uv { top: calc(var(--alto-barra, 104px) + 6px); }
+      .boton-modo { white-space: nowrap; }
+    }
+
+    /* Más angosto: se ocultan las etiquetas "Colorear por / Altura por" (el menú ya las explica) */
+    @media (min-width: 901px) and (max-width: 1300px) {
+      .control label { display: none; }
+      .control select { min-width: 140px; }
+      .barra { gap: 8px 16px; }
+    }
+
+    /* Satélite/Relieve + botones de elementos del mapa en columna debajo (solo íconos) */
+    .grupo-modos { position: relative; display: flex; }
+    .capas-mapa {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .capa-mapa {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--borde);
+      background: var(--panel);
+      font-size: 14px;
+      color: var(--texto-suave);
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+    }
+
+    .capa-mapa:hover { color: var(--texto); border-color: var(--borde-fuerte); }
+    .capa-mapa:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+    .capa-mapa.activo { color: var(--acento); border-color: rgba(198, 242, 78, 0.5); background: rgba(16, 22, 29, 0.92); }
+
+    /* Tooltip a la izquierda del botón */
+    .capa-mapa::after {
+      content: attr(data-tip) " · " attr(data-estado);
+      position: absolute;
+      right: calc(100% + 8px);
+      top: 50%;
+      padding: 5px 9px;
+      transform: translateY(-50%);
+      background: var(--panel-solido);
+      border: 1px solid var(--borde-fuerte);
+      font: 500 10.5px var(--mono);
+      letter-spacing: 0.06em;
+      color: var(--texto);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+    }
+
+    .capa-mapa:hover::after, .capa-mapa:focus-visible::after { opacity: 1; }
+
+    body.sin-nombres-uv .etiqueta-uv,
+    body.sin-cortes .etiqueta-corte { display: none !important; }
+
+    @media (max-width: 900px) {
+      .capa-mapa { width: 36px; height: 36px; }
+      .capa-mapa::after { display: none; }
+    }
+
+    .modos { display: flex; }
+
+    .boton-modo {
+      padding: 0 14px;
+      border: 1px solid var(--borde);
+      background: var(--panel);
+      font: 500 11px var(--mono);
+      letter-spacing: 0.12em;
+      cursor: pointer;
+    }
+
+    .boton-modo.activo { background: var(--acento); color: var(--acento-texto); border-color: var(--acento); }
+
+    /* ======================
+       LEYENDA (izquierda)
+       ====================== */
+    .leyenda {
+      position: absolute;
+      top: 76px;
+      left: 18px;
+      z-index: 15;
+      width: 270px;
+      max-height: calc(100% - 160px);
+      overflow-y: auto;
+      padding: 14px;
+    }
+
+    .leyenda::-webkit-scrollbar { width: 5px; }
+    .leyenda::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+
+    .titulo-caja {
+      margin: 0 0 10px;
+      font: 500 10.5px var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--texto-suave);
+    }
+
+    .item-cluster {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      width: 100%;
+      padding: 6px 4px;
+      border: none;
+      background: none;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .item-cluster:hover { background: rgba(255,255,255,0.04); }
+
+    .letra {
+      display: grid;
+      place-items: center;
+      width: 20px;
+      height: 20px;
+      border: 1.5px solid currentColor;
+      border-radius: 2px;
+      font: 600 11px var(--mono);
+      flex-shrink: 0;
+    }
+
+    .item-cluster b { display: block; font-weight: 500; font-size: 13px; line-height: 1.3; color: var(--texto); }
+    .item-cluster small { font-size: 11px; color: var(--texto-suave); }
+
+    .gradiente { height: 10px; border-radius: 1px; margin: 4px 0 6px; }
+
+    .extremos { display: flex; justify-content: space-between; font: 400 11px var(--mono); color: var(--texto-suave); }
+
+    .rango { margin-top: 12px; }
+
+    .rango-fila { display: grid; grid-template-columns: 46px 1fr 54px; gap: 8px; align-items: center; margin: 6px 0; }
+    .rango-fila span { font: 500 10px var(--mono); letter-spacing: 0.1em; color: var(--texto-suave); }
+    .rango-fila output { font: 500 11.5px var(--mono); text-align: right; }
+
+    input[type=range] { width: 100%; accent-color: var(--acento); }
+
+    .nota { margin: 10px 0 0; font-size: 11px; line-height: 1.45; color: var(--texto-suave); }
+
+    .alternar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--borde);
+      font-size: 12.5px;
+      cursor: pointer;
+    }
+
+    .alternar input { accent-color: var(--acento); }
+    .alternar i { color: #ff8a3d; }
+
+    /* ======================
+       FILTRO INFERIOR
+       ====================== */
+    .filtros {
+      position: absolute;
+      left: 18px;
+      bottom: 22px;
+      z-index: 15;
+      display: flex;
+      max-width: calc(100% - 36px);
+      overflow-x: auto;
+    }
+
+    .chip {
+      padding: 9px 13px;
+      border: 1px solid var(--borde);
+      border-right: none;
+      background: var(--panel);
+      font: 500 11px var(--mono);
+      letter-spacing: 0.1em;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .chip:last-child { border-right: 1px solid var(--borde); }
+    .chip:hover { color: var(--acento); }
+    .chip.activo { background: var(--acento); color: var(--acento-texto); border-color: var(--acento); }
+
+    /* Ficha rápida al pasar el mouse */
+    .maplibregl-popup-content {
+      padding: 6px 10px;
+      border-radius: 0;
+      background: var(--panel-solido);
+      border: 1px solid var(--borde-fuerte);
+      color: var(--texto);
+      font: 500 11.5px var(--mono);
+      letter-spacing: 0.04em;
+      box-shadow: none;
+    }
+
+    .maplibregl-popup-tip { display: none; }
+
+    /* Etiquetas de UV */
+    /* Ficha de UV */
+    .barra-perfiles-uv { display: flex; height: 10px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.06); }
+    .barra-perfiles-uv i { display: block; height: 100%; }
+    .fila-perfil-uv { display: flex; align-items: center; gap: 9px; padding: 4px 0; font-size: 12.5px; }
+    .fila-perfil-uv > i { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+    .fila-perfil-uv span { flex: 1; color: #cfd5dd; }
+    .fila-perfil-uv b { font: 500 12px var(--mono); }
+
+    .servicios-uv { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .servicios-uv > div { display: flex; gap: 10px; align-items: flex-start; padding: 9px 10px; border: 1px solid var(--borde); }
+    .servicios-uv > div > i { width: 16px; margin-top: 2px; text-align: center; color: var(--acento); }
+    .servicios-uv span { font-size: 11.5px; line-height: 1.35; color: var(--texto-suave); }
+    .servicios-uv b { display: block; font: 600 17px var(--sans); color: var(--texto); }
+    .servicios-uv small { display: block; font-size: 10.5px; }
+    .servicios-uv .cero { opacity: 0.45; border-style: dashed; }
+    .servicios-uv .cero > i { color: var(--texto-suave); }
+
+    .lineas-uv { display: flex; flex-wrap: wrap; gap: 6px; }
+    .lineas-uv span { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border: 1px solid var(--borde); font-size: 12px; }
+    .lineas-uv i { color: #ff8a3d; font-size: 11px; }
+    .lineas-uv small { font: 400 10.5px var(--mono); color: var(--texto-suave); }
+
+    .tarjeta-uv-botones { display: flex; gap: 6px; }
+    .tarjeta-uv-cabecera .tarjeta-uv-botones button { font: 500 10px var(--mono); letter-spacing: 0.1em; }
+
+    /* UV destacada */
+    .tarjeta-uv {
+      position: absolute;
+      top: 76px;
+      left: 50%;
+      z-index: 15;
+      width: min(340px, calc(100% - 24px));
+      padding: 12px 14px;
+      transform: translateX(-50%);
+    }
+
+    .tarjeta-uv[hidden] { display: none; }
+    .tarjeta-uv-cabecera { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .tarjeta-uv-cabecera .mono { display: block; font-size: 10px; color: var(--acento); }
+    .tarjeta-uv-cabecera b { display: block; margin-top: 2px; font-size: 18px; font-weight: 600; }
+    .tarjeta-uv-cabecera button { padding: 4px 8px; border: 1px solid var(--borde-fuerte); background: none; cursor: pointer; }
+    .tarjeta-uv-cabecera button:hover { border-color: var(--acento); color: var(--acento); }
+    .tarjeta-uv-cifras { display: flex; gap: 18px; margin: 10px 0 8px; font-size: 11px; color: var(--texto-suave); }
+    .tarjeta-uv-cifras b { display: block; font: 500 15px var(--mono); color: var(--texto); }
+    .tarjeta-uv-barra { display: flex; height: 8px; margin-bottom: 6px; background: rgba(255, 255, 255, 0.06); }
+    .tarjeta-uv-barra i { display: block; height: 100%; }
+    .tarjeta-uv small { font-size: 10.5px; color: var(--texto-suave); }
+
+    .boton-uv-ficha { margin: 4px 0 2px; border-right: 1px solid var(--borde) !important; }
+
+    /* Hover / activa: se aplican a la etiqueta del alfiler */
+    .etiqueta-uv:hover .pin-texto { color: var(--acento); border-color: var(--acento); }
+    .etiqueta-uv.activa .pin-texto { color: var(--acento-texto); background: var(--acento); border-color: var(--acento); }
+    .etiqueta-uv.activa .pin-tallo { border-color: var(--acento); }
+    .etiqueta-uv.activa .pin-punto { background: var(--acento); box-shadow: 0 0 0 4px rgba(198, 242, 78, 0.35); }
+
+    @media (max-width: 900px) { .tarjeta-uv { top: 104px; } }
+
+    /* Nombre de UV como "alfiler digital": etiqueta flotando sobre un tallo punteado */
+    .etiqueta-uv {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+
+    .pin-texto {
+      padding: 3px 7px 3px 6px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-left: 2px solid var(--acento);
+      background: rgba(11, 15, 20, 0.82);
+      font: 600 9.5px var(--mono);
+      letter-spacing: 0.12em;
+      color: #fff;
+      white-space: nowrap;
+      transition: color 0.2s, background 0.2s, border-color 0.2s;
+    }
+
+    .pin-tallo {
+      height: 30px;
+      border-left: 1.5px dashed rgba(198, 242, 78, 0.75);
+    }
+
+    .pin-punto {
+      width: 7px;
+      height: 7px;
+      margin-top: -1px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(198, 242, 78, 0.3), 0 0 6px rgba(0, 0, 0, 0.6);
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+
+    /* Alfileres de distinta altura para que no se encimen las etiquetas vecinas */
+    .etiqueta-uv.alto-2 .pin-tallo { height: 48px; }
+    .etiqueta-uv.alto-3 .pin-tallo { height: 66px; }
+
+    @media (max-width: 900px) {
+      .pin-texto { font-size: 8.5px; padding: 2px 5px; }
+      .pin-tallo { height: 20px; }
+      .etiqueta-uv.alto-2 .pin-tallo { height: 32px; }
+      .etiqueta-uv.alto-3 .pin-tallo { height: 44px; }
+    }
+
+    /* Créditos del mapa: legibles sobre el satélite */
+    .maplibregl-ctrl-attrib {
+      background: rgba(11, 15, 20, 0.92) !important;
+      border: 1px solid var(--borde);
+      color: #c3cad3;
+      font: 400 11px/1.4 var(--sans);
+    }
+
+    /* MapLibre pinta el texto casi negro: se fuerza un gris claro */
+    .maplibregl-ctrl.maplibregl-ctrl-attrib,
+    .maplibregl-ctrl.maplibregl-ctrl-attrib .maplibregl-ctrl-attrib-inner { color: #c3cad3 !important; }
+    .maplibregl-ctrl.maplibregl-ctrl-attrib a { color: #e6e9ee !important; text-decoration: none; }
+    .maplibregl-ctrl.maplibregl-ctrl-attrib a:hover { color: var(--acento) !important; text-decoration: underline; }
+    .maplibregl-ctrl-attrib-inner { padding: 3px 8px; }
+
+    /* Botón "i" que abre/cierra los créditos: visible sobre fondo oscuro */
+    .maplibregl-ctrl-attrib-button {
+      background-color: var(--acento) !important;
+      border-radius: 50% !important;
+      filter: none;
+    }
+
+    /* ======================
+       MODALES (ficha, perfiles, informe, fuentes)
+       ====================== */
+    .fondo-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .fondo-modal[hidden] { display: none; }
+
+    .modal {
+      width: min(980px, 100%);
+      max-height: calc(100dvh - 48px);
+      overflow-y: auto;
+      background: var(--panel-solido);
+      border: 1px solid var(--borde-fuerte);
+    }
+
+    .modal::-webkit-scrollbar { width: 6px; }
+    .modal::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+
+    .modal-cabecera {
+      position: relative;
+      padding: 22px 26px 18px;
+      border-bottom: 1px solid var(--borde);
+      background:
+        linear-gradient(rgba(198, 242, 78, 0.04) 1px, transparent 1px) 0 0 / 22px 22px,
+        linear-gradient(90deg, rgba(198, 242, 78, 0.04) 1px, transparent 1px) 0 0 / 22px 22px,
+        linear-gradient(135deg, #12202b, #10161d 60%);
+    }
+
+    .modal-cabecera .ruta { padding-left: 8px; border-left: 2px solid var(--acento); font: 500 11px var(--mono); letter-spacing: 0.12em; color: var(--acento); }
+    .modal-cabecera h2 { margin: 10px 0 4px; font: 600 32px/1.1 var(--sans); }
+    .modal-cabecera p { margin: 0; font: 400 12.5px var(--mono); color: var(--texto-suave); }
+
+    .cerrar {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      padding: 7px 12px;
+      border: 1px solid var(--borde-fuerte);
+      background: none;
+      font: 500 11px var(--mono);
+      letter-spacing: 0.12em;
+      cursor: pointer;
+    }
+
+    .cerrar:hover { border-color: var(--acento); color: var(--acento); }
+
+    .modal-cuerpo { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; padding: 22px 26px 28px; }
+    .modal-cuerpo.una-columna { grid-template-columns: 1fr; }
+
+    .kpis { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--borde); }
+    .kpis div { padding: 12px; border-right: 1px solid var(--borde); border-bottom: 1px solid var(--borde); }
+    .kpis div:nth-child(2n) { border-right: none; }
+    .kpis div:nth-last-child(-n+2) { border-bottom: none; }
+    .kpis span { display: block; font: 500 10px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--texto-suave); }
+    .kpis b { display: block; margin-top: 4px; font: 500 20px var(--sans); }
+
+    .subtitulo { margin: 20px 0 10px; font: 500 10.5px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--texto-suave); }
+    .subtitulo:first-child { margin-top: 0; }
+
+    table.datos { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.datos th { padding: 6px 0; font: 500 10px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--texto-suave); text-align: left; border-bottom: 1px solid var(--borde); }
+    table.datos td { padding: 7px 0; border-bottom: 1px solid var(--borde); }
+    table.datos td:not(:first-child), table.datos th:not(:first-child) { text-align: right; font-family: var(--mono); }
+    .sube { color: #ff8a8a; }
+    .baja { color: #7cc4ff; }
+
+    .donas { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .dona { text-align: center; }
+    .dona svg { width: 140px; height: 140px; }
+    .leyenda-dona { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 10px; margin-top: 6px; font-size: 11px; color: var(--texto-suave); }
+    .leyenda-dona i { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 50%; }
+
+    .barras svg { width: 100%; height: auto; }
+
+    /* Perfiles */
+    .tarjetas-perfil { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+    .tarjeta { padding: 14px; border: 1px solid var(--borde); }
+    .tarjeta h3 { display: flex; gap: 10px; align-items: center; margin: 0 0 6px; font-size: 15px; font-weight: 600; }
+    .tarjeta p { margin: 0 0 10px; font-size: 12px; line-height: 1.45; color: var(--texto-suave); }
+    .fila-barra { display: grid; grid-template-columns: 112px 1fr 48px; gap: 8px; align-items: center; margin: 5px 0; font-size: 11.5px; }
+    .fila-barra .pista { position: relative; height: 8px; background: rgba(255,255,255,0.06); }
+    .fila-barra .relleno { position: absolute; inset: 0 auto 0 0; }
+    .fila-barra .marca-prom { position: absolute; top: -3px; bottom: -3px; width: 2px; background: #fff; opacity: 0.7; }
+    .fila-barra b { font: 500 11.5px var(--mono); text-align: right; }
+
+    /* Informe */
+    .hallazgos { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+    .hallazgo { padding: 16px; border: 1px solid var(--borde); border-left: 2px solid var(--acento); }
+    .hallazgo b { display: block; font: 600 30px var(--sans); color: var(--acento); }
+    .hallazgo span { font-size: 13px; line-height: 1.45; }
+    .texto-informe { font-size: 14px; line-height: 1.65; color: #cfd5dd; }
+    .texto-informe a, .fuentes a { color: var(--acento); }
+    .fuentes li { margin-bottom: 10px; font-size: 13.5px; line-height: 1.55; color: #cfd5dd; }
+
+    .cargando {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 30;
+      padding: 10px 16px;
+      font: 500 11px var(--mono);
+      letter-spacing: 0.12em;
+    }
+
+    .cargando i { margin-right: 8px; color: var(--acento); }
+
+    .boton-leyenda { display: none; }
+
+    /* ======================
+       CELULAR
+       ====================== */
+    @media (max-width: 900px) {
+      .barra { flex-wrap: wrap; gap: 8px 14px; padding: 10px 12px; }
+      .nav { order: 3; width: 100%; overflow-x: auto; }
+      .nav button { padding: 6px 8px; }
+      .barra-derecha { margin-left: auto; }
+      .control { display: none; }
+      .boton-modo { padding: 8px 10px; font-size: 10px; }
+
+      .leyenda {
+        top: auto;
+        left: 10px;
+        right: 10px;
+        bottom: 70px;
+        width: auto;
+        max-height: 45dvh;
+        display: none;
+      }
+
+      body.leyenda-abierta .leyenda { display: block; }
+
+      /* En celular los selectores van dentro de la leyenda */
+      .controles-movil { display: grid; gap: 8px; margin-bottom: 12px; }
+      .controles-movil label { font: 500 10px var(--mono); letter-spacing: 0.12em; color: var(--texto-suave); }
+      .controles-movil select {
+        width: 100%; padding: 9px 10px; border: 1px solid var(--borde-fuerte); background: #0b0f14;
+        color: var(--texto); font: 500 14px var(--sans);
+      }
+
+      .boton-leyenda {
+        display: grid;
+        place-items: center;
+        position: absolute;
+        right: 10px;
+        bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+        z-index: 16;
+        width: 44px;
+        height: 44px;
+        background: var(--panel);
+        border: 1px solid var(--borde-fuerte);
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      body.leyenda-abierta .boton-leyenda { background: var(--acento); color: var(--acento-texto); }
+
+      .filtros { left: 10px; right: 64px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); max-width: none; }
+      .chip { padding: 12px 11px; }
+
+      .fondo-modal { padding: 0; }
+      .modal { max-height: 100dvh; height: 100dvh; border: none; }
+      .modal-cabecera { padding: 18px 16px 14px; }
+      .modal-cabecera h2 { font-size: 24px; padding-right: 80px; }
+      .modal-cuerpo { grid-template-columns: 1fr; padding: 16px; }
+      .donas { grid-template-columns: 1fr 1fr; }
+      .dona svg { width: 120px; height: 120px; }
+    }
+
+    @media (min-width: 901px) {
+      .controles-movil { display: none; }
+    }
+
+    /* =====================================================================
+       HISTORIA (análisis bajo el mapa)
+       ===================================================================== */
+    .bajar {
+      position: absolute;
+      left: 50%;
+      bottom: 22px;
+      z-index: 16;
+      width: 52px;
+      height: 36px;
+      border: none;
+      background: none;
+      color: var(--acento);
+      font-size: 24px;
+      cursor: pointer;
+      transform: translateX(-50%);
+      animation: rebote 2.2s ease-in-out infinite;
+    }
+
+    @keyframes rebote {
+      0%, 100% { transform: translate(-50%, 0); }
+      50% { transform: translate(-50%, 7px); }
+    }
+
+    .subir {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 30;
+      display: none;
+      width: 42px;
+      height: 42px;
+      border: 1px solid var(--borde-fuerte);
+      background: var(--panel);
+      color: var(--acento);
+      cursor: pointer;
+    }
+
+    body.en-historia .subir { display: grid; place-items: center; }
+
+    main.historia {
+      position: relative;
+      z-index: 25;
+      margin-top: 100vh;
+      margin-top: 100dvh;
+      padding: 90px 0 40px;
+      background: var(--fondo);
+    }
+
+    .bloque { max-width: 1400px; margin: 0 auto 120px; padding: 0 40px; }
+
+    .eyebrow { font: 500 11px var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--texto-suave); }
+
+    .bloque > h2 {
+      max-width: 780px;
+      margin: 12px 0 16px;
+      font: 600 clamp(30px, 4vw, 54px)/1.08 var(--sans);
+    }
+
+    .intro { max-width: 660px; margin: 0 0 30px; font-size: 15px; line-height: 1.6; color: #b5bdc8; }
+
+    .marco {
+      position: relative;
+      padding: 22px;
+      border: 1px solid var(--borde);
+      background: #0d1218;
+    }
+
+    .marco::before, .marco::after {
+      content: "";
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--acento);
+    }
+
+    .marco::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+    .marco::after { right: -1px; bottom: -1px; border-left: none; border-top: none; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-dispersion { display: grid; grid-template-columns: 1.7fr 1fr; gap: 26px; align-items: start; }
+
+    .titulo-marco {
+      margin: 0 0 16px;
+      font: 500 10.5px var(--mono);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--texto-suave);
+    }
+
+    .kpis-grandes { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 20px; border: 1px solid var(--borde); }
+    .kpis-grandes div { padding: 22px; border-right: 1px solid var(--borde); }
+    .kpis-grandes div:last-child { border-right: none; }
+    .kpis-grandes b { display: block; font: 600 clamp(32px, 4vw, 56px)/1 var(--sans); }
+    .kpis-grandes span { display: block; margin-top: 12px; font: 500 10.5px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--texto-suave); }
+
+    /* 01 · Dona y pictograma */
+    .dona-grande { display: block; width: 100%; max-width: 440px; margin: 0 auto; }
+    .dona-grande .tajada { cursor: pointer; transition: opacity 0.25s; }
+    .dona-grande .tajada.atenuado { opacity: 0.12; }
+
+    .cifras-perfil {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px 14px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--borde);
+    }
+
+    .cifras-perfil div { cursor: pointer; transition: opacity 0.25s; }
+    .cifras-perfil div.atenuado { opacity: 0.3; }
+    .cifras-perfil b { font: 600 24px var(--sans); }
+    .cifras-perfil span { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 12.5px; }
+    .cifras-perfil span i { width: 9px; height: 9px; border-radius: 2px; }
+    .cifras-perfil small { font-size: 11px; line-height: 1.35; color: var(--texto-suave); }
+
+    .picto-fila {
+      display: grid;
+      grid-template-columns: 150px 1fr 66px;
+      gap: 12px;
+      align-items: center;
+      padding: 5px 4px;
+      cursor: pointer;
+    }
+
+    .picto-fila:hover, .picto-fila:focus-visible { background: rgba(255, 255, 255, 0.04); outline: none; }
+    .picto-fila .nombre { overflow: hidden; font-size: 13px; white-space: nowrap; text-overflow: ellipsis; }
+    .puntos { display: flex; flex-wrap: wrap; gap: 4px; }
+    .puntos i { width: 10px; height: 10px; border-radius: 50%; transition: opacity 0.25s; }
+    .puntos i.atenuado { opacity: 0.12; }
+    .picto-fila .cuenta { font: 500 12px var(--mono); text-align: right; }
+
+    /* Chips de las secciones */
+    .grupo-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0; margin-bottom: 16px; }
+    .etq-chips { margin-right: 12px; font: 500 10.5px var(--mono); letter-spacing: 0.12em; color: var(--texto-suave); }
+    .grupo-chips .separa { width: 24px; }
+
+    /* Leyenda con clic para ocultar */
+    .lista-leyenda button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 4px;
+      padding: 9px 10px;
+      border: 1px solid var(--borde);
+      background: none;
+      font: 500 12px var(--mono);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .lista-leyenda button:hover { border-color: var(--borde-fuerte); }
+    .lista-leyenda button.oculto { opacity: 0.35; }
+    .lista-leyenda button i { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+    .lista-leyenda button .n { margin-left: auto; color: var(--texto-suave); }
+
+    .svg-grafico { display: block; width: 100%; height: auto; }
+    .svg-grafico circle { cursor: pointer; }
+
+    /* 03 · Barras por UV */
+    .barras-uv .fila { display: grid; grid-template-columns: 150px 1fr; gap: 10px; align-items: center; margin: 4px 0; font-size: 12px; cursor: pointer; }
+    .barras-uv .fila > span { overflow: hidden; color: #b5bdc8; text-align: right; white-space: nowrap; text-overflow: ellipsis; }
+    .barras-uv .fila:hover > span { color: var(--texto); }
+    .barra-apilada { display: flex; height: 13px; }
+    .barra-apilada i { display: block; height: 100%; }
+    .eje { display: flex; justify-content: space-between; margin: 6px 0 0 160px; font: 400 10px var(--mono); color: var(--texto-suave); }
+    .leyenda-linea { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; margin: 10px 0 22px; font-size: 11.5px; color: var(--texto-suave); }
+    .leyenda-linea i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; }
+
+    /* Tooltip de gráficos */
+    .tip {
+      position: fixed;
+      z-index: 35;
+      display: none;
+      max-width: 270px;
+      padding: 7px 10px;
+      background: var(--panel-solido);
+      border: 1px solid var(--borde-fuerte);
+      font: 500 11.5px/1.5 var(--mono);
+      pointer-events: none;
+    }
+
+    /* 04 · Cortes (panel claro, como un plano) */
+    .panel-corte { background: #f3efe6; color: #1f2328; border: 1px solid #d9d2c3; }
+
+    .barra-corte {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      border-bottom: 1px solid #ddd5c5;
+    }
+
+    .barra-corte .grupo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .etq-corte { font: 500 10.5px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: #6b6457; }
+    .seg { display: inline-flex; border: 1px solid #cfc6b4; }
+    .seg button { padding: 7px 12px; border: none; border-right: 1px solid #cfc6b4; background: none; font: 500 11px var(--mono); letter-spacing: 0.08em; color: #1f2328; cursor: pointer; }
+    .seg button:last-child { border-right: none; }
+    .seg button.activo { background: #1f2328; color: #f3efe6; }
+    .checks { display: flex; gap: 14px; font: 500 11.5px var(--mono); }
+    .checks label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+    .checks input { accent-color: #2563eb; }
+    #svg-corte { min-height: 200px; }
+    #svg-corte svg { display: block; width: 100%; height: auto; }
+    #svg-corte rect.barra-mz { cursor: pointer; }
+    .lectura { min-height: 36px; margin: 0; padding: 9px 18px; border-top: 1px solid #ddd5c5; font: 400 11.5px var(--mono); color: #6b6457; }
+    .pie-corte { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 18px; border-top: 1px solid #ddd5c5; }
+    .ley-corte div { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: 13px; }
+    .ley-corte i { display: inline-block; width: 28px; height: 14px; border: 1px solid rgba(0, 0, 0, 0.18); }
+    .ficha-corte .etq-corte { display: block; margin-bottom: 4px; }
+    .ficha-corte h3 { margin: 0 0 6px; font-size: 20px; }
+    .ficha-corte p { margin: 0 0 12px; font-size: 13.5px; line-height: 1.5; color: #4b463d; }
+    .ficha-corte table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .ficha-corte td { padding: 8px 0; border-top: 1px solid #ddd5c5; }
+    .ficha-corte td:first-child { width: 46%; font: 500 10.5px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: #6b6457; }
+
+    .etiqueta-corte {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      background: var(--acento);
+      color: var(--acento-texto);
+      font: 700 12px var(--mono);
+      cursor: pointer;
+    }
+
+    .pie-pagina { padding-top: 28px; border-top: 1px solid var(--borde); font-size: 12.5px; line-height: 1.6; color: var(--texto-suave); }
+    .pie-pagina a { color: var(--acento); }
+
+    /* Aparición al desplazarse */
+    .aparece { opacity: 0; transform: translateY(26px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .aparece.visible { opacity: 1; transform: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .aparece { opacity: 1; transform: none; transition: none; }
+      .bajar { animation: none; }
+    }
+
+    @media (max-width: 900px) {
+      .bajar { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); }
+      body.leyenda-abierta .bajar { display: none; }
+      main.historia { padding-top: 54px; }
+      .bloque { margin-bottom: 76px; padding: 0 16px; }
+      .grid-2, .grid-dispersion, .pie-corte { grid-template-columns: 1fr; }
+      .marco { padding: 14px; }
+      .kpis-grandes { grid-template-columns: 1fr 1fr; }
+      .kpis-grandes div:nth-child(2) { border-right: none; }
+      .kpis-grandes div:nth-child(-n+2) { border-bottom: 1px solid var(--borde); }
+      .kpis-grandes div { padding: 16px; }
+      .cifras-perfil { grid-template-columns: 1fr 1fr; }
+      .picto-fila { grid-template-columns: 96px 1fr 50px; gap: 8px; }
+      .picto-fila .nombre { font-size: 12px; }
+      .puntos { gap: 3px; }
+      .puntos i { width: 7px; height: 7px; }
+      .barras-uv .fila { grid-template-columns: 96px 1fr; }
+      .eje { margin-left: 106px; }
+      .barra-corte { padding: 10px 12px; }
+      .seg button { padding: 8px 9px; }
+      .lectura { padding: 9px 12px; }
+      .pie-corte { padding: 14px 12px; }
+      .subir { right: 12px; bottom: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="mapa"></div>
+  <div id="cargando" class="cargando caja"><i class="fa-solid fa-circle-notch fa-spin"></i>CARGANDO MANZANAS…</div>
+
+  <!-- Barra superior -->
+  <header class="barra">
+    <div class="marca">
+      <b>ATLAS COPIAPÓ</b>
+      <span>MANZANAS · CENSO 2024</span>
+    </div>
+    <nav class="nav" aria-label="Secciones">
+      <button onclick="irAHistoria()">ANÁLISIS</button>
+      <button onclick="abrirModal('perfiles')">PERFILES</button>
+      <button onclick="abrirModal('informe')">INFORME</button>
+      <button onclick="abrirModal('fuentes')">FUENTES</button>
+      <div class="ver-mas">
+        <button id="btn-ver-mas" aria-haspopup="true" aria-expanded="false" aria-controls="menu-ver-mas"
+                onclick="event.stopPropagation(); alternarVerMas()">VER <i class="fa-solid fa-plus"></i></button>
+        <div id="menu-ver-mas" class="submenu caja" role="menu" hidden>
+          <a role="menuitem" href="Rutas_Buses.html"><i class="fa-solid fa-route"></i> Recorridos de buses</a>
+          <a role="menuitem" href="./"><i class="fa-solid fa-briefcase"></i> Portafolio</a>
+        </div>
+      </div>
+    </nav>
+    <div class="barra-derecha">
+      <div class="control caja">
+        <label for="sel-color">COLOREAR POR</label>
+        <select id="sel-color"></select>
+      </div>
+      <button class="boton-sync caja" data-sync onclick="alternarSync()" aria-pressed="false"
+              data-tip="Sincronizar color y altura · apagado" aria-label="Sincronizar color y altura">
+        <i class="fa-solid fa-link-slash"></i>
+      </button>
+      <div class="control caja">
+        <label for="sel-altura">ALTURA POR</label>
+        <select id="sel-altura"></select>
+      </div>
+      <div class="grupo-modos">
+        <div class="modos">
+          <button id="modo-2d" class="boton-modo" onclick="cambiarModo(false)">SATÉLITE 2D</button>
+          <button id="modo-3d" class="boton-modo activo" onclick="cambiarModo(true)">RELIEVE 3D</button>
+        </div>
+        <!-- Mostrar / ocultar elementos sobre el mapa -->
+        <div class="capas-mapa" role="group" aria-label="Elementos visibles en el mapa">
+          <button class="capa-mapa activo" data-capa="rutas" aria-pressed="true" aria-label="Mostrar u ocultar: Recorridos de buses" data-tip="Recorridos de buses"><i class="fa-solid fa-route"></i></button>
+          <button class="capa-mapa activo" data-capa="cortes" aria-pressed="true" aria-label="Mostrar u ocultar: Líneas de corte" data-tip="Líneas de corte"><i class="fa-solid fa-scissors"></i></button>
+          <button class="capa-mapa activo" data-capa="uv" aria-pressed="true" aria-label="Mostrar u ocultar: Nombres de UV" data-tip="Nombres de UV"><i class="fa-solid fa-location-dot"></i></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Leyenda -->
+  <aside id="leyenda" class="leyenda caja" aria-label="Leyenda">
+    <div class="controles-movil">
+      <label for="sel-color-m">COLOREAR POR</label>
+      <select id="sel-color-m"></select>
+      <button class="boton-sync boton-sync-movil" data-sync onclick="alternarSync()" aria-pressed="false">
+        <i class="fa-solid fa-link-slash"></i> <span>SINCRONIZAR COLOR Y ALTURA</span>
+      </button>
+      <label for="sel-altura-m">ALTURA POR</label>
+      <select id="sel-altura-m"></select>
+    </div>
+    <div id="contenido-leyenda"></div>
+    <label class="alternar">
+      <input type="checkbox" id="chk-rutas" checked onchange="alternarRutas(this.checked)">
+      <i class="fa-solid fa-route"></i> Recorridos de buses
+    </label>
+  </aside>
+
+  <button class="boton-leyenda" onclick="document.body.classList.toggle('leyenda-abierta')" aria-label="Mostrar leyenda y opciones">
+    <i class="fa-solid fa-sliders"></i>
+  </button>
+
+  <!-- Tarjeta de la UV destacada -->
+  <div id="tarjeta-uv" class="tarjeta-uv caja" role="status" hidden></div>
+
+  <!-- Filtro por perfil -->
+  <div id="filtros" class="filtros" role="toolbar" aria-label="Filtrar por perfil"></div>
+
+  <!-- Modal -->
+  <div id="fondo-modal" class="fondo-modal" hidden onclick="if (event.target === this) cerrarModal()">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal" id="modal"></div>
+  </div>
+
+  <!-- Flecha para bajar al análisis y botón para volver al mapa -->
+  <button id="bajar" class="bajar" onclick="irAHistoria()" aria-label="Ver el análisis bajo el mapa" title="Ver análisis">
+    <i class="fa-solid fa-chevron-down"></i>
+  </button>
+  <button class="subir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" aria-label="Volver al mapa" title="Volver al mapa">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+  <div id="tip" class="tip" role="tooltip"></div>
+
+  <!-- ===================== ANÁLISIS ===================== -->
+  <main id="historia" class="historia">
+
+    <section class="bloque aparece" id="sec-datos">
+      <div class="eyebrow">01 — Los datos</div>
+      <h2>Las manzanas de Copiapó</h2>
+      <p class="intro">
+        Censo 2024 a nivel de manzana. Cada manzana se clasificó en un perfil según cómo se traslada su
+        población, su edad, migración, hacinamiento, escolaridad y densidad. Pase el cursor por la dona para
+        aislar un perfil; toque una unidad vecinal para verla en el mapa.
+      </p>
+      <div class="grid-2">
+        <div class="marco">
+          <h3 class="titulo-marco">Población por perfil de manzana</h3>
+          <div id="dona-perfiles"></div>
+          <div id="cifras-perfiles" class="cifras-perfil"></div>
+        </div>
+        <div class="marco">
+          <h3 class="titulo-marco">Población por unidad vecinal · color = perfil · cada punto = 500 personas</h3>
+          <div id="pictograma"></div>
+        </div>
+      </div>
+      <div id="kpis-grandes" class="kpis-grandes"></div>
+    </section>
+
+    <section class="bloque aparece" id="sec-dispersion">
+      <div class="eyebrow">02 — Bus o auto</div>
+      <h2>Cómo se mueve cada manzana</h2>
+      <p class="intro">
+        Cada punto es una manzana, según el porcentaje de quienes se trasladan a trabajar o estudiar en auto
+        (horizontal) y en transporte público (vertical). Su tamaño indica la población. Las líneas punteadas
+        marcan el promedio de Copiapó. Toque un punto para abrir la ficha de la manzana.
+      </p>
+      <div class="grupo-chips" id="chips-dispersion"></div>
+      <div class="marco grid-dispersion">
+        <div id="dispersion"></div>
+        <div>
+          <h3 class="titulo-marco">Leyenda · clic para ocultar</h3>
+          <div id="leyenda-dispersion" class="lista-leyenda"></div>
+          <p class="nota">Pase el cursor sobre un punto para ver sus datos. Manzanas con menos personas que el mínimo elegido no se muestran (sus porcentajes no son confiables).</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="bloque aparece" id="sec-uv">
+      <div class="eyebrow">03 — Composición por unidad vecinal</div>
+      <h2>Cómo cambia de un barrio a otro</h2>
+      <p class="intro">
+        A la izquierda, cómo se traslada y qué edad tiene la población de cada unidad vecinal, ordenadas de
+        mayor a menor uso del transporte público. A la derecha, la cobertura de los recorridos frente al uso
+        del bus: las UV del recuadro dependen del bus más que el promedio y están peor cubiertas.
+      </p>
+      <div class="grid-2">
+        <div class="marco">
+          <h3 class="titulo-marco">Cómo se trasladan, %</h3>
+          <div id="barras-transporte" class="barras-uv"></div>
+          <h3 class="titulo-marco">Edades, %</h3>
+          <div id="barras-edades" class="barras-uv"></div>
+        </div>
+        <div class="marco">
+          <h3 class="titulo-marco">Cobertura de recorridos frente a uso del bus · tamaño = población</h3>
+          <div id="burbujas"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bloque aparece" id="sec-cortes">
+      <div class="eyebrow">04 — Cortes</div>
+      <h2>Copiapó en corte</h2>
+      <p class="intro">
+        Perfiles de elevación reales del valle con las manzanas que atraviesan (a menos de 150 m de la línea),
+        levantadas según la variable elegida y coloreadas por perfil. Se marcan los recorridos de buses que
+        cruza cada corte y las unidades vecinales. Pase el cursor para leer distancia, cota y barrio; las
+        líneas de corte también están en el mapa.
+      </p>
+      <div class="grupo-chips" id="tabs-corte"></div>
+      <div class="panel-corte">
+        <div class="barra-corte">
+          <div class="grupo">
+            <span class="etq-corte">Exageración vertical</span>
+            <div class="seg" id="seg-exag"></div>
+          </div>
+          <div class="grupo">
+            <span class="etq-corte">Barras</span>
+            <div class="seg" id="seg-var-corte"></div>
+          </div>
+          <div class="checks">
+            <label><input type="checkbox" id="chk-corte-rutas" checked> Recorridos</label>
+            <label><input type="checkbox" id="chk-corte-uv" checked> Unidades vecinales</label>
+          </div>
+        </div>
+        <div id="svg-corte"></div>
+        <p class="lectura" id="lectura-corte">Mueva el cursor sobre el perfil para leer distancia, cota y unidad vecinal.</p>
+        <div class="pie-corte">
+          <div class="ley-corte" id="ley-corte"></div>
+          <div class="ficha-corte" id="ficha-corte"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="bloque pie-pagina">
+      Atlas Copiapó · Censo de Población y Vivienda 2024 (INE), datos por manzana · Relieve: Terrain Tiles
+      (Mapzen / AWS) · Imagen: Esri World Imagery · Recorridos: elaboración propia.
+      Desarrollo: Rubén Hidalgo · <a href="./">Portafolio</a> · <a href="Rutas_Buses.html">Mapa de recorridos</a>
+    </footer>
+  </main>
+
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script>
+    // =====================================================================
+    // CONFIGURACIÓN
+    // =====================================================================
+
+    // Perfiles (clusters k-means, ver scripts/clusters_manzanas.mjs). Orden: más auto → más bus
+    const PERFILES = [
+      { letra: 'A', nombre: 'Baja densidad, mayores con auto', color: '#5b8ff9',
+        desc: 'Manzanas amplias y poco densas, con más adultos mayores y alta escolaridad. Se trasladan principalmente en auto.' },
+      { letra: 'B', nombre: 'Familias con auto', color: '#3ad1c4',
+        desc: 'Hogares con niños, pocos adultos mayores y la mayor escolaridad de la ciudad. El auto es el medio principal.' },
+      { letra: 'C', nombre: 'Barrios envejecidos', color: '#f6c544',
+        desc: 'Casi 3 de cada 10 personas tienen 60 años o más; menor escolaridad y más desocupación.' },
+      { letra: 'D', nombre: 'Dependientes del bus', color: '#ff9d4d',
+        desc: 'Barrios densos donde casi la mitad de quienes se trasladan usa transporte público.' },
+      { letra: 'E', nombre: 'Alta migración y hacinamiento', color: '#ff5d73',
+        desc: 'Mayoría migrante, hacinamiento alto y muchos niños. Dependen del bus y viven lejos de los recorridos.' }
+    ];
+    const COLOR_SIN_PERFIL = '#5b6270';
+
+    // Variables: color (escala continua) y altura
+    const VARIABLES = [
+      { clave: 'per',     nombre: 'Población',              unidad: 'personas', pct: false, dec: 0 },
+      { clave: 'dens',    nombre: 'Densidad',               unidad: 'hab/ha',   pct: false, dec: 0 },
+      { clave: 'tp',      nombre: 'Uso del transporte público', unidad: '%',    pct: true,  dec: 1 },
+      { clave: 'auto',    nombre: 'Uso del auto',           unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'ninos',   nombre: 'Niños (0–13)',           unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'mayores', nombre: 'Adultos mayores (60+)',  unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'inm',     nombre: 'Inmigrantes',            unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'hacin',   nombre: 'Hacinamiento',           unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'desoc',   nombre: 'Desocupación',           unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'esc',     nombre: 'Escolaridad (18+)',      unidad: 'años',     pct: false, dec: 1 },
+      { clave: 'dist',    nombre: 'Distancia al bus',       unidad: 'm',        pct: false, dec: 0 }
+    ];
+    // De claro (valor bajo) a oscuro (valor alto)
+    const ESCALA_COLOR = ['#f9f871', '#fbb13c', '#f06b4e', '#c2417a', '#7b3294', '#3b2c84', '#1b1f4b'];
+
+    const ALTURA_MAX_M = 160;
+    // Mirando hacia el NE: el valle queda horizontal (Cancha Rayada a la izquierda, Paipote a la derecha)
+    const VISTA_3D = { center: [-70.316, -27.381], zoom: 13.0, pitch: 62, bearing: 40 };
+    const VISTA_2D = { pitch: 0, bearing: 0 };
+
+    let estado = {
+      color: 'perfil',
+      altura: 'dens',
+      perfil: 'todos',      // 'todos' | 0..4 | -1
+      rango: [0, 100],      // % del rango de la variable de color
+      en3D: true,
+      sync: false          // color y altura con la misma variable
+    };
+    let datos = null, estad = {}, promedios = {}, resumenUV = null;
+
+    const esMovil = () => window.matchMedia('(max-width: 900px)').matches;
+    const ES_TACTIL = window.matchMedia('(hover: none)').matches;
+    const fmt = (v, d = 0) => v == null || !isFinite(v) ? '–' : Number(v).toLocaleString('es-CL', { maximumFractionDigits: d, minimumFractionDigits: d });
+    const fmtVar = (clave, v) => {
+      const x = VARIABLES.find(z => z.clave === clave);
+      return v == null ? '–' : `${fmt(v, x.dec)}${x.unidad === '%' ? ' %' : ' ' + x.unidad}`;
+    };
+    const esc = t => String(t).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // =====================================================================
+    // MAPA: satélite + relieve
+    // =====================================================================
+    const map = new maplibregl.Map({
+      container: 'mapa',
+      style: {
+        version: 8,
+        sources: {
+          satelite: {
+            type: 'raster',
+            tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+            tileSize: 256,
+            maxzoom: 19,
+            attribution: 'Imagen: Esri, Maxar, Earthstar Geographics'
+          },
+          relieve: {
+            type: 'raster-dem',
+            tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+            encoding: 'terrarium',
+            tileSize: 256,
+            maxzoom: 14,
+            attribution: 'Relieve: Mapzen / AWS Terrain Tiles'
+          }
+        },
+        layers: [
+          { id: 'fondo', type: 'background', paint: { 'background-color': '#0b0f14' } },
+          { id: 'satelite', type: 'raster', source: 'satelite',
+            paint: { 'raster-saturation': -0.25, 'raster-brightness-max': 0.82, 'raster-contrast': 0.05 } },
+          { id: 'sombra', type: 'hillshade', source: 'relieve',
+            paint: { 'hillshade-exaggeration': 0.35, 'hillshade-shadow-color': '#0b0f14', 'hillshade-highlight-color': '#fff7e6' } }
+        ]
+      },
+      ...VISTA_3D,
+      maxPitch: 78,
+      attributionControl: { compact: true, customAttribution: 'Censo 2024 (INE) · © OpenStreetMap' }
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+
+    map.on('load', async () => {
+      map.setTerrain({ source: 'relieve', exaggeration: 1.6 });
+      if (map.setSky) map.setSky({ 'sky-color': '#0b0f14', 'horizon-color': '#1a2430', 'fog-color': '#0b0f14', 'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.6, 'fog-ground-blend': 0.3 });
+
+      const [manzanas, rutas, uvs, ficticias, cobertura] = await Promise.all([
+        fetch('inputs/manzanas_3d.geojson').then(r => r.json()),
+        fetch('inputs/RutaBusesV2.geojson').then(r => r.json()).catch(() => null),
+        fetch('inputs/UV_COPIAPO.geojson').then(r => r.json()).catch(() => null),
+        fetch('inputs/UV_FICTICIAS.geojson').then(r => r.json()).catch(() => null),
+        fetch('inputs/cobertura_uv.json').then(r => r.json()).catch(() => null)
+      ]);
+      datos = manzanas;
+      resumenUV = cobertura;
+      calcularEstadisticas();
+
+      map.addSource('manzanas', { type: 'geojson', data: datos, promoteId: 'id' });
+      map.addLayer({
+        id: 'manzanas',
+        type: 'fill-extrusion',
+        source: 'manzanas',
+        paint: {
+          'fill-extrusion-color': exprColorFinal(),
+          'fill-extrusion-height': exprAltura(),
+          'fill-extrusion-height-transition': { duration: 700 },
+          'fill-extrusion-color-transition': { duration: 400 },
+          'fill-extrusion-opacity': 0.92,
+          'fill-extrusion-vertical-gradient': true
+        }
+      });
+
+      if (rutas) {
+        map.addSource('rutas', { type: 'geojson', data: rutas });
+        map.addLayer({ id: 'rutas-borde', type: 'line', source: 'rutas',
+          paint: { 'line-color': '#3a1d0c', 'line-width': 4, 'line-opacity': 0.8 } });
+        map.addLayer({ id: 'rutas', type: 'line', source: 'rutas',
+          paint: { 'line-color': '#ff8a3d', 'line-width': 1.8 } });
+      }
+
+      if (uvs) {
+        uvsGeo = uvs;
+        ficticiasGeo = ficticias;
+        agregarEtiquetasUV(uvs, ficticias);
+        // Bordes de UV (solo se ve la destacada). Incluye UV ficticias y sus extensiones.
+        const bordes = uvs.features.filter(f => f.properties.urbano === 1)
+          .concat(ficticias ? ficticias.features : []);
+        map.addSource('uv-bordes', { type: 'geojson', data: { type: 'FeatureCollection', features: bordes } });
+        const sinUV = ['==', ['get', 'NOMBRE_UV'], '__ninguna__'];
+        map.addLayer({ id: 'uv-halo', type: 'line', source: 'uv-bordes', filter: sinUV,
+          paint: { 'line-color': '#c6f24e', 'line-width': 9, 'line-opacity': 0.25, 'line-blur': 3 } });
+        map.addLayer({ id: 'uv-borde', type: 'line', source: 'uv-bordes', filter: sinUV,
+          paint: { 'line-color': '#c6f24e', 'line-width': 2.6 } });
+      }
+      map.setLight({ anchor: 'map', color: '#fff4e0', intensity: 0.45, position: [1.3, 220, 40] });
+
+      document.getElementById('cargando').remove();
+      construirControles();
+      actualizarLeyenda();
+      construirFiltros();
+      construirHistoria(rutas);
+      activarInteraccion();
+    });
+
+    // ---------------------------------------------------------------------
+    function calcularEstadisticas() {
+      const conPerfil = datos.features.filter(f => f.properties.cluster >= 0);
+      VARIABLES.forEach(v => {
+        const xs = conPerfil.map(f => f.properties[v.clave]).filter(x => x != null && isFinite(x)).sort((a, b) => a - b);
+        const q = p => xs[Math.min(xs.length - 1, Math.floor(p * xs.length))];
+        estad[v.clave] = { min: q(0.02), max: q(0.98) };
+      });
+      const perfiles = datos.metadata.perfiles;
+      const pob = perfiles.reduce((s, p) => s + p.poblacion, 0);
+      Object.keys(perfiles[0]).filter(k => !['cluster', 'manzanas', 'poblacion'].includes(k)).forEach(k => {
+        promedios[k] = perfiles.reduce((s, p) => s + (p[k] || 0) * p.poblacion, 0) / pob;
+      });
+    }
+
+    // Color: por perfil o por variable continua
+    // Con una UV destacada, las manzanas de las demás UV se apagan
+    function exprColorFinal() {
+      const base = exprColor();
+      return uvDestacada.nombre ? ['case', ['==', ['get', 'uv'], uvDestacada.nombre], base, '#3c424b'] : base;
+    }
+
+    function exprColor() {
+      if (estado.color === 'perfil') {
+        return ['match', ['get', 'cluster'], ...PERFILES.flatMap((p, i) => [i, p.color]), COLOR_SIN_PERFIL];
+      }
+      const v = VARIABLES.find(x => x.clave === estado.color);
+      const { min, max } = estad[v.clave];
+      const pasos = ESCALA_COLOR.flatMap((c, i) => [min + (max - min) * i / (ESCALA_COLOR.length - 1), c]);
+      const valor = ['get', v.clave];
+      const sinDato = v.pct ? ['any', ['==', valor, null], ['==', ['get', 'cluster'], -1]] : ['==', valor, null];
+      return ['case', sinDato, COLOR_SIN_PERFIL, ['interpolate', ['linear'], valor, ...pasos]];
+    }
+
+    function exprAltura() {
+      if (estado.altura === 'plano') return 4;
+      const v = VARIABLES.find(x => x.clave === estado.altura);
+      const factor = ALTURA_MAX_M / (estad[v.clave].max || 1);
+      const valor = ['coalesce', ['get', v.clave], 0];
+      return ['case',
+        ['all', ['==', ['get', 'cluster'], -1], v.pct], 4,
+        ['max', 4, ['*', ['min', valor, estad[v.clave].max * 1.3], factor]]];
+    }
+
+    function exprFiltro() {
+      const cond = ['all'];
+      if (estado.perfil !== 'todos') cond.push(['==', ['get', 'cluster'], estado.perfil]);
+      if (estado.color !== 'perfil' && (estado.rango[0] > 0 || estado.rango[1] < 100)) {
+        const { min, max } = estad[estado.color];
+        const desde = min + (max - min) * estado.rango[0] / 100;
+        const hasta = min + (max - min) * estado.rango[1] / 100;
+        const valor = ['coalesce', ['get', estado.color], -1e9];
+        if (estado.rango[0] > 0) cond.push(['>=', valor, desde]);
+        if (estado.rango[1] < 100) cond.push(['<=', valor, hasta]);
+      }
+      return cond.length > 1 ? cond : null;
+    }
+
+    function actualizarMapa() {
+      map.setPaintProperty('manzanas', 'fill-extrusion-color', exprColorFinal());
+      map.setPaintProperty('manzanas', 'fill-extrusion-height', exprAltura());
+      map.setFilter('manzanas', exprFiltro());
+    }
+
+    // Etiquetas de UV (HTML, sin necesidad de fuentes de mapa)
+    function agregarEtiquetasUV(uvs, ficticias) {
+      const feats = uvs.features.filter(f => f.properties.urbano === 1)
+        .concat((ficticias ? ficticias.features : []).filter(f => f.properties.ficticia));
+      let indiceUV = 0;
+      feats.sort((a, b) => (centroGrande(a.geometry) || [0])[0] - (centroGrande(b.geometry) || [0])[0]);
+      feats.forEach(f => {
+        const c = centroGrande(f.geometry);
+        if (!c) return;
+        centrosUV[f.properties.NOMBRE_UV] = c;
+        const el = document.createElement('div');
+        el.className = 'etiqueta-uv alto-' + (1 + (indiceUV++ % 3));
+        const texto = document.createElement('span');
+        texto.className = 'pin-texto';
+        texto.textContent = f.properties.NOMBRE_UV.replace(' (SECTOR URBANO)', ' ALTO');
+        el.append(texto, Object.assign(document.createElement('span'), { className: 'pin-tallo' }),
+                  Object.assign(document.createElement('span'), { className: 'pin-punto' }));
+        el.title = 'Destacar ' + f.properties.NOMBRE_UV;
+        el.addEventListener('click', ev => {
+          ev.stopPropagation();
+          const n = f.properties.NOMBRE_UV;
+          destacarUV(n, true);
+          abrirFichaUV(n);
+        });
+        etiquetasUV[f.properties.NOMBRE_UV] = el;
+        // anchor 'bottom': el punto queda sobre el terreno y la etiqueta flota encima
+        new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(c).addTo(map);
+      });
+    }
+
+    function centroGrande(g) {
+      const polis = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
+      let mejor = null, mejorA = -1;
+      polis.forEach(p => {
+        const r = p[0];
+        let a = 0, cx = 0, cy = 0;
+        for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+          const f = r[j][0] * r[i][1] - r[i][0] * r[j][1];
+          a += f; cx += (r[j][0] + r[i][0]) * f; cy += (r[j][1] + r[i][1]) * f;
+        }
+        if (Math.abs(a) > mejorA) { mejorA = Math.abs(a); mejor = [cx / (3 * a), cy / (3 * a)]; }
+      });
+      return mejor;
+    }
+
+    // =====================================================================
+    // CONTROLES
+    // =====================================================================
+    function opcionesColor() {
+      return `<optgroup label="Clasificación"><option value="perfil">Perfil de la manzana (A–E)</option></optgroup>
+        <optgroup label="Indicadores Censo 2024">${VARIABLES.map(v => `<option value="${v.clave}">${v.nombre}</option>`).join('')}</optgroup>`;
+    }
+
+    function opcionesAltura() {
+      return `<option value="plano">Sin altura (plano)</option>${VARIABLES.map(v => `<option value="${v.clave}">${v.nombre}</option>`).join('')}`;
+    }
+
+    function construirControles() {
+      [['sel-color', 'sel-color-m', opcionesColor(), 'color'], ['sel-altura', 'sel-altura-m', opcionesAltura(), 'altura']]
+        .forEach(([a, b, html, clave]) => {
+          [a, b].forEach(id => {
+            const s = document.getElementById(id);
+            s.innerHTML = html;
+            s.value = estado[clave];
+            s.addEventListener('change', () => {
+              estado[clave] = s.value;
+              document.getElementById(id === a ? b : a).value = s.value;
+              if (clave === 'color') estado.rango = [0, 100];
+              if (estado.sync) sincronizar(clave);
+              actualizarMapa();
+              actualizarLeyenda();
+            });
+          });
+        });
+    }
+
+    // ----- Sincronizar color y altura (misma variable en ambos) -----
+    // "Perfil" solo existe en color y "Sin altura" solo en altura: en esos casos el otro se mantiene.
+    const VARIABLE_COMUN = v => VARIABLES.some(x => x.clave === v);
+
+    function sincronizar(origen) {
+      const valor = estado[origen];
+      if (!VARIABLE_COMUN(valor)) return;
+      const destino = origen === 'color' ? 'altura' : 'color';
+      if (estado[destino] === valor) return;
+      estado[destino] = valor;
+      if (destino === 'color') estado.rango = [0, 100];
+      const ids = destino === 'color' ? ['sel-color', 'sel-color-m'] : ['sel-altura', 'sel-altura-m'];
+      ids.forEach(id => { document.getElementById(id).value = valor; });
+    }
+
+    function alternarSync() {
+      estado.sync = !estado.sync;
+      document.querySelectorAll('[data-sync]').forEach(b => {
+        b.classList.toggle('activo', estado.sync);
+        b.setAttribute('aria-pressed', estado.sync);
+        b.querySelector('i').className = 'fa-solid ' + (estado.sync ? 'fa-link' : 'fa-link-slash');
+        if (b.dataset.tip) b.dataset.tip = 'Sincronizar color y altura · ' + (estado.sync ? 'activado' : 'apagado');
+      });
+      if (estado.sync) {
+        // Al activar: usa la variable de color si es un indicador; si no, la de altura
+        sincronizar(VARIABLE_COMUN(estado.color) ? 'color' : 'altura');
+        actualizarMapa();
+        actualizarLeyenda();
+      }
+    }
+
+    function actualizarLeyenda() {
+      const cont = document.getElementById('contenido-leyenda');
+      if (estado.color === 'perfil') {
+        const total = datos.metadata.perfiles.reduce((s, p) => s + p.poblacion, 0);
+        cont.innerHTML = `
+          <h2 class="titulo-caja">Perfil de la manzana</h2>
+          ${PERFILES.map((p, i) => {
+            const m = datos.metadata.perfiles[i];
+            return `<button class="item-cluster" onclick="elegirPerfil(${i})">
+              <span class="letra" style="color:${p.color}">${p.letra}</span>
+              <span><b>${p.nombre}</b><small>${fmt(m.manzanas)} manzanas · ${fmt(100 * m.poblacion / total)} % de la población</small></span>
+            </button>`;
+          }).join('')}
+          <button class="item-cluster" onclick="elegirPerfil(-1)">
+            <span class="letra" style="color:${COLOR_SIN_PERFIL}">·</span>
+            <span><b>Pocas personas</b><small>Menos de 20 habitantes, sin perfil</small></span>
+          </button>
+          <p class="nota">Toque un perfil para filtrarlo. Ver detalle en <a href="#" onclick="abrirModal('perfiles');return false" style="color:var(--acento)">PERFILES</a>.</p>`;
+        return;
+      }
+      const v = VARIABLES.find(x => x.clave === estado.color);
+      const { min, max } = estad[v.clave];
+      const valorRango = p => min + (max - min) * p / 100;
+      cont.innerHTML = `
+        <h2 class="titulo-caja">${esc(v.nombre)}</h2>
+        <div class="gradiente" style="background:linear-gradient(90deg,${ESCALA_COLOR.join(',')})"></div>
+        <div class="extremos"><span>${fmtVar(v.clave, min)}</span><span>${fmtVar(v.clave, max)}</span></div>
+        <div class="rango">
+          <div class="rango-fila"><span>DESDE</span>
+            <input type="range" id="rango-desde" min="0" max="100" value="${estado.rango[0]}" aria-label="Valor mínimo">
+            <output id="out-desde">${fmtVar(v.clave, valorRango(estado.rango[0]))}</output></div>
+          <div class="rango-fila"><span>HASTA</span>
+            <input type="range" id="rango-hasta" min="0" max="100" value="${estado.rango[1]}" aria-label="Valor máximo">
+            <output id="out-hasta">${fmtVar(v.clave, valorRango(estado.rango[1]))}</output></div>
+        </div>
+        <p class="nota">Escala entre el 2 % y el 98 % de las manzanas. En gris: sin dato o con menos de 20 personas (porcentajes poco confiables).</p>`;
+
+      const d = document.getElementById('rango-desde'), h = document.getElementById('rango-hasta');
+      const mover = () => {
+        let a = +d.value, b = +h.value;
+        if (a > b) [a, b] = [b, a];
+        estado.rango = [a, b];
+        document.getElementById('out-desde').textContent = fmtVar(v.clave, valorRango(a));
+        document.getElementById('out-hasta').textContent = fmtVar(v.clave, valorRango(b));
+        map.setFilter('manzanas', exprFiltro());
+      };
+      d.addEventListener('input', mover);
+      h.addEventListener('input', mover);
+    }
+
+    function construirFiltros() {
+      const cont = document.getElementById('filtros');
+      const chips = [['todos', 'TODAS'], ...PERFILES.map((p, i) => [i, 'PERFIL ' + p.letra]), [-1, 'SIN PERFIL']];
+      cont.innerHTML = chips.map(([v, t]) =>
+        `<button class="chip ${v === estado.perfil ? 'activo' : ''}" data-v="${v}" aria-pressed="${v === estado.perfil}">${t}</button>`).join('');
+      cont.addEventListener('click', e => {
+        const b = e.target.closest('.chip');
+        if (!b) return;
+        const v = b.dataset.v === 'todos' ? 'todos' : +b.dataset.v;
+        elegirPerfil(v === estado.perfil ? 'todos' : v);
+      });
+    }
+
+    function elegirPerfil(v) {
+      estado.perfil = v;
+      document.querySelectorAll('.chip').forEach(c => {
+        const activo = (c.dataset.v === 'todos' ? 'todos' : +c.dataset.v) === v;
+        c.classList.toggle('activo', activo);
+        c.setAttribute('aria-pressed', activo);
+      });
+      map.setFilter('manzanas', exprFiltro());
+    }
+
+    function cambiarModo(tresD) {
+      estado.en3D = tresD;
+      document.getElementById('modo-3d').classList.toggle('activo', tresD);
+      document.getElementById('modo-2d').classList.toggle('activo', !tresD);
+      map.setTerrain(tresD ? { source: 'relieve', exaggeration: 1.6 } : null);
+      map.easeTo({ ...(tresD ? { pitch: VISTA_3D.pitch, bearing: VISTA_3D.bearing } : VISTA_2D), duration: 900 });
+      map.setPaintProperty('manzanas', 'fill-extrusion-height', tresD ? exprAltura() : 0);
+    }
+
+    function alternarRutas(ver) {
+      ['rutas', 'rutas-borde'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ver ? 'visible' : 'none'));
+      const chk = document.getElementById('chk-rutas');
+      if (chk) chk.checked = ver;
+      marcarCapaMapa('rutas', ver);
+    }
+
+    // Selector de elementos sobre el mapa (bajo Satélite 2D / Relieve 3D)
+    const capasVisibles = { rutas: true, cortes: true, uv: true };
+    function marcarCapaMapa(clave, ver) {
+      capasVisibles[clave] = ver;
+      const b = document.querySelector(`.capa-mapa[data-capa="${clave}"]`);
+      if (b) { b.classList.toggle('activo', ver); b.setAttribute('aria-pressed', ver); b.dataset.estado = ver ? 'visible' : 'oculto'; }
+    }
+    function alternarCapaMapa(clave, ver = !capasVisibles[clave]) {
+      if (clave === 'rutas') return alternarRutas(ver);
+      if (clave === 'cortes') {
+        if (map.getLayer('cortes')) map.setLayoutProperty('cortes', 'visibility', ver ? 'visible' : 'none');
+        document.body.classList.toggle('sin-cortes', !ver);
+      }
+      if (clave === 'uv') document.body.classList.toggle('sin-nombres-uv', !ver);
+      marcarCapaMapa(clave, ver);
+    }
+    document.querySelectorAll('.capa-mapa').forEach(b => { b.dataset.estado = 'visible'; });
+    document.querySelector('.capas-mapa').addEventListener('click', e => {
+      const b = e.target.closest('.capa-mapa');
+      if (b) alternarCapaMapa(b.dataset.capa);
+    });
+
+    // =====================================================================
+    // INTERACCIÓN CON LAS MANZANAS
+    // =====================================================================
+    function activarInteraccion() {
+      const etiqueta = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
+      if (!ES_TACTIL) {
+        map.on('mousemove', 'manzanas', e => {
+          const p = e.features[0].properties;
+          map.getCanvas().style.cursor = 'pointer';
+          programarUV(p.uv);
+          const perfil = p.cluster >= 0 ? 'PERFIL ' + PERFILES[p.cluster].letra : 'SIN PERFIL';
+          const valor = estado.color !== 'perfil' ? ' · ' + fmtVar(estado.color, p[estado.color]) : '';
+          etiqueta.setLngLat(e.lngLat).setHTML(`${esc(p.uv || 'MANZANA')} · ${perfil}${valor}`).addTo(map);
+        });
+        map.on('mouseleave', 'manzanas', () => {
+          map.getCanvas().style.cursor = '';
+          etiqueta.remove();
+          programarUV(null);
+        });
+      }
+      map.on('click', 'manzanas', e => {
+        etiqueta.remove();
+        abrirFichaManzana(e.features[0].properties);
+      });
+    }
+
+    // =====================================================================
+    // GRÁFICOS (SVG)
+    // =====================================================================
+    function dona(partes) {
+      const total = partes.reduce((s, p) => s + (p.v || 0), 0) || 1;
+      const r = 52, c = 2 * Math.PI * r;
+      let acum = 0;
+      const arcos = partes.map(p => {
+        const largo = c * (p.v || 0) / total;
+        const arco = `<circle r="${r}" cx="70" cy="70" fill="none" stroke="${p.color}" stroke-width="18"
+                      stroke-dasharray="${largo} ${c - largo}" stroke-dashoffset="${-acum}" transform="rotate(-90 70 70)"/>`;
+        acum += largo;
+        return arco;
+      }).join('');
+      return `<svg viewBox="0 0 140 140" role="img"><circle r="${r}" cx="70" cy="70" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="18"/>${arcos}</svg>
+        <div class="leyenda-dona">${partes.map(p => `<span><i style="background:${p.color}"></i>${p.n} ${fmt(p.v, 0)} %</span>`).join('')}</div>`;
+    }
+
+    // Barras: manzana vs promedio de Copiapó (marca blanca)
+    function barrasComparadas(items) {
+      const alto = 26, ancho = 420, izq = 150;
+      const filas = items.map((it, i) => {
+        const max = Math.max(it.v || 0, it.prom || 0, it.max || 0) || 1;
+        const w = (ancho - izq - 60) * (it.v || 0) / max;
+        const wp = (ancho - izq - 60) * (it.prom || 0) / max;
+        const y = i * alto;
+        return `
+          <text x="0" y="${y + 15}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono">${it.n}</text>
+          <rect x="${izq}" y="${y + 6}" width="${ancho - izq - 60}" height="10" fill="rgba(255,255,255,0.05)"/>
+          <rect x="${izq}" y="${y + 6}" width="${Math.max(1, w)}" height="10" fill="${it.color || '#c6f24e'}"/>
+          <rect x="${izq + wp - 1}" y="${y + 2}" width="2" height="18" fill="#fff" opacity="0.8"/>
+          <text x="${ancho}" y="${y + 15}" fill="#e6e9ee" font-size="11.5" font-family="IBM Plex Mono" text-anchor="end">${it.t}</text>`;
+      }).join('');
+      return `<svg viewBox="0 0 ${ancho} ${items.length * alto}" role="img">${filas}</svg>
+        <p class="nota">Barra de color = manzana · línea blanca = promedio de Copiapó.</p>`;
+    }
+
+    // =====================================================================
+    // MODALES
+    // =====================================================================
+    function abrirModal(tipo, html) {
+      const modal = document.getElementById('modal');
+      modal.innerHTML = html || ({ perfiles: htmlPerfiles, informe: htmlInforme, fuentes: htmlFuentes }[tipo])();
+      document.getElementById('fondo-modal').hidden = false;
+      modal.scrollTop = 0;
+      modal.querySelector('.cerrar').focus();
+    }
+
+    function cerrarModal() { document.getElementById('fondo-modal').hidden = true; }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+
+    const botonCerrar = '<button class="cerrar" onclick="cerrarModal()">CERRAR <i class="fa-solid fa-xmark"></i></button>';
+
+    function abrirFichaManzana(p) {
+      const perfil = p.cluster >= 0 ? PERFILES[p.cluster] : null;
+      const pocas = p.cluster < 0;
+      const aviso = pocas ? '<p class="nota">Manzana con menos de 20 personas: los porcentajes son poco confiables.</p>' : '';
+      const filasTabla = [
+        ['Población', fmt(p.per) + ' personas', null],
+        ['Hogares', fmt(p.hog), null],
+        ['Densidad', fmtVar('dens', p.dens), promedios.dens && fmtVar('dens', promedios.dens)],
+        ['Edad promedio', p.edad == null ? '–' : fmt(p.edad, 1) + ' años', null],
+        ['Escolaridad (18+)', fmtVar('esc', p.esc), fmtVar('esc', promedios.esc)],
+        ['Desocupación', fmtVar('desoc', p.desoc), fmtVar('desoc', promedios.desoc)],
+        ['Con discapacidad', p.disc == null ? '–' : fmt(p.disc, 1) + ' %', fmt(promedios.disc, 1) + ' %'],
+        ['Distancia al bus', fmtVar('dist', p.dist), fmtVar('dist', promedios.dist)]
+      ];
+      const html = `
+        <div class="modal-cabecera">
+          <div class="ruta">${esc(p.uv || 'SIN UV')} / ${perfil ? 'PERFIL ' + perfil.letra : 'SIN PERFIL'}</div>
+          <h2 id="titulo-modal">${esc(p.uv ? 'Manzana · ' + p.uv : 'Manzana')}</h2>
+          <p>${perfil ? esc(perfil.nombre) + ' · ' : ''}${fmt(p.per)} personas · ${fmt(p.hog)} hogares</p>
+          ${botonCerrar}
+        </div>
+        <div class="modal-cuerpo">
+          <div>
+            <div class="kpis">
+              <div><span>Población</span><b>${fmt(p.per)}</b></div>
+              <div><span>Perfil</span><b style="color:${perfil ? perfil.color : COLOR_SIN_PERFIL}">${perfil ? 'Perfil ' + perfil.letra : 'Sin perfil'}</b></div>
+              <div><span>Usa transporte público</span><b>${p.tp == null ? '–' : fmt(p.tp, 1) + ' %'}</b></div>
+              <div><span>Distancia al bus</span><b>${fmt(p.dist)} m</b></div>
+            </div>
+            ${perfil ? `<p class="nota" style="color:${perfil.color}">${esc(perfil.desc)}</p>` : aviso}
+            ${p.uv ? `<button class="chip boton-uv-ficha" data-uv="${esc(p.uv)}" onclick="cerrarModal(); destacarUV(this.dataset.uv, true)">
+              <i class="fa-solid fa-draw-polygon"></i> DESTACAR ${esc(nombreCorto(p.uv).toUpperCase())} EN EL MAPA</button>` : ''}
+            <h3 class="subtitulo">Indicadores</h3>
+            <table class="datos">
+              <thead><tr><th>Indicador</th><th>Manzana</th><th>Copiapó</th></tr></thead>
+              <tbody>${filasTabla.map(([n, v, c]) => `<tr><td>${n}</td><td>${v}</td><td>${c || '–'}</td></tr>`).join('')}</tbody>
+            </table>
+          </div>
+          <div>
+            <h3 class="subtitulo">Cómo se trasladan · Edades</h3>
+            <div class="donas">
+              <div class="dona">${dona([
+                { n: 'Bus', v: p.tp, color: '#ff8a3d' }, { n: 'Auto', v: p.auto, color: '#5b8ff9' },
+                { n: 'A pie', v: p.camina, color: '#3ad1c4' }, { n: 'Otros', v: p.otros, color: '#8b95a3' }])}</div>
+              <div class="dona">${dona([
+                { n: '0–13', v: p.ninos, color: '#7cc4ff' }, { n: '14–17', v: p.adol, color: '#b39dfb' },
+                { n: '18–59', v: p.adultos, color: '#cfd5dd' }, { n: '60+', v: p.mayores, color: '#f6c544' }])}</div>
+            </div>
+            <h3 class="subtitulo">Comparación con Copiapó</h3>
+            <div class="barras">${barrasComparadas([
+              { n: 'TRANSPORTE PÚB.', v: p.tp, prom: promedios.tp, t: fmt(p.tp, 1) + ' %', color: '#ff8a3d' },
+              { n: 'AUTO', v: p.auto, prom: promedios.auto, t: fmt(p.auto, 1) + ' %', color: '#5b8ff9' },
+              { n: 'NIÑOS 0–13', v: p.ninos, prom: promedios.ninos, t: fmt(p.ninos, 1) + ' %', color: '#7cc4ff' },
+              { n: 'MAYORES 60+', v: p.mayores, prom: promedios.mayores, t: fmt(p.mayores, 1) + ' %', color: '#f6c544' },
+              { n: 'INMIGRANTES', v: p.inm, prom: promedios.inm, t: fmt(p.inm, 1) + ' %', color: '#ff5d73' },
+              { n: 'HACINAMIENTO', v: p.hacin, prom: promedios.hacin, t: fmt(p.hacin, 1) + ' %', color: '#ff9d4d' }
+            ])}</div>
+          </div>
+        </div>`;
+      abrirModal(null, html);
+    }
+
+    function htmlPerfiles() {
+      const filas = [
+        ['Transporte público', 'tp', '#ff8a3d'], ['Auto', 'auto', '#5b8ff9'], ['Niños 0–13', 'ninos', '#7cc4ff'],
+        ['Mayores 60+', 'mayores', '#f6c544'], ['Inmigrantes', 'inm', '#ff5d73'], ['Hacinamiento', 'hacin', '#ff9d4d'],
+        ['Desocupación', 'desoc', '#b39dfb']
+      ];
+      const maximos = Object.fromEntries(filas.map(([, k]) => [k, Math.max(...datos.metadata.perfiles.map(p => p[k]), promedios[k])]));
+      const tarjetas = PERFILES.map((pf, i) => {
+        const m = datos.metadata.perfiles[i];
+        return `<div class="tarjeta">
+          <h3><span class="letra" style="color:${pf.color}">${pf.letra}</span>${pf.nombre}</h3>
+          <p>${pf.desc}<br><span class="mono" style="font-size:10.5px">${fmt(m.manzanas)} manzanas · ${fmt(m.poblacion)} personas · ${fmt(m.esc, 1)} años de escolaridad · ${fmt(m.dist)} m al bus</span></p>
+          ${filas.map(([n, k, color]) => `
+            <div class="fila-barra"><span>${n}</span>
+              <div class="pista">
+                <div class="relleno" style="width:${100 * m[k] / maximos[k]}%;background:${color}"></div>
+                <div class="marca-prom" style="left:${100 * promedios[k] / maximos[k]}%"></div>
+              </div>
+              <b>${fmt(m[k], 1)} %</b></div>`).join('')}
+          <button class="chip" style="margin-top:10px;border-right:1px solid var(--borde)" onclick="cerrarModal();elegirPerfil(${i})">VER EN EL MAPA</button>
+        </div>`;
+      }).join('');
+      return `
+        <div class="modal-cabecera">
+          <div class="ruta">K-MEANS · 5 PERFILES · CENSO 2024</div>
+          <h2 id="titulo-modal">Perfiles de manzana</h2>
+          <p>Línea blanca = promedio de Copiapó</p>
+          ${botonCerrar}
+        </div>
+        <div class="modal-cuerpo una-columna"><div class="tarjetas-perfil">${tarjetas}</div></div>`;
+    }
+
+    function htmlInforme() {
+      const t = resumenUV && resumenUV.total;
+      const pf = datos.metadata.perfiles;
+      const totalPf = pf.reduce((s, p) => s + p.poblacion, 0);
+      const prioritarias = resumenUV ? Object.entries(resumenUV.uv)
+        .sort((a, b) => b[1].tp_lejos_200 - a[1].tp_lejos_200).slice(0, 3) : [];
+      const pctE = 100 * pf[4].poblacion / totalPf;
+      return `
+        <div class="modal-cabecera">
+          <div class="ruta">INFORME · HALLAZGOS PRINCIPALES</div>
+          <h2 id="titulo-modal">Copiapó: población y transporte</h2>
+          <p>Censo 2024 (INE) · ${fmt(t ? t.poblacion : totalPf)} habitantes en ${fmt(datos.features.length)} manzanas</p>
+          ${botonCerrar}
+        </div>
+        <div class="modal-cuerpo una-columna">
+          <div class="hallazgos">
+            ${t ? `<div class="hallazgo"><b>${fmt(100 * t.menos_200 / t.poblacion, 1)} %</b><span>de la población vive a menos de 200 m de un recorrido de bus.</span></div>
+            <div class="hallazgo"><b>${fmt(t.tp_lejos_200)}</b><span>personas que usan transporte público viven a 200 m o más de un recorrido.</span></div>` : ''}
+            <div class="hallazgo"><b>${fmt(promedios.tp, 1)} %</b><span>de quienes se trasladan a trabajar o estudiar usa transporte público (manzanas con perfil).</span></div>
+            <div class="hallazgo"><b>${fmt(pctE, 1)} %</b><span>de la población vive en manzanas de perfil E: mayoría migrante, hacinamiento alto y a ${fmt(pf[4].dist)} m promedio de un recorrido.</span></div>
+          </div>
+          <div class="texto-informe">
+            <h3 class="subtitulo" style="margin-top:24px">Lectura</h3>
+            <p>Las manzanas de Copiapó se agrupan en cinco perfiles. Los perfiles <b>A</b> y <b>B</b> concentran hogares que se
+            trasladan en auto y con mayor escolaridad; el <b>C</b> corresponde a barrios envejecidos; el <b>D</b> a barrios densos
+            que dependen del bus, y el <b>E</b> a sectores con alta migración y hacinamiento —en gran parte en los sectores altos—,
+            que son a la vez los más dependientes del transporte público y los más alejados de los recorridos.</p>
+            ${prioritarias.length ? `<p>Las unidades vecinales con más usuarios de bus lejos de un recorrido son:
+              ${prioritarias.map(([n, v]) => `<b>${esc(n)}</b> (${fmt(v.tp_lejos_200)})`).join(', ')}.</p>` : ''}
+            <p>Explore estos patrones eligiendo <b>"Colorear por: Uso del transporte público"</b> y <b>"Altura por: Distancia al bus"</b>:
+            los bloques altos y claros son manzanas que dependen del bus y están lejos de él.</p>
+          </div>
+        </div>`;
+    }
+
+    function htmlFuentes() {
+      return `
+        <div class="modal-cabecera">
+          <div class="ruta">FUENTES Y MÉTODO</div>
+          <h2 id="titulo-modal">Fuentes</h2>
+          <p>Datos abiertos y herramientas libres</p>
+          ${botonCerrar}
+        </div>
+        <div class="modal-cuerpo una-columna">
+          <ul class="fuentes">
+            <li><b>Población:</b> Censo de Población y Vivienda 2024, Instituto Nacional de Estadísticas (INE), datos por manzana.
+              Inmigrantes y pueblos originarios pueden estar subestimados (el INE oculta cifras pequeñas por confidencialidad).</li>
+            <li><b>Unidades vecinales:</b> capa de UV de Copiapó; sectores altos y bordes trazados a partir de las manzanas del Censo 2024.</li>
+            <li><b>Recorridos de buses:</b> elaboración propia en QGIS.</li>
+            <li><b>Relieve:</b> Terrain Tiles (Mapzen / AWS Open Data), derivado de SRTM y otras fuentes.</li>
+            <li><b>Imagen satelital:</b> Esri World Imagery (Esri, Maxar, Earthstar Geographics).</li>
+            <li><b>Perfiles:</b> k-means (5 grupos, semilla fija) sobre variables estandarizadas: uso de transporte público y auto,
+              niños, mayores, inmigrantes, hacinamiento, escolaridad y densidad (logarítmica). Manzanas con menos de 20 personas sin perfil.</li>
+            <li><b>Distancia al bus:</b> línea recta desde el centro de cada manzana al recorrido más cercano.</li>
+            <li><b>Herramientas:</b> MapLibre GL JS, QGIS y scripts propios en JavaScript
+              (<span class="mono" style="font-size:11px">scripts/clusters_manzanas.mjs</span>,
+              <span class="mono" style="font-size:11px">scripts/calcular_cobertura.mjs</span>).</li>
+          </ul>
+          <p class="nota">Desarrollo: Rubén Hidalgo · <a href="./">Portafolio</a> · <a href="Rutas_Buses.html">Mapa de recorridos</a></p>
+        </div>`;
+    }
+
+    // =====================================================================
+    // HISTORIA: análisis bajo el mapa
+    // =====================================================================
+    const centrosUV = {};            // nombre UV → [lng, lat] (lo llena agregarEtiquetasUV)
+    const MODOS_TRASLADO = ['publico', 'auto', 'camina', 'bicicleta', 'motocicleta', 'cab_lan_bote', 'otros'];
+    let porId = new Map();
+    let rutasGeo = null;
+
+    const GRUPOS = () => [
+      ...PERFILES.map((p, i) => ({ k: i, color: p.color, letra: p.letra, nombre: p.nombre })),
+      { k: -1, color: COLOR_SIN_PERFIL, letra: '·', nombre: 'Pocas personas' }
+    ];
+    const colorPerfil = k => k >= 0 ? PERFILES[k].color : COLOR_SIN_PERFIL;
+
+    // "ALAMEDA J.A.M." → "Alameda J.A.M."; "COPIAPÓ ESTE (SECTOR URBANO)" → "Copiapó Este alto"
+    function nombreCorto(n) {
+      if (!n) return 'Sin UV';
+      if (n.includes('(SECTOR URBANO)')) return 'Copiapó Este alto';
+      return n.split(' ').map(w => /^([A-ZÁÉÍÓÚÑ]\.)+$/.test(w) ? w
+        : w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
+    }
+
+    function irAHistoria() {
+      document.getElementById('historia').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function irAUVMapa(nombre) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const c = centrosUV[nombre];
+      if (c) setTimeout(() => map.flyTo({ center: c, zoom: 15, pitch: 60, bearing: map.getBearing(), duration: 1600 }), 450);
+    }
+
+    // Tooltip
+    const tip = document.getElementById('tip');
+    function mostrarTip(html, ev) {
+      tip.innerHTML = html;
+      tip.style.display = 'block';
+      const w = tip.offsetWidth, h = tip.offsetHeight;
+      let x = ev.clientX + 14, y = ev.clientY + 14;
+      if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+      if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
+    }
+    const ocultarTip = () => { tip.style.display = 'none'; };
+
+    function construirHistoria(rutas) {
+      rutasGeo = rutas;
+      porId = new Map(datos.features.map(f => [f.properties.id, f]));
+      construirKPIs();
+      construirDona();
+      construirPictograma();
+      construirDispersion();
+      construirComposicionUV();
+      prepararCortes();
+
+      // Aparición al desplazarse; el corte se calcula al llegar a su sección
+      const obs = new IntersectionObserver(entradas => entradas.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('visible');
+        if (e.target.id === 'sec-cortes' && !corteDibujado) dibujarCorte();
+        obs.unobserve(e.target);
+      }), { threshold: 0.08 });
+      document.querySelectorAll('.aparece').forEach(el => obs.observe(el));
+
+      window.addEventListener('scroll', () => {
+        document.body.classList.toggle('en-historia', scrollY > innerHeight * 0.5);
+        ocultarTip();
+      }, { passive: true });
+    }
+
+    // ---------------------------------------------------------------------
+    // 01 · KPIs, dona y pictograma
+    // ---------------------------------------------------------------------
+    function construirKPIs() {
+      const t = resumenUV && resumenUV.total, c = t && t.censo;
+      const tras = c ? MODOS_TRASLADO.reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0) : 0;
+      const pob = datos.features.reduce((s, f) => s + (f.properties.per || 0), 0);
+      const items = [
+        [fmt(datos.features.length), 'Manzanas censales'],
+        [fmt(pob), 'Habitantes · Censo 2024'],
+        [resumenUV ? fmt(Object.keys(resumenUV.uv).length) : '–', 'Unidades vecinales'],
+        [c ? fmt(100 * c.n_transporte_publico / tras, 1) + ' %' : '–', 'Se traslada en transporte público']
+      ];
+      document.getElementById('kpis-grandes').innerHTML = items.map(([v, n]) => `<div><b>${v}</b><span>${n}</span></div>`).join('');
+    }
+
+    function construirDona() {
+      const grupos = GRUPOS();
+      grupos.forEach(g => {
+        const fs = datos.features.filter(f => f.properties.cluster === g.k);
+        g.mz = fs.length;
+        g.pob = fs.reduce((s, f) => s + (f.properties.per || 0), 0);
+      });
+      const total = grupos.reduce((s, g) => s + g.pob, 0);
+      const cx = 220, cy = 220, R = 150;
+      let semilla = 7;
+      const azar = () => (semilla = (semilla * 16807) % 2147483647) / 2147483647;
+      const punto = (a, r) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+
+      let ang = -Math.PI / 2, svg = '';
+      // Puntos decorativos alrededor (como "polvo" de cada perfil)
+      grupos.forEach(g => {
+        const da = 2 * Math.PI * g.pob / total;
+        const a0 = ang, a1 = ang + da;
+        const [x0, y0] = punto(a0, R), [x1, y1] = punto(a1, R);
+        const grande = da > Math.PI ? 1 : 0;
+        const puntosDentro = Array.from({ length: Math.min(70, Math.round(g.mz / 9)) }, () => {
+          const a = a0 + azar() * da, r = Math.sqrt(azar()) * R * 0.94;
+          const [x, y] = punto(a, r);
+          return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${g.color}"/>`;
+        }).join('');
+        const puntosFuera = Array.from({ length: Math.round(18 * da / Math.PI) + 2 }, () => {
+          const a = a0 + azar() * da, r = R + 12 + azar() * 45;
+          const [x, y] = punto(a, r);
+          return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(0.8 + azar() * 1.4).toFixed(1)}" fill="${g.color}" opacity="${(0.25 + azar() * 0.5).toFixed(2)}"/>`;
+        }).join('');
+        svg += `<g class="tajada" data-k="${g.k}">
+          <path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${R},${R} 0 ${grande} 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z"
+                fill="${g.color}" fill-opacity="0.2" stroke="${g.color}" stroke-opacity="0.55"/>
+          ${puntosDentro}${puntosFuera}
+          <title>Perfil ${g.letra} · ${g.nombre}: ${fmt(100 * g.pob / total, 1)} % de la población</title>
+        </g>`;
+        ang = a1;
+      });
+      svg += `<circle cx="${cx}" cy="${cy}" r="62" fill="#0d1218" opacity="0.82" pointer-events="none"/>
+        <text x="${cx}" y="${cy + 10}" text-anchor="middle" fill="#e6e9ee" font-family="Space Grotesk" font-weight="600" font-size="44" pointer-events="none">${fmt(datos.features.length)}</text>
+        <text x="${cx}" y="${cy + 32}" text-anchor="middle" fill="#8b95a3" font-family="IBM Plex Mono" font-size="10" letter-spacing="1.5" pointer-events="none">MANZANAS</text>`;
+      const dona = document.getElementById('dona-perfiles');
+      dona.innerHTML = `<svg class="dona-grande" viewBox="0 0 440 440" role="img" aria-label="Población por perfil de manzana">${svg}</svg>`;
+
+      document.getElementById('cifras-perfiles').innerHTML = grupos.map(g => `
+        <div data-k="${g.k}">
+          <b style="color:${g.color}">${fmt(100 * g.pob / total, 1)} %</b>
+          <span><i style="background:${g.color}"></i>${g.k >= 0 ? 'Perfil ' + g.letra : 'Sin perfil'}</span>
+          <small>${esc(g.nombre)} · ${fmt(g.mz)} manzanas</small>
+        </div>`).join('');
+
+      // Aislar un perfil
+      const aislar = k => {
+        document.querySelectorAll('.dona-grande .tajada, #cifras-perfiles > div').forEach(el =>
+          el.classList.toggle('atenuado', k !== null && +el.dataset.k !== k));
+        document.querySelectorAll('#pictograma .puntos i').forEach(el =>
+          el.classList.toggle('atenuado', k !== null && +el.dataset.k !== k));
+      };
+      let fijo = null;
+      [dona, document.getElementById('cifras-perfiles')].forEach(cont => {
+        if (!ES_TACTIL) {
+          cont.addEventListener('mouseover', e => { const t = e.target.closest('[data-k]'); if (t && fijo === null) aislar(+t.dataset.k); });
+          cont.addEventListener('mouseleave', () => { if (fijo === null) aislar(null); });
+        }
+        cont.addEventListener('click', e => {
+          const t = e.target.closest('[data-k]');
+          if (!t) return;
+          fijo = fijo === +t.dataset.k ? null : +t.dataset.k;
+          aislar(fijo);
+        });
+      });
+    }
+
+    function construirPictograma() {
+      const porUV = {};
+      datos.features.forEach(f => {
+        const p = f.properties;
+        if (!p.uv) return;
+        const u = porUV[p.uv] = porUV[p.uv] || { pob: 0, c: {} };
+        u.pob += p.per || 0;
+        u.c[p.cluster] = (u.c[p.cluster] || 0) + (p.per || 0);
+      });
+      const filas = Object.entries(porUV).sort((a, b) => b[1].pob - a[1].pob);
+      const orden = [0, 1, 2, 3, 4, -1];
+      const cont = document.getElementById('pictograma');
+      cont.innerHTML = filas.map(([n, u]) => {
+        const nd = Math.max(1, Math.round(u.pob / 500));
+        const base = orden.map(k => { const v = (u.c[k] || 0) / u.pob * nd; return { k, n: Math.floor(v), r: v - Math.floor(v) }; });
+        const falta = nd - base.reduce((s, b) => s + b.n, 0);
+        base.slice().sort((a, b) => b.r - a.r).slice(0, falta).forEach(b => b.n++);
+        const puntos = base.flatMap(b => Array(b.n).fill(b.k))
+          .map(k => `<i data-k="${k}" style="background:${colorPerfil(k)}"></i>`).join('');
+        return `<div class="picto-fila" data-uv="${esc(n)}" role="button" tabindex="0" title="Ver ${esc(nombreCorto(n))} en el mapa">
+          <span class="nombre">${esc(nombreCorto(n))}</span><span class="puntos">${puntos}</span><span class="cuenta">${fmt(u.pob)}</span></div>`;
+      }).join('');
+      cont.addEventListener('click', e => { const f = e.target.closest('.picto-fila'); if (f) irAUVMapa(f.dataset.uv); });
+      cont.addEventListener('keydown', e => {
+        const f = e.target.closest('.picto-fila');
+        if (f && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); irAUVMapa(f.dataset.uv); }
+      });
+    }
+
+    // ---------------------------------------------------------------------
+    // 02 · Dispersión bus vs auto
+    // ---------------------------------------------------------------------
+    const dispersion = { ocultos: new Set(), minimo: 20 };
+
+    function construirDispersion() {
+      const chips = document.getElementById('chips-dispersion');
+      chips.innerHTML = `<span class="etq-chips">MANZANAS</span>
+        ${[[20, 'TODAS (20+ PERSONAS)'], [100, 'MÁS DE 100 PERSONAS'], [300, 'MÁS DE 300 PERSONAS']]
+          .map(([v, t]) => `<button class="chip ${v === dispersion.minimo ? 'activo' : ''}" data-min="${v}">${t}</button>`).join('')}`;
+      chips.addEventListener('click', e => {
+        const b = e.target.closest('[data-min]');
+        if (!b) return;
+        dispersion.minimo = +b.dataset.min;
+        chips.querySelectorAll('[data-min]').forEach(c => c.classList.toggle('activo', c === b));
+        dibujarDispersion();
+      });
+
+      const ley = document.getElementById('leyenda-dispersion');
+      ley.addEventListener('click', e => {
+        const b = e.target.closest('[data-k]');
+        if (!b) return;
+        const k = +b.dataset.k;
+        if (dispersion.ocultos.has(k)) dispersion.ocultos.delete(k); else dispersion.ocultos.add(k);
+        dibujarDispersion();
+      });
+
+      const cont = document.getElementById('dispersion');
+      cont.addEventListener('mousemove', e => {
+        const c = e.target.closest('circle[data-id]');
+        if (!c) { ocultarTip(); return; }
+        const p = porId.get(+c.dataset.id).properties;
+        mostrarTip(`${esc(nombreCorto(p.uv))} · PERFIL ${PERFILES[p.cluster].letra}<br>
+          ${fmt(p.per)} personas<br>BUS ${fmt(p.tp, 1)} % · AUTO ${fmt(p.auto, 1)} %`, e);
+      });
+      cont.addEventListener('mouseleave', ocultarTip);
+      cont.addEventListener('click', e => {
+        const c = e.target.closest('circle[data-id]');
+        if (c) { ocultarTip(); abrirFichaManzana(porId.get(+c.dataset.id).properties); }
+      });
+      dibujarDispersion();
+    }
+
+    function dibujarDispersion() {
+      const W = 640, H = 450, m = { l: 54, r: 16, t: 14, b: 46 };
+      const pw = W - m.l - m.r, ph = H - m.t - m.b;
+      const X = v => m.l + pw * v / 100, Y = v => m.t + ph * (1 - v / 100);
+      const base = datos.features.map(f => f.properties)
+        .filter(p => p.cluster >= 0 && p.per >= dispersion.minimo && p.tp != null && p.auto != null);
+      const visibles = base.filter(p => !dispersion.ocultos.has(p.cluster)).sort((a, b) => b.per - a.per);
+
+      let g = '';
+      for (let v = 0; v <= 100; v += 20) {
+        g += `<line x1="${X(v)}" y1="${m.t}" x2="${X(v)}" y2="${m.t + ph}" stroke="rgba(255,255,255,0.06)"/>
+              <line x1="${m.l}" y1="${Y(v)}" x2="${m.l + pw}" y2="${Y(v)}" stroke="rgba(255,255,255,0.06)"/>
+              <text x="${X(v)}" y="${m.t + ph + 18}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="middle">${v}</text>
+              <text x="${m.l - 10}" y="${Y(v) + 4}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="end">${v}</text>`;
+      }
+      g += `<text x="${m.l + pw / 2}" y="${H - 6}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">USA AUTO (%)</text>
+        <text transform="translate(14 ${m.t + ph / 2}) rotate(-90)" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">USA TRANSPORTE PÚBLICO (%)</text>
+        <line x1="${X(promedios.auto)}" y1="${m.t}" x2="${X(promedios.auto)}" y2="${m.t + ph}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.45"/>
+        <line x1="${m.l}" y1="${Y(promedios.tp)}" x2="${m.l + pw}" y2="${Y(promedios.tp)}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.45"/>
+        <text x="${X(2)}" y="${Y(97)}" fill="#ff9d4d" font-size="11" font-family="IBM Plex Mono" letter-spacing="1">DEPENDEN DEL BUS</text>
+        <text x="${X(98)}" y="${Y(3)}" fill="#5b8ff9" font-size="11" font-family="IBM Plex Mono" letter-spacing="1" text-anchor="end">DEPENDEN DEL AUTO</text>`;
+      g += visibles.map(p => `<circle data-id="${p.id}" cx="${X(p.auto).toFixed(1)}" cy="${Y(p.tp).toFixed(1)}"
+        r="${Math.min(8, 1.6 + Math.sqrt(p.per) / 5).toFixed(1)}" fill="${PERFILES[p.cluster].color}" fill-opacity="0.72"
+        stroke="#0d1218" stroke-width="0.6"/>`).join('');
+
+      document.getElementById('dispersion').innerHTML =
+        `<svg class="svg-grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Uso del auto frente a uso del transporte público por manzana">${g}</svg>`;
+
+      document.getElementById('leyenda-dispersion').innerHTML = PERFILES.map((pf, k) => {
+        const n = base.filter(p => p.cluster === k).length;
+        return `<button data-k="${k}" class="${dispersion.ocultos.has(k) ? 'oculto' : ''}" aria-pressed="${!dispersion.ocultos.has(k)}">
+          <i style="background:${pf.color}"></i>Perfil ${pf.letra} · ${esc(pf.nombre)}<span class="n">${fmt(n)}</span></button>`;
+      }).join('');
+    }
+
+    // ---------------------------------------------------------------------
+    // 03 · Composición por UV y burbujas
+    // ---------------------------------------------------------------------
+    function construirComposicionUV() {
+      if (!resumenUV) return;
+      const filas = Object.entries(resumenUV.uv).filter(([, v]) => v.poblacion > 0).map(([n, v]) => {
+        const c = v.censo, per = c.n_per || v.poblacion;
+        const tras = MODOS_TRASLADO.reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0) || 1;
+        const tp = 100 * c.n_transporte_publico / tras, auto = 100 * c.n_transporte_auto / tras, camina = 100 * c.n_transporte_camina / tras;
+        const ninos = 100 * ((c.n_edad_0_5 || 0) + (c.n_edad_6_13 || 0)) / per, adol = 100 * (c.n_edad_14_17 || 0) / per;
+        const mayores = 100 * (c.n_edad_60_mas || 0) / per;
+        return { n, pob: v.poblacion, cob: 100 * v.menos_200 / v.poblacion, lejos: v.tp_lejos_200,
+          tp, auto, camina, otros: Math.max(0, 100 - tp - auto - camina),
+          ninos, adol, mayores, adultos: Math.max(0, 100 - ninos - adol - mayores) };
+      }).sort((a, b) => b.tp - a.tp);
+
+      const barras = (id, partes) => {
+        const cont = document.getElementById(id);
+        cont.innerHTML = filas.map(f => `
+          <div class="fila" data-uv="${esc(f.n)}" title="Ver ${esc(nombreCorto(f.n))} en el mapa">
+            <span>${esc(nombreCorto(f.n))}</span>
+            <div class="barra-apilada">${partes.map(([k, color, nombre]) =>
+              `<i style="width:${f[k]}%;background:${color}" title="${nombre}: ${fmt(f[k], 1)} %"></i>`).join('')}</div>
+          </div>`).join('') + `
+          <div class="eje">${[0, 20, 40, 60, 80, 100].map(v => `<span>${v}</span>`).join('')}</div>
+          <div class="leyenda-linea">${partes.map(([, color, nombre]) => `<span><i style="background:${color}"></i>${nombre}</span>`).join('')}</div>`;
+        cont.addEventListener('click', e => { const f = e.target.closest('.fila'); if (f) irAUVMapa(f.dataset.uv); });
+      };
+      barras('barras-transporte', [['tp', '#ff8a3d', 'Transporte público'], ['auto', '#5b8ff9', 'Auto'], ['camina', '#3ad1c4', 'A pie'], ['otros', '#5b6270', 'Otros']]);
+      barras('barras-edades', [['ninos', '#7cc4ff', '0–13'], ['adol', '#b39dfb', '14–17'], ['adultos', '#8b95a3', '18–59'], ['mayores', '#f6c544', '60+']]);
+
+      // Burbujas
+      const t = resumenUV.total, c = t.censo;
+      const tras = MODOS_TRASLADO.reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0);
+      const cobProm = 100 * t.menos_200 / t.poblacion, tpProm = 100 * c.n_transporte_publico / tras;
+      const W = 640, H = 520, m = { l: 54, r: 20, t: 20, b: 46 };
+      const pw = W - m.l - m.r, ph = H - m.t - m.b;
+      const yMax = 60;
+      const X = v => m.l + pw * v / 100, Y = v => m.t + ph * (1 - v / yMax);
+      let g = `<rect x="${m.l}" y="${m.t}" width="${X(cobProm) - m.l}" height="${Y(tpProm) - m.t}" fill="#c6f24e" fill-opacity="0.06" stroke="#c6f24e" stroke-opacity="0.4" stroke-dasharray="4 4"/>
+        <text x="${m.l + 8}" y="${m.t + 16}" fill="#c6f24e" font-size="10.5" font-family="IBM Plex Mono" letter-spacing="1">PRIORIDAD · MÁS BUS, MENOS COBERTURA</text>`;
+      for (let v = 0; v <= 100; v += 20) g += `<line x1="${X(v)}" y1="${m.t}" x2="${X(v)}" y2="${m.t + ph}" stroke="rgba(255,255,255,0.06)"/>
+        <text x="${X(v)}" y="${m.t + ph + 18}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="middle">${v}</text>`;
+      for (let v = 0; v <= yMax; v += 10) g += `<line x1="${m.l}" y1="${Y(v)}" x2="${m.l + pw}" y2="${Y(v)}" stroke="rgba(255,255,255,0.06)"/>
+        <text x="${m.l - 10}" y="${Y(v) + 4}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="end">${v}</text>`;
+      g += `<text x="${m.l + pw / 2}" y="${H - 6}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">VIVE A MENOS DE 200 M DE UN RECORRIDO (%)</text>
+        <text transform="translate(14 ${m.t + ph / 2}) rotate(-90)" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">USA TRANSPORTE PÚBLICO (%)</text>
+        <line x1="${X(cobProm)}" y1="${m.t}" x2="${X(cobProm)}" y2="${m.t + ph}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.4"/>
+        <line x1="${m.l}" y1="${Y(tpProm)}" x2="${m.l + pw}" y2="${Y(tpProm)}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.4"/>
+        <text x="${X(cobProm) + 4}" y="${m.t + ph - 6}" fill="#8b95a3" font-size="10" font-family="IBM Plex Mono">COPIAPÓ ${fmt(cobProm, 0)} %</text>`;
+      filas.slice().sort((a, b) => b.pob - a.pob).forEach((f, i) => {
+        const prioridad = f.cob < cobProm && f.tp > tpProm;
+        const r = 4 + Math.sqrt(f.pob) / 11;
+        const x = X(f.cob), y = Y(Math.min(f.tp, yMax));
+        g += `<circle data-i="${filas.indexOf(f)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"
+                fill="${prioridad ? '#ff8a3d' : '#5b8ff9'}" fill-opacity="${prioridad ? 0.8 : 0.45}" stroke="${prioridad ? '#ff8a3d' : '#5b8ff9'}"/>
+              <text x="${(x + r + 4 + nombreCorto(f.n).length * 5.6 > W - 4 ? x - r - 4 : x + r + 4).toFixed(1)}" y="${(y + 4).toFixed(1)}"
+                    text-anchor="${x + r + 4 + nombreCorto(f.n).length * 5.6 > W - 4 ? 'end' : 'start'}" fill="${prioridad ? '#ffd2b0' : '#b5bdc8'}" font-size="10.5" font-family="Space Grotesk" pointer-events="none">${esc(nombreCorto(f.n))}</text>`;
+      });
+      const cont = document.getElementById('burbujas');
+      cont.innerHTML = `<svg class="svg-grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Cobertura de recorridos frente a uso del bus por UV">${g}</svg>
+        <p class="nota">Naranja: UV con más uso del bus y menos cobertura que el promedio. Toque una burbuja para verla en el mapa.</p>`;
+      cont.addEventListener('mousemove', e => {
+        const c = e.target.closest('circle[data-i]');
+        if (!c) { ocultarTip(); return; }
+        const f = filas[+c.dataset.i];
+        mostrarTip(`${esc(nombreCorto(f.n))}<br>${fmt(f.pob)} personas<br>COBERTURA ${fmt(f.cob, 1)} % · BUS ${fmt(f.tp, 1)} %<br>${fmt(f.lejos)} usuarios de bus lejos de un recorrido`, e);
+      });
+      cont.addEventListener('mouseleave', ocultarTip);
+      cont.addEventListener('click', e => { const c = e.target.closest('circle[data-i]'); if (c) { ocultarTip(); irAUVMapa(filas[+c.dataset.i].n); } });
+    }
+
+    // ---------------------------------------------------------------------
+    // 04 · Cortes (perfil de elevación + manzanas + recorridos + UV)
+    // ---------------------------------------------------------------------
+    const CORTES = [
+      { id: 'A', nombre: 'A–A′', extremos: ['SO · Rosario', 'NE · Sectores altos'],
+        titulo: 'Corte transversal del valle',
+        desc: 'Desde Rosario, cruzando el río Copiapó y el centro, hasta los sectores altos del oriente.',
+        puntos: [[-70.352, -27.381], [-70.300, -27.347]] },
+      { id: 'B', nombre: 'B–B′', extremos: ['NO · Cancha Rayada', 'SE · Paipote'],
+        titulo: 'Corte longitudinal del valle',
+        desc: 'Siguiendo el valle del río Copiapó, desde Cancha Rayada hasta Paipote.',
+        puntos: [[-70.358, -27.350], [-70.333, -27.367], [-70.305, -27.388], [-70.268, -27.418]] },
+      { id: 'C', nombre: 'C–C′', extremos: ['SO · Palomar', 'NE · Juan Pablo II'],
+        titulo: 'Corte del sur al norte',
+        desc: 'Desde Palomar, cruzando el centro y El Chañar, hasta Juan Pablo II en la ladera norte.',
+        puntos: [[-70.342, -27.397], [-70.318, -27.352]] }
+    ];
+    const cortesUI = { actual: 'A', exag: 'auto', variable: 'dens', rutas: true, uv: true };
+    let corteDibujado = false;
+    const cacheCortes = {};
+
+    // Proyección local en metros
+    const R_T = 6371008.8, COS_L = Math.cos(-27.37 * Math.PI / 180);
+    const aM = ([lng, lat]) => [R_T * lng * Math.PI / 180 * COS_L, R_T * lat * Math.PI / 180];
+    const aLL = ([x, y]) => [x / (R_T * COS_L) * 180 / Math.PI, y / R_T * 180 / Math.PI];
+
+    // Relieve: mosaicos Terrarium (z13, ~19 m por píxel)
+    const ZDEM = 13, cacheDEM = new Map();
+    function mosaicoDEM(x, y) {
+      const k = x + '/' + y;
+      if (!cacheDEM.has(k)) cacheDEM.set(k, new Promise(res => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const cv = document.createElement('canvas');
+          cv.width = cv.height = 256;
+          const ctx = cv.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          res(ctx.getImageData(0, 0, 256, 256).data);
+        };
+        img.onerror = () => res(null);
+        img.src = `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${ZDEM}/${x}/${y}.png`;
+      }));
+      return cacheDEM.get(k);
+    }
+    async function elevacion([lng, lat]) {
+      const n = 2 ** ZDEM, lr = lat * Math.PI / 180;
+      const xf = (lng + 180) / 360 * n, yf = (1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n;
+      const x = Math.floor(xf), y = Math.floor(yf);
+      const d = await mosaicoDEM(x, y);
+      if (!d) return null;
+      const i = (Math.min(255, Math.floor((yf - y) * 256)) * 256 + Math.min(255, Math.floor((xf - x) * 256))) * 4;
+      return d[i] * 256 + d[i + 1] + d[i + 2] / 256 - 32768;
+    }
+
+    function centroManzana(g) {
+      const polis = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
+      let mejor = polis[0][0], area = -1;
+      polis.forEach(p => {
+        const r = p[0];
+        let a = 0;
+        for (let i = 0, j = r.length - 1; i < r.length; j = i++) a += r[j][0] * r[i][1] - r[i][0] * r[j][1];
+        if (Math.abs(a) > area) { area = Math.abs(a); mejor = r; }
+      });
+      const s = mejor.reduce((acc, v) => [acc[0] + v[0], acc[1] + v[1]], [0, 0]);
+      return [s[0] / mejor.length, s[1] / mejor.length];
+    }
+
+    // Distancia de p a la polilínea y posición a lo largo de ella
+    function proyectarEnLinea(p, pts, acum) {
+      let mejor = { dist: Infinity, d: 0 };
+      for (let i = 1; i < pts.length; i++) {
+        const [ax, ay] = pts[i - 1], [bx, by] = pts[i];
+        const dx = bx - ax, dy = by - ay, l2 = dx * dx + dy * dy;
+        let t = l2 ? ((p[0] - ax) * dx + (p[1] - ay) * dy) / l2 : 0;
+        t = Math.max(0, Math.min(1, t));
+        const dist = Math.hypot(ax + t * dx - p[0], ay + t * dy - p[1]);
+        if (dist < mejor.dist) mejor = { dist, d: acum[i - 1] + t * Math.sqrt(l2) };
+      }
+      return mejor;
+    }
+
+    async function calcularCorte(C) {
+      if (cacheCortes[C.id]) return cacheCortes[C.id];
+      const pts = C.puntos.map(aM);
+      const acum = [0];
+      for (let i = 1; i < pts.length; i++) acum.push(acum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+      const largo = acum[acum.length - 1];
+
+      const enPos = d => {
+        let i = 1;
+        while (i < acum.length - 1 && acum[i] < d) i++;
+        const t = (d - acum[i - 1]) / ((acum[i] - acum[i - 1]) || 1);
+        return [pts[i - 1][0] + t * (pts[i][0] - pts[i - 1][0]), pts[i - 1][1] + t * (pts[i][1] - pts[i - 1][1])];
+      };
+      const N = 260;
+      const muestras = await Promise.all(Array.from({ length: N + 1 }, async (_, k) => {
+        const d = largo * k / N;
+        return { d, z: await elevacion(aLL(enPos(d))) };
+      }));
+
+      // Manzanas a menos de 150 m
+      const manzanas = [];
+      datos.features.forEach(f => {
+        const pr = proyectarEnLinea(aM(centroManzana(f.geometry)), pts, acum);
+        if (pr.dist <= 150 && pr.d > 0 && pr.d < largo) manzanas.push({ d: pr.d, p: f.properties });
+      });
+      manzanas.sort((a, b) => a.d - b.d);
+
+      // Cruces con recorridos de buses
+      const cruces = [];
+      if (rutasGeo) rutasGeo.features.forEach(f => {
+        const lineas = f.geometry.type === 'LineString' ? [f.geometry.coordinates] : f.geometry.coordinates;
+        lineas.forEach(l => {
+          const q = l.map(aM);
+          for (let j = 1; j < q.length; j++) for (let i = 1; i < pts.length; i++) {
+            const [x1, y1] = pts[i - 1], [x2, y2] = pts[i], [x3, y3] = q[j - 1], [x4, y4] = q[j];
+            const den = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+            if (!den) continue;
+            const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / den;
+            const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / den;
+            if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+              const d = acum[i - 1] + t * (acum[i] - acum[i - 1]);
+              const linea = f.properties.linea;
+              if (!cruces.some(c => c.linea === linea && Math.abs(c.d - d) < 120)) cruces.push({ d, linea });
+            }
+          }
+        });
+      });
+      cruces.sort((a, b) => a.d - b.d);
+
+      // Zonas por UV (tramos consecutivos de manzanas de la misma UV)
+      const zonas = [];
+      manzanas.forEach(m => {
+        const u = m.p.uv || 'Sin UV';
+        const ult = zonas[zonas.length - 1];
+        if (ult && ult.uv === u && m.d - ult.d1 < 400) ult.d1 = m.d;
+        else zonas.push({ uv: u, d0: m.d, d1: m.d });
+      });
+
+      return (cacheCortes[C.id] = { largo, muestras, manzanas, cruces, zonas: zonas.filter(z => z.d1 - z.d0 > 120) });
+    }
+
+    function prepararCortes() {
+      const tabs = document.getElementById('tabs-corte');
+      tabs.innerHTML = CORTES.map(c => `<button class="chip ${c.id === cortesUI.actual ? 'activo' : ''}" data-c="${c.id}">${c.nombre}</button>`).join('');
+      tabs.addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (b) seleccionarCorte(b.dataset.c); });
+
+      const exag = document.getElementById('seg-exag');
+      exag.innerHTML = [['auto', 'AUTO'], [1, 'REAL · 1×'], [3, '3×'], [6, '6×']]
+        .map(([v, t]) => `<button data-v="${v}" class="${v === cortesUI.exag ? 'activo' : ''}">${t}</button>`).join('');
+      exag.addEventListener('click', e => {
+        const b = e.target.closest('[data-v]');
+        if (!b) return;
+        cortesUI.exag = b.dataset.v === 'auto' ? 'auto' : +b.dataset.v;
+        exag.querySelectorAll('button').forEach(x => x.classList.toggle('activo', x === b));
+        dibujarCorte();
+      });
+
+      const vars = document.getElementById('seg-var-corte');
+      vars.innerHTML = [['dens', 'DENSIDAD'], ['per', 'POBLACIÓN'], ['tp', 'USO DEL BUS']]
+        .map(([v, t]) => `<button data-v="${v}" class="${v === cortesUI.variable ? 'activo' : ''}">${t}</button>`).join('');
+      vars.addEventListener('click', e => {
+        const b = e.target.closest('[data-v]');
+        if (!b) return;
+        cortesUI.variable = b.dataset.v;
+        vars.querySelectorAll('button').forEach(x => x.classList.toggle('activo', x === b));
+        dibujarCorte();
+      });
+
+      document.getElementById('chk-corte-rutas').addEventListener('change', e => { cortesUI.rutas = e.target.checked; dibujarCorte(); });
+      document.getElementById('chk-corte-uv').addEventListener('change', e => { cortesUI.uv = e.target.checked; dibujarCorte(); });
+
+      // Líneas de corte en el mapa
+      map.addSource('cortes', { type: 'geojson', data: { type: 'FeatureCollection', features: CORTES.map(c => ({
+        type: 'Feature', properties: { id: c.id }, geometry: { type: 'LineString', coordinates: c.puntos } })) } });
+      map.addLayer({ id: 'cortes', type: 'line', source: 'cortes',
+        paint: { 'line-color': '#c6f24e', 'line-width': 2.2, 'line-dasharray': [3, 2] } });
+      map.on('click', 'cortes', e => { e.preventDefault(); irACorte(e.features[0].properties.id); });
+      map.on('mouseenter', 'cortes', () => { map.getCanvas().style.cursor = 'pointer'; });
+      map.on('mouseleave', 'cortes', () => { map.getCanvas().style.cursor = ''; });
+      CORTES.forEach(c => [[c.puntos[0], c.id], [c.puntos[c.puntos.length - 1], c.id + '′']].forEach(([p, t]) => {
+        const el = document.createElement('div');
+        el.className = 'etiqueta-corte';
+        el.textContent = t;
+        el.title = 'Ver corte ' + c.nombre;
+        el.addEventListener('click', ev => { ev.stopPropagation(); irACorte(c.id); });
+        new maplibregl.Marker({ element: el }).setLngLat(p).addTo(map);
+      }));
+    }
+
+    function seleccionarCorte(id) {
+      cortesUI.actual = id;
+      document.querySelectorAll('#tabs-corte [data-c]').forEach(b => b.classList.toggle('activo', b.dataset.c === id));
+      dibujarCorte();
+    }
+
+    function irACorte(id) {
+      seleccionarCorte(id);
+      document.getElementById('sec-cortes').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function dibujarCorte() {
+      corteDibujado = true;
+      const cont = document.getElementById('svg-corte');
+      const C = CORTES.find(c => c.id === cortesUI.actual);
+      if (!cacheCortes[C.id]) cont.innerHTML = '<p class="lectura" style="border:none">Calculando el perfil de elevación…</p>';
+      const dat = await calcularCorte(C);
+      if (cortesUI.actual !== C.id) return;
+
+      const W = 1000, H = 430, m = { l: 66, r: 66, t: 92, b: 58 };
+      const pw = W - m.l - m.r, ph = H - m.t - m.b;
+      const zs = dat.muestras.map(s => s.z).filter(z => z != null);
+      if (!zs.length) { cont.innerHTML = '<p class="lectura" style="border:none">No se pudo cargar el relieve.</p>'; return; }
+      const zmin = Math.min(...zs), zmax = Math.max(...zs);
+      const sx = pw / dat.largo;
+      const sy = cortesUI.exag === 'auto' ? ph * 0.5 / Math.max(25, zmax - zmin) : sx * cortesUI.exag;
+      const exagReal = sy / sx;
+      let zbase = zmin - (ph * 0.06) / sy;
+      if ((zmax - zbase) * sy > ph * 0.62) zbase = zmax - ph * 0.62 / sy;
+      const X = d => m.l + d * sx;
+      const Y = z => m.t + ph - (z - zbase) * sy;
+      const zEn = d => { const k = Math.round(d / dat.largo * (dat.muestras.length - 1)); return dat.muestras[k].z ?? zmin; };
+
+      // Eje de cotas con pasos "redondos"
+      const zTop = zbase + ph / sy;
+      const paso = [5, 10, 20, 25, 50, 100, 200, 250, 500].find(p => (zTop - zbase) / p <= 7) || 1000;
+      let g = `<defs><clipPath id="recorte"><rect x="${m.l}" y="${m.t - 4}" width="${pw}" height="${ph + 4}"/></clipPath>
+        <pattern id="tierra" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#e8d5a6"/><circle cx="2" cy="2" r="0.9" fill="#c3a46a"/><circle cx="6" cy="6" r="0.9" fill="#c3a46a"/></pattern></defs>`;
+      for (let z = Math.ceil(zbase / paso) * paso; z <= zTop; z += paso) {
+        g += `<line x1="${m.l}" y1="${Y(z)}" x2="${m.l + pw}" y2="${Y(z)}" stroke="#d9d2c3"/>
+          <text x="${m.l - 8}" y="${Y(z) + 4}" font-size="12" font-family="IBM Plex Mono" text-anchor="end" fill="#4b463d">${fmt(z)}</text>
+          <text x="${m.l + pw + 8}" y="${Y(z) + 4}" font-size="12" font-family="IBM Plex Mono" fill="#4b463d">${fmt(z)}</text>`;
+      }
+      const pasoKm = dat.largo > 8000 ? 2 : dat.largo > 4000 ? 1 : 0.5;
+      for (let k = 0; k <= dat.largo / 1000 + 1e-6; k += pasoKm) {
+        g += `<line x1="${X(k * 1000)}" y1="${m.t + ph}" x2="${X(k * 1000)}" y2="${m.t + ph + 6}" stroke="#1f2328"/>
+          <text x="${X(k * 1000)}" y="${m.t + ph + 22}" font-size="13" font-family="IBM Plex Mono" text-anchor="middle" fill="#1f2328">${fmt(k, k % 1 ? 1 : 0)}</text>`;
+      }
+      g += `<text x="${m.l + pw / 2}" y="${H - 8}" font-size="15" font-family="IBM Plex Mono" text-anchor="middle" fill="#1f2328">Distancia (km)</text>
+        <text x="${m.l + pw}" y="${H - 8}" font-size="13" font-family="IBM Plex Mono" text-anchor="end" fill="#1f2328">Exageración vertical ${fmt(exagReal, 1)}×</text>
+        <text transform="translate(16 ${m.t + ph / 2}) rotate(-90)" font-size="12" font-family="IBM Plex Mono" text-anchor="middle" fill="#4b463d">Cota (m s. n. m.)</text>
+        <text x="${m.l - 40}" y="34" font-size="30" font-weight="700" font-family="Space Grotesk" fill="#1f2328">${C.id}</text>
+        <text x="${m.l - 8}" y="32" font-size="15" font-family="IBM Plex Mono" fill="#1f2328">${C.extremos[0]}</text>
+        <text x="${m.l + pw + 40}" y="34" font-size="30" font-weight="700" font-family="Space Grotesk" text-anchor="end" fill="#1f2328">${C.id}′</text>
+        <text x="${m.l + pw + 8}" y="32" font-size="15" font-family="IBM Plex Mono" text-anchor="end" fill="#1f2328">${C.extremos[1]}</text>`;
+
+      // Zonas UV
+      if (cortesUI.uv) dat.zonas.forEach((z, i) => {
+        const x0 = X(z.d0), x1 = X(z.d1);
+        if (i > 0) g += `<line x1="${x0 - 3}" y1="${m.t - 34}" x2="${x0 - 3}" y2="${m.t + ph}" stroke="#6b6457" stroke-dasharray="3 4" opacity="0.6"/>`;
+        if (x1 - x0 > 54) g += `<text x="${(x0 + x1) / 2}" y="${m.t - 18}" font-size="11" font-family="IBM Plex Mono" text-anchor="middle" fill="#4b463d">${esc(nombreCorto(z.uv)).slice(0, Math.max(6, Math.floor((x1 - x0) / 7.2)))}</text>`;
+      });
+
+      // Terreno
+      const linea = dat.muestras.map(s => `${X(s.d).toFixed(1)},${Y(s.z ?? zmin).toFixed(1)}`).join(' L');
+      g += `<g clip-path="url(#recorte)">
+        <path d="M${X(0)},${m.t + ph} L${linea} L${X(dat.largo)},${m.t + ph} Z" fill="url(#tierra)"/>
+        <path d="M${linea}" fill="none" stroke="#1f2328" stroke-width="2"/>`;
+
+      // Manzanas como barras sobre el terreno
+      const v = cortesUI.variable;
+      const valores = dat.manzanas.map(mz => mz.p[v]).filter(x => x != null).sort((a, b) => a - b);
+      const vmax = v === 'tp' ? 100 : (valores[Math.floor(valores.length * 0.95)] || 1);
+      const alturaMax = ph * 0.34;
+      dat.manzanas.forEach((mz, i) => {
+        const val = mz.p[v];
+        if (val == null || (v === 'tp' && mz.p.cluster < 0)) return;
+        const h = Math.max(2, Math.min(1.15, val / vmax) * alturaMax);
+        const x = X(mz.d), yb = Y(zEn(mz.d));
+        g += `<rect class="barra-mz" data-i="${i}" x="${(x - 2).toFixed(1)}" y="${(yb - h).toFixed(1)}" width="4" height="${h.toFixed(1)}"
+                fill="${colorPerfil(mz.p.cluster)}" stroke="#1f2328" stroke-width="0.4"/>`;
+      });
+
+      g += `</g>`;
+
+      // Cruces con recorridos: una marca por calle (agrupa líneas cercanas) con sus números encima
+      if (cortesUI.rutas) {
+        const grupos = [];
+        dat.cruces.forEach(c => {
+          const x = X(c.d), ult = grupos[grupos.length - 1];
+          if (ult && x - ult.x1 < 26) { ult.x1 = x; ult.lineas.add(c.linea); ult.ds.push(c.d); }
+          else grupos.push({ x0: x, x1: x, lineas: new Set([c.linea]), ds: [c.d] });
+        });
+        let prev = null; // caja de la etiqueta anterior, para no encimar
+        grupos.forEach(gr => {
+          const d = gr.ds.reduce((a, b) => a + b, 0) / gr.ds.length;
+          const x = X(d), y = Math.min(Y(zEn(d)), m.t + ph);
+          const nums = [...gr.lineas].map(l => +l.replace(/\D/g, '')).sort((a, b) => a - b);
+          const filas = [];
+          for (let k = 0; k < nums.length; k += 3) filas.push(nums.slice(k, k + 3).map(n => 'L' + n).join('·'));
+          g += `<path d="M${x - 5},${y - 9} L${x + 5},${y - 9} L${x},${y - 1} Z" fill="#ea580c" stroke="#f3efe6" stroke-width="0.8"/>`;
+          const ancho = Math.max(...filas.map(t => t.length)) * 6.6;
+          let base = y - 13;
+          if (prev && x - ancho / 2 < prev.der + 4) base = Math.min(base, prev.arriba - 6);
+          prev = { der: x + ancho / 2, arriba: base - (filas.length - 1) * 12 - 10 };
+          filas.reverse().forEach((t, k) => {
+            g += `<text x="${x}" y="${base - k * 12}" font-size="10.5" font-weight="600" font-family="IBM Plex Mono" text-anchor="middle"
+                    fill="#c2410c" stroke="#f3efe6" stroke-width="3" paint-order="stroke">${t}</text>`;
+          });
+        });
+      }
+      g += `
+        <line id="cursor-corte" x1="0" y1="${m.t - 4}" x2="0" y2="${m.t + ph}" stroke="#2563eb" stroke-width="1.2" opacity="0"/>
+        <rect id="captura-corte" x="${m.l}" y="${m.t - 4}" width="${pw}" height="${ph + 4}" fill="transparent"/>`;
+
+      cont.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Perfil de elevación ${C.nombre}">${g}</svg>`;
+      document.querySelector('#seg-exag [data-v="auto"]').textContent = `AUTO · ${fmt(sy / sx, 1)}×`;
+
+      // Lectura al mover el cursor
+      const svg = cont.querySelector('svg');
+      const cursor = svg.querySelector('#cursor-corte');
+      const lectura = document.getElementById('lectura-corte');
+      const leer = ev => {
+        const pt = svg.createSVGPoint();
+        pt.x = ev.clientX; pt.y = ev.clientY;
+        const loc = pt.matrixTransform(svg.getScreenCTM().inverse());
+        const d = Math.max(0, Math.min(dat.largo, (loc.x - m.l) / sx));
+        cursor.setAttribute('x1', X(d)); cursor.setAttribute('x2', X(d)); cursor.setAttribute('opacity', 0.8);
+        let cerca = null;
+        dat.manzanas.forEach(mz => { if (Math.abs(mz.d - d) < 70 && (!cerca || Math.abs(mz.d - d) < Math.abs(cerca.d - d))) cerca = mz; });
+        lectura.innerHTML = `${fmt(d / 1000, 2)} km · cota ${fmt(zEn(d))} m s. n. m.` + (cerca
+          ? ` · ${esc(nombreCorto(cerca.p.uv))} · ${cerca.p.cluster >= 0 ? 'perfil ' + PERFILES[cerca.p.cluster].letra : 'sin perfil'} · ${fmt(cerca.p.per)} personas · ${fmt(cerca.p.dens)} hab/ha${cerca.p.tp != null ? ' · bus ' + fmt(cerca.p.tp, 1) + ' %' : ''}`
+          : ' · sin manzanas cercanas');
+      };
+      svg.addEventListener('mousemove', leer);
+      svg.addEventListener('touchmove', e => { if (e.touches[0]) leer(e.touches[0]); }, { passive: true });
+      svg.addEventListener('mouseleave', () => cursor.setAttribute('opacity', 0));
+      svg.addEventListener('click', e => {
+        const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+        const d = (pt.matrixTransform(svg.getScreenCTM().inverse()).x - m.l) / sx;
+        let cerca = null;
+        dat.manzanas.forEach(mz => { if (Math.abs(mz.d - d) < 40 && (!cerca || Math.abs(mz.d - d) < Math.abs(cerca.d - d))) cerca = mz; });
+        if (cerca) abrirFichaManzana(cerca.p);
+      });
+
+      // Leyenda y ficha del corte
+      const nombreVar = { dens: 'densidad (hab/ha)', per: 'población', tp: '% que usa transporte público' }[v];
+      document.getElementById('ley-corte').innerHTML = `
+        <div><i style="background:url(#);background:#e8d5a6"></i>Terreno (relieve SRTM)</div>
+        <div><i style="background:#ea580c;width:14px;height:12px;clip-path:polygon(0 0,100% 0,50% 100%)"></i>Cruce con un recorrido de bus (L = línea)</div>
+        ${PERFILES.map(p => `<div><i style="background:${p.color};width:12px"></i>Manzana perfil ${p.letra} · ${esc(p.nombre)}</div>`).join('')}
+        <div><i style="background:#2563eb;width:2px;border:none"></i>Altura de la barra: ${nombreVar}</div>`;
+
+      const pob = dat.manzanas.reduce((s, mz) => s + (mz.p.per || 0), 0);
+      const porPerfil = {};
+      dat.manzanas.forEach(mz => { porPerfil[mz.p.cluster] = (porPerfil[mz.p.cluster] || 0) + (mz.p.per || 0); });
+      const dom = Object.entries(porPerfil).filter(([k]) => +k >= 0).sort((a, b) => b[1] - a[1])[0];
+      const lineasCruzadas = [...new Set(dat.cruces.map(c => c.linea))];
+      document.getElementById('ficha-corte').innerHTML = `
+        <span class="etq-corte">${esc(C.extremos[0])} → ${esc(C.extremos[1])}</span>
+        <h3>Corte ${C.nombre} · ${esc(C.titulo)}</h3>
+        <p>${esc(C.desc)}</p>
+        <table>
+          <tr><td>Longitud</td><td>${fmt(dat.largo / 1000, 1)} km</td></tr>
+          <tr><td>Cotas</td><td>${fmt(zmin)}–${fmt(zmax)} m s. n. m. (desnivel ${fmt(zmax - zmin)} m)</td></tr>
+          <tr><td>Manzanas en la franja</td><td>${fmt(dat.manzanas.length)} · ${fmt(pob)} personas (±150 m)</td></tr>
+          <tr><td>Perfil predominante</td><td>${dom ? `Perfil ${PERFILES[dom[0]].letra} · ${esc(PERFILES[dom[0]].nombre)} (${fmt(100 * dom[1] / pob, 0)} %)` : '–'}</td></tr>
+          <tr><td>Recorridos que cruza</td><td>${lineasCruzadas.length ? lineasCruzadas.map(l => esc(l.replace('Línea ', 'L'))).join(', ') : 'Ninguno'}</td></tr>
+        </table>`;
+    }
+
+    // =====================================================================
+    // DESTACAR UNA UNIDAD VECINAL
+    // ---------------------------------------------------------------------
+    // - Mouse 1 segundo sobre una manzana: se destaca su UV (se quita al salir).
+    // - Clic en el nombre de una UV, o botón en la ficha: queda fija hasta
+    //   cerrar la tarjeta, pulsar Escape o volver a tocar el nombre.
+    // =====================================================================
+    const uvDestacada = { nombre: null, fija: false };
+    const etiquetasUV = {};
+    let temporizadorUV = null, uvPendiente = null;
+
+    function programarUV(nombre) {
+      if (uvDestacada.fija) return;
+      if (nombre === uvPendiente) return;
+      uvPendiente = nombre;
+      clearTimeout(temporizadorUV);
+      if (!nombre) { temporizadorUV = setTimeout(() => quitarUV(false), 250); return; }
+      if (nombre === uvDestacada.nombre) return;
+      // Ya hay una destacada: pasar a la vecina es más rápido
+      temporizadorUV = setTimeout(() => destacarUV(nombre, false), uvDestacada.nombre ? 350 : 1000);
+    }
+
+    function destacarUV(nombre, fija) {
+      clearTimeout(temporizadorUV);
+      uvDestacada.nombre = nombre;
+      uvDestacada.fija = fija;
+      if (fija) uvPendiente = nombre;
+      const filtro = ['==', ['get', 'NOMBRE_UV'], nombre];
+      ['uv-halo', 'uv-borde'].forEach(id => map.getLayer(id) && map.setFilter(id, filtro));
+      map.setPaintProperty('manzanas', 'fill-extrusion-color', exprColorFinal());
+      Object.entries(etiquetasUV).forEach(([n, el]) => el.classList.toggle('activa', n === nombre));
+      mostrarTarjetaUV(nombre, fija);
+      if (fija && centrosUV[nombre]) map.easeTo({ center: centrosUV[nombre], duration: 900 });
+    }
+
+    function quitarUV(forzar) {
+      if (uvDestacada.fija && !forzar) return;
+      clearTimeout(temporizadorUV);
+      uvDestacada.nombre = null;
+      uvDestacada.fija = false;
+      uvPendiente = null;
+      ['uv-halo', 'uv-borde'].forEach(id => map.getLayer(id) && map.setFilter(id, ['==', ['get', 'NOMBRE_UV'], '__ninguna__']));
+      map.setPaintProperty('manzanas', 'fill-extrusion-color', exprColorFinal());
+      Object.values(etiquetasUV).forEach(el => el.classList.remove('activa'));
+      document.getElementById('tarjeta-uv').hidden = true;
+    }
+
+    // Tarjeta con el resumen de la UV destacada
+    function mostrarTarjetaUV(nombre, fija) {
+      const fs = datos.features.filter(f => f.properties.uv === nombre);
+      const pob = fs.reduce((s, f) => s + (f.properties.per || 0), 0) || 1;
+      const porPerfil = {};
+      fs.forEach(f => { porPerfil[f.properties.cluster] = (porPerfil[f.properties.cluster] || 0) + (f.properties.per || 0); });
+      const barra = [0, 1, 2, 3, 4, -1].map(k => porPerfil[k]
+        ? `<i style="width:${100 * porPerfil[k] / pob}%;background:${k >= 0 ? PERFILES[k].color : COLOR_SIN_PERFIL}" title="${k >= 0 ? 'Perfil ' + PERFILES[k].letra : 'Sin perfil'}: ${fmt(100 * porPerfil[k] / pob)} %"></i>` : '').join('');
+      const r = resumenUV && resumenUV.uv[nombre];
+      const t = document.getElementById('tarjeta-uv');
+      t.innerHTML = `
+        <div class="tarjeta-uv-cabecera">
+          <span><span class="mono">UNIDAD VECINAL</span><b>${esc(nombreCorto(nombre))}</b></span>
+          <span class="tarjeta-uv-botones">
+            <button data-uv="${esc(nombre)}" onclick="abrirFichaUV(this.dataset.uv)" title="Ver ficha completa">FICHA</button>
+            ${fija ? '<button onclick="quitarUV(true)" aria-label="Quitar destacado" title="Quitar destacado"><i class="fa-solid fa-xmark"></i></button>' : ''}
+          </span>
+        </div>
+        <div class="tarjeta-uv-cifras">
+          <span><b>${fmt(pob)}</b>personas</span>
+          <span><b>${fmt(fs.length)}</b>manzanas</span>
+          ${r ? `<span><b>${fmt(100 * r.menos_200 / r.poblacion)} %</b>a menos de 200 m del bus</span>` : ''}
+        </div>
+        <div class="tarjeta-uv-barra">${barra}</div>
+        <small>Barra = perfiles de sus manzanas${fija ? '' : ' · toque el nombre en el mapa para fijarla'}</small>`;
+      t.hidden = false;
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && uvDestacada.nombre) quitarUV(true); });
+
+    // Alfileres de UV: cada uno elige la altura de tallo más baja que no choque
+    // con las etiquetas ya ubicadas (se recalcula al mover o hacer zoom)
+    const ALTURAS_TALLO = esMovil() ? [18, 32, 46, 60, 74] : [26, 44, 62, 80, 98, 116];
+    function acomodarPines() {
+      const pines = Object.entries(etiquetasUV).map(([n, el]) => {
+        const c = centrosUV[n];
+        if (!c) return null;
+        const pt = map.project(c);
+        const t = el.querySelector('.pin-texto');
+        return { el, x: pt.x, y: pt.y, w: t.offsetWidth + 6, h: t.offsetHeight + 4 };
+      }).filter(Boolean).sort((a, b) => b.y - a.y); // primero los más cercanos (abajo en pantalla)
+      const cajas = [];
+      pines.forEach(p => {
+        let elegida = ALTURAS_TALLO[ALTURAS_TALLO.length - 1];
+        for (const alto of ALTURAS_TALLO) {
+          const caja = { x0: p.x - p.w / 2, x1: p.x + p.w / 2, y1: p.y - alto, y0: p.y - alto - p.h };
+          if (!cajas.some(c => caja.x0 < c.x1 && caja.x1 > c.x0 && caja.y0 < c.y1 && caja.y1 > c.y0)) { elegida = alto; break; }
+        }
+        cajas.push({ x0: p.x - p.w / 2, x1: p.x + p.w / 2, y1: p.y - elegida, y0: p.y - elegida - p.h });
+        p.el.querySelector('.pin-tallo').style.height = elegida + 'px';
+      });
+    }
+    map.on('moveend', acomodarPines);
+    map.once('idle', acomodarPines);
+
+    // Menú "VER +": se abre con clic y se cierra al tocar fuera o con Escape
+    function alternarVerMas(abrir) {
+      const btn = document.getElementById('btn-ver-mas');
+      const menu = document.getElementById('menu-ver-mas');
+      const abierto = abrir ?? menu.hidden;
+      menu.hidden = !abierto;
+      btn.setAttribute('aria-expanded', abierto);
+      if (abierto) menu.querySelector('a').focus();
+    }
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.ver-mas')) alternarVerMas(false);
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !document.getElementById('menu-ver-mas').hidden) {
+        alternarVerMas(false);
+        document.getElementById('btn-ver-mas').focus();
+      }
+    });
+
+    // Alto real de la barra superior (cambia si el menú pasa a otra fila)
+    function medirBarra() {
+      document.documentElement.style.setProperty('--alto-barra', document.querySelector('.barra').offsetHeight + 'px');
+    }
+    window.addEventListener('resize', medirBarra);
+    medirBarra();
+    // Volver a medir cuando cargan las fuentes y los selectores (cambian el ancho)
+    if (document.fonts) document.fonts.ready.then(medirBarra);
+    map.once('load', () => setTimeout(medirBarra, 50));
+    if (window.ResizeObserver) new ResizeObserver(medirBarra).observe(document.querySelector('.barra'));
+
+    // =====================================================================
+    // FICHA COMPLETA DE UNA UNIDAD VECINAL
+    // =====================================================================
+    let uvsGeo = null, ficticiasGeo = null;
+
+    // Punto dentro de polígono (ray casting)
+    function dentroAnillo([x, y], r) {
+      let d = false;
+      for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+        const [xi, yi] = r[i], [xj, yj] = r[j];
+        if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) d = !d;
+      }
+      return d;
+    }
+    function dentroGeom(pt, g) {
+      const polis = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
+      return polis.some(([ext, ...hs]) => dentroAnillo(pt, ext) && !hs.some(h => dentroAnillo(pt, h)));
+    }
+
+    // Líneas de bus que recorren la UV (algún vértice del recorrido dentro de la UV)
+    const cacheLineasUV = {};
+    function lineasDeUV(nombre) {
+      if (cacheLineasUV[nombre]) return cacheLineasUV[nombre];
+      const geoms = [...(uvsGeo ? uvsGeo.features : []), ...(ficticiasGeo ? ficticiasGeo.features : [])]
+        .filter(f => f.properties.NOMBRE_UV === nombre).map(f => f.geometry);
+      const lineas = new Map();
+      (rutasGeo ? rutasGeo.features : []).forEach(f => {
+        if (lineas.has(f.properties.linea)) return;
+        const partes = f.geometry.type === 'LineString' ? [f.geometry.coordinates] : f.geometry.coordinates;
+        if (partes.some(l => l.some(pt => geoms.some(g => dentroGeom(pt, g))))) {
+          lineas.set(f.properties.linea, f.properties.frecuencia || '');
+        }
+      });
+      return (cacheLineasUV[nombre] = [...lineas.entries()]
+        .sort((a, b) => parseInt(a[0].replace(/\D/g, '')) - parseInt(b[0].replace(/\D/g, ''))));
+    }
+
+    // Indicadores (fracciones 0–1) a partir de los conteos del Censo 2024
+    function indicadoresUV(c) {
+      const div = (a, b) => b ? a / b : 0;
+      const per = c.n_per || 0;
+      const tras = MODOS_TRASLADO.reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0);
+      return {
+        per,
+        tp: div(c.n_transporte_publico || 0, tras), auto: div(c.n_transporte_auto || 0, tras),
+        camina: div(c.n_transporte_camina || 0, tras),
+        otros: div((c.n_transporte_bicicleta || 0) + (c.n_transporte_motocicleta || 0) + (c.n_transporte_cab_lan_bote || 0) + (c.n_transporte_otros || 0), tras),
+        ninos: div((c.n_edad_0_5 || 0) + (c.n_edad_6_13 || 0), per), adol: div(c.n_edad_14_17 || 0, per),
+        adultos: div((c.n_edad_18_24 || 0) + (c.n_edad_25_44 || 0) + (c.n_edad_45_59 || 0), per),
+        mayores: div(c.n_edad_60_mas || 0, per),
+        inm: div(c.n_inmigrantes || 0, per), pueblo: div(c.n_pueblos_orig || 0, per),
+        disc: div(c.n_discapacidad || 0, per), mujeres: div(c.n_mujeres || 0, per),
+        desoc: div(c.n_desocupado || 0, (c.n_ocupado || 0) + (c.n_desocupado || 0)),
+        hacin: div(c.n_viv_hacinadas || 0, c.n_vp_ocupada || 0),
+        sinInt: div(Math.max(0, (c.n_hog || 0) - (c.n_internet || 0)), c.n_hog || 0),
+        jefa: div(c.n_jefatura_mujer || 0, c.n_hog || 0),
+        edad: c.prom_edad, esc: c.prom_escolaridad18
+      };
+    }
+
+    // Flecha si la UV está claramente sobre/bajo Copiapó
+    function flecha(v, prom) {
+      if (!prom) return '';
+      const r = v / prom;
+      return r > 1.15 ? ' <i class="fa-solid fa-arrow-up sube"></i>' : r < 0.85 ? ' <i class="fa-solid fa-arrow-down baja"></i>' : '';
+    }
+
+    function abrirFichaUV(nombre) {
+      const r = resumenUV && resumenUV.uv[nombre];
+      if (!r) return;
+      const c = r.censo, u = indicadoresUV(c), cp = indicadoresUV(resumenUV.total.censo);
+      const props = ((uvsGeo ? uvsGeo.features : []).concat(ficticiasGeo ? ficticiasGeo.features : [])
+        .find(f => f.properties.NOMBRE_UV === nombre && !f.properties.extension) || { properties: {} }).properties;
+      const ficticia = !!props.ficticia;
+      const pct = v => fmt(100 * v, 1) + ' %';
+
+      // Perfiles de sus manzanas
+      const fs = datos.features.filter(f => f.properties.uv === nombre);
+      const porPerfil = {};
+      fs.forEach(f => { porPerfil[f.properties.cluster] = (porPerfil[f.properties.cluster] || 0) + (f.properties.per || 0); });
+      const pobMz = Object.values(porPerfil).reduce((a, b) => a + b, 0) || 1;
+      const perfilesHtml = [0, 1, 2, 3, 4, -1].filter(k => porPerfil[k]).map(k => {
+        const color = k >= 0 ? PERFILES[k].color : COLOR_SIN_PERFIL;
+        return `<div class="fila-perfil-uv"><i style="background:${color}"></i>
+          <span>${k >= 0 ? `Perfil ${PERFILES[k].letra} · ${esc(PERFILES[k].nombre)}` : 'Pocas personas (sin perfil)'}</span>
+          <b>${fmt(100 * porPerfil[k] / pobMz, 0)} %</b></div>`;
+      }).join('');
+      const barraPerfiles = [0, 1, 2, 3, 4, -1].filter(k => porPerfil[k]).map(k =>
+        `<i style="width:${100 * porPerfil[k] / pobMz}%;background:${k >= 0 ? PERFILES[k].color : COLOR_SIN_PERFIL}"></i>`).join('');
+
+      // Indicadores: UV vs Copiapó
+      const filas = [
+        ['Edad promedio', u.edad != null ? fmt(u.edad, 1) + ' años' : '–', cp.edad != null ? fmt(cp.edad, 1) + ' años' : '–', ''],
+        ['Escolaridad (18+)', u.esc != null ? fmt(u.esc, 1) + ' años' : '–', cp.esc != null ? fmt(cp.esc, 1) + ' años' : '–', ''],
+        ['Desocupación', pct(u.desoc), pct(cp.desoc), flecha(u.desoc, cp.desoc)],
+        ['Inmigrantes', pct(u.inm), pct(cp.inm), flecha(u.inm, cp.inm)],
+        ['Pueblos originarios', pct(u.pueblo), pct(cp.pueblo), flecha(u.pueblo, cp.pueblo)],
+        ['Con discapacidad', pct(u.disc), pct(cp.disc), flecha(u.disc, cp.disc)],
+        ['Viviendas hacinadas', pct(u.hacin), pct(cp.hacin), flecha(u.hacin, cp.hacin)],
+        ['Hogares sin internet', pct(u.sinInt), pct(cp.sinInt), flecha(u.sinInt, cp.sinInt)],
+        ['Jefatura femenina', pct(u.jefa), pct(cp.jefa), flecha(u.jefa, cp.jefa)]
+      ];
+
+      // Servicios (archivo de UV)
+      const num = k => Number(props[k]) || 0;
+      const m2hab = u.per ? num('AREA_VERDE') / u.per : 0;
+      const salud = num('TOTAL_SALU');
+      const detSalud = [[num('SALUD_PUBL'), 'públ.'], [num('SALUD_PRIV'), 'priv.'], [num('SALUD_OTRO'), 'otro']]
+        .filter(([n]) => n > 0).map(([n, t]) => `${n} ${t}`).join(' · ');
+      const servicios = [
+        ['fa-house-medical', 'Centros de salud', salud, detSalud],
+        ['fa-school', 'Establec. educacionales', num('T_EDUCACIO'), ''],
+        ['fa-prescription-bottle-medical', 'Farmacias', num('FARMACIAS'), ''],
+        ['fa-cart-shopping', 'Supermercados', num('SUPERMERCA'), ''],
+        ['fa-futbol', 'Recintos deportivos', num('DEPORTE'), ''],
+        ['fa-tree', 'Áreas verdes', fmt(num('AREA_VERDE') / 10000, 1) + ' ha', m2hab ? fmt(m2hab, 1) + ' m²/hab' : ''],
+        ['fa-shield-halved', 'Carabineros / PDI', num('CARABINERO') + num('PDI'), ''],
+        ['fa-fire-extinguisher', 'Bomberos', num('BOMBEROS'), '']
+      ];
+      const serviciosHtml = ficticia
+        ? `<p class="nota">UV creada para el análisis (sectores altos y tomas): el archivo de UV no tiene datos de servicios para este sector.</p>`
+        : `<div class="servicios-uv">${servicios.map(([ic, n, v, d]) => `
+            <div class="${v === 0 ? 'cero' : ''}"><i class="fa-solid ${ic}"></i>
+              <span><b>${v}</b>${n}${d ? `<small>${d}</small>` : ''}</span></div>`).join('')}</div>`;
+
+      const lineas = lineasDeUV(nombre);
+      const bandas = [['menos_200', 'Menos de 200 m', '#3ad1c4'], ['entre_200_400', '200 a 400 m', '#f6c544'], ['mas_400', 'Más de 400 m', '#ff5d73']];
+
+      const html = `
+        <div class="modal-cabecera">
+          <div class="ruta">${ficticia ? 'UV FICTICIA · CREADA PARA EL ANÁLISIS' : 'UNIDAD VECINAL' + (props.CODIGO_UV ? ' · N° ' + esc(props.CODIGO_UV) : '')}</div>
+          <h2 id="titulo-modal">${esc(nombreCorto(nombre))}</h2>
+          <p>${fmt(u.per)} personas · ${fmt(c.n_hog)} hogares · ${fmt(fs.length)} manzanas · Censo 2024</p>
+          ${botonCerrar}
+        </div>
+        <div class="modal-cuerpo">
+          <div>
+            <div class="kpis">
+              <div><span>Habitantes</span><b>${fmt(u.per)}</b></div>
+              <div><span>Usa transporte público</span><b>${pct(u.tp)}</b></div>
+              <div><span>A menos de 200 m del bus</span><b>${fmt(100 * r.menos_200 / r.poblacion, 1)} %</b></div>
+              <div><span>Usuarios de bus lejos</span><b style="color:${r.tp_lejos_200 > 300 ? '#ff8a3d' : 'inherit'}">${fmt(r.tp_lejos_200)}</b></div>
+            </div>
+
+            <h3 class="subtitulo">Perfiles de sus manzanas</h3>
+            <div class="barra-perfiles-uv">${barraPerfiles}</div>
+            ${perfilesHtml}
+
+            <h3 class="subtitulo">Indicadores</h3>
+            <table class="datos">
+              <thead><tr><th>Indicador</th><th>UV</th><th>Copiapó</th></tr></thead>
+              <tbody>${filas.map(([n, v, p, f]) => `<tr><td>${n}</td><td>${v}${f}</td><td>${p}</td></tr>`).join('')}</tbody>
+            </table>
+          </div>
+          <div>
+            <h3 class="subtitulo">Cómo se trasladan · Edades</h3>
+            <div class="donas">
+              <div class="dona">${dona([
+                { n: 'Bus', v: 100 * u.tp, color: '#ff8a3d' }, { n: 'Auto', v: 100 * u.auto, color: '#5b8ff9' },
+                { n: 'A pie', v: 100 * u.camina, color: '#3ad1c4' }, { n: 'Otros', v: 100 * u.otros, color: '#8b95a3' }])}</div>
+              <div class="dona">${dona([
+                { n: '0–13', v: 100 * u.ninos, color: '#7cc4ff' }, { n: '14–17', v: 100 * u.adol, color: '#b39dfb' },
+                { n: '18–59', v: 100 * u.adultos, color: '#cfd5dd' }, { n: '60+', v: 100 * u.mayores, color: '#f6c544' }])}</div>
+            </div>
+
+            <h3 class="subtitulo">Distancia de la población a un recorrido</h3>
+            <div class="barra-perfiles-uv">${bandas.map(([k, , col]) => `<i style="width:${100 * r[k] / r.poblacion}%;background:${col}"></i>`).join('')}</div>
+            ${bandas.map(([k, n, col]) => `<div class="fila-perfil-uv"><i style="background:${col}"></i><span>${n}</span><b>${fmt(100 * r[k] / r.poblacion, 1)} %</b></div>`).join('')}
+
+            <h3 class="subtitulo">Servicios</h3>
+            ${serviciosHtml}
+
+            <h3 class="subtitulo">Líneas de bus que la recorren · ${lineas.length}</h3>
+            <div class="lineas-uv">${lineas.length
+              ? lineas.map(([l, f]) => `<span><i class="fa-solid fa-bus"></i>${esc(l)}${f ? `<small>${esc(f)}</small>` : ''}</span>`).join('')
+              : '<p class="nota">Ninguna línea pasa por esta UV.</p>'}</div>
+
+            <button class="chip" style="margin-top:18px;border-right:1px solid var(--borde)" onclick="cerrarModal()">
+              <i class="fa-solid fa-map"></i> VER EN EL MAPA</button>
+          </div>
+        </div>
+        <p class="nota" style="padding:0 26px 22px;margin:0">
+          Población, movilidad, empleo, hogares y vivienda: Censo 2024 (INE), por manzana. Servicios: archivo de UV.
+          Cobertura: distancia en línea recta desde cada manzana al recorrido más cercano. "Copiapó" = total de las UV urbanas.
+        </p>`;
+      abrirModal(null, html);
+    }
+
+    // Celular: vista algo más alejada
+    if (esMovil()) map.jumpTo({ ...VISTA_3D, zoom: 11.9 });
+  </script>
+</body>
+</html>
