@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------
 // Agrupa las manzanas en perfiles parecidos con k-means sobre variables
 // estandarizadas (z-score) y genera un archivo liviano para la
-// visualización 3D (Manzanas_3D.html).
+// visualización 3D (Atlas_Copiapo_3D.html).
 //
 // Uso (desde la raíz del repositorio):
 //   node scripts/clusters_manzanas.mjs
