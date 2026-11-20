@@ -137,6 +137,16 @@
     .resumen-filtro .barra-pct i { display: block; height: 100%; background: var(--acento); transition: width 0.15s; }
     .resumen-filtro small { display: block; font-size: 12px; line-height: 1.5; color: var(--texto-suave); }
     .resumen-filtro small b { color: var(--texto); font-weight: 600; }
+    /* Química de un relave (ficha) */
+    .elemento-relave { margin: 12px 0 16px; }
+    .elemento-relave .cabeza { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+    .elemento-relave .cabeza b { font-size: 14px; }
+    .elemento-relave .veces { font: 600 12px var(--mono); color: #ff6b5b; white-space: nowrap; }
+    .elemento-relave .pista-veces { height: 5px; margin: 6px 0 5px; background: rgba(255, 255, 255, 0.08); }
+    .elemento-relave .pista-veces i { display: block; height: 100%; background: linear-gradient(90deg, #fbb13c, #ff3b30); }
+    .elemento-relave small { font-size: 10.5px; color: var(--texto-suave); }
+    .elemento-relave p { margin: 6px 0 0; font-size: 12.5px; line-height: 1.5; color: #c9cfd7; }
+    .aviso-salud { padding: 10px 12px; border: 1px solid var(--borde); background: rgba(255, 255, 255, 0.03); }
     /* Capa de relaves mineros */
     .leyenda-relaves { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--borde); }
     .leyenda-relaves .fila-rel { display: flex; align-items: center; gap: 8px; margin: 5px 0; font-size: 12px; }
@@ -1261,9 +1271,9 @@
       <div class="eyebrow">01 — Los datos</div>
       <h2 id="h-datos">Las manzanas de Copiapó</h2>
       <p class="intro" id="intro-datos">
-        Censo 2024 a nivel de manzana. Cada manzana se clasificó en un perfil según cómo se traslada su
-        población, su edad, migración, hacinamiento, escolaridad y densidad. Pase el cursor por la dona para
-        aislar un perfil; toque una unidad vecinal para verla en el mapa.
+        Censo 2024 a nivel de manzana. Cada manzana se clasificó en uno de cinco perfiles hechos solo con datos
+        demográficos: edad, migración, pueblos originarios, hacinamiento, escolaridad, desocupación y densidad.
+        Pase el cursor por la dona para aislar un perfil; toque una unidad vecinal para verla en el mapa.
       </p>
       <div class="grid-2">
         <div class="marco">
@@ -1369,19 +1379,7 @@
     // CONFIGURACIÓN
     // =====================================================================
 
-    // Perfiles (clusters k-means, ver scripts/clusters_manzanas.mjs). Orden: más auto → más bus
-    const PERFILES = [
-      { letra: 'A', nombre: 'Baja densidad, mayores con auto', color: '#5b8ff9',
-        desc: 'Manzanas amplias y poco densas, con más adultos mayores y alta escolaridad. Se trasladan principalmente en auto.' },
-      { letra: 'B', nombre: 'Familias con auto', color: '#3ad1c4',
-        desc: 'Hogares con niños, pocos adultos mayores y la mayor escolaridad de la ciudad. El auto es el medio principal.' },
-      { letra: 'C', nombre: 'Barrios envejecidos', color: '#f6c544',
-        desc: 'Casi 3 de cada 10 personas tienen 60 años o más; menor escolaridad y más desocupación.' },
-      { letra: 'D', nombre: 'Dependientes del bus', color: '#ff9d4d',
-        desc: 'Barrios densos donde casi la mitad de quienes se trasladan usa transporte público.' },
-      { letra: 'E', nombre: 'Alta migración y hacinamiento', color: '#ff5d73',
-        desc: 'Mayoría migrante, hacinamiento alto y muchos niños. Dependen del bus y viven lejos de los recorridos.' }
-    ];
+    // Perfiles: vienen en cada archivo de manzanas (metadata.perfiles), ver scripts/clusters_manzanas.mjs
     const COLOR_SIN_PERFIL = '#5b6270';
 
     // Variables: color (escala continua) y altura
@@ -1396,6 +1394,16 @@
       { clave: 'hacin',   nombre: 'Hacinamiento',           unidad: '%',        pct: true,  dec: 1 },
       { clave: 'desoc',   nombre: 'Desocupación',           unidad: '%',        pct: true,  dec: 1 },
       { clave: 'esc',     nombre: 'Escolaridad (18+)',      unidad: 'años',     pct: false, dec: 1 },
+      { clave: 'disc',    nombre: 'Personas con discapacidad', unidad: '%',     pct: true,  dec: 1 },
+      { clave: 'sinint',  nombre: 'Hogares sin internet',   unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'jefa',    nombre: 'Jefatura femenina',      unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'pueblo',  nombre: 'Pueblos originarios',    unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'mineria', nombre: 'Trabaja en minería',     unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'agua',    nombre: 'Sin agua de red pública', unidad: '%',       pct: true,  dec: 1 },
+      { clave: 'irrec',   nombre: 'Viviendas irrecuperables', unidad: '%',      pct: true,  dec: 1 },
+      { clave: 'deficit', nombre: 'Déficit habitacional',   unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'allegados', nombre: 'Hogares allegados',    unidad: '%',        pct: true,  dec: 1 },
+      { clave: 'sincontrato', nombre: 'Arriendo sin contrato', unidad: '%',     pct: true,  dec: 1 },
       { clave: 'dist',    nombre: 'Distancia al bus',       unidad: 'm',        pct: false, dec: 0 },
       { clave: 'relave',  nombre: 'Distancia a un relave',  unidad: 'm',        pct: false, dec: 0, invertir: true }   // cerca = oscuro
     ];
@@ -1423,7 +1431,7 @@
     // Comunas: el mapa carga solo la que se está viendo (Tierra Amarilla se descarga al elegirla).
     // Cada una tiene sus propios perfiles, escalas y promedios. `datos` = Copiapó (análisis de abajo).
     const COMUNAS = {
-      CP: { nombre: 'Copiapó', geo: null, resumen: null, perfiles: PERFILES, estad: {}, promedios: {} },
+      CP: { nombre: 'Copiapó', geo: null, resumen: null, perfiles: null, estad: {}, promedios: {} },
       TA: { nombre: 'Tierra Amarilla', geo: null, resumen: null, perfiles: null, estad: {}, promedios: {}, cargando: null }
     };
     let comunaActiva = 'CP';
@@ -1601,6 +1609,7 @@
       datos = manzanas;
       resumenUV = cobertura;
       COMUNAS.CP.geo = datos;
+      COMUNAS.CP.perfiles = datos.metadata.perfiles;
       COMUNAS.CP.resumen = cobertura;
       calcularEstadisticas();
 
@@ -1708,6 +1717,16 @@
       return uvDestacada.nombre ? ['case', ['==', ['get', 'uv'], uvDestacada.nombre], base, '#3c424b'] : base;
     }
 
+    // Qué mide cada variable de vivienda, agua y trabajo (Censo 2024)
+    const NOTAS_VARIABLE = {
+      mineria: 'Porcentaje de las personas ocupadas que trabaja en minería (rama B del Censo).',
+      agua: 'Viviendas que se abastecen de camión aljibe, pozo o río en vez de la red pública.',
+      irrec: 'Viviendas que el Censo califica como irrecuperables por sus materiales (deben reemplazarse).',
+      deficit: 'Déficit cuantitativo del Censo: viviendas que faltan (por hogares allegados, núcleos hacinados o viviendas irrecuperables), por cada 100 hogares.',
+      allegados: 'Hogares que comparten la vivienda de otro hogar.',
+      sincontrato: 'Hogares que arriendan sin contrato, sobre el total de hogares según su tenencia.'
+    };
+
     // Escala de color de una variable (algunas van al revés: p. ej. cerca de un relave = oscuro)
     const escalaDe = v => v.invertir ? ESCALA_COLOR.slice().reverse() : ESCALA_COLOR;
 
@@ -1802,6 +1821,16 @@
         desoc:   r => `donde ${r} de quienes buscan trabajo o trabajan está desocupado`,
         esc:     r => `donde los adultos (18 años o más) estudiaron en promedio ${r}`,
         dist:    r => `que están ${r.replace(/^entre /, 'entre ').replace(/^hasta /, 'a menos de ')} de un recorrido de bus`,
+        disc:    r => `donde ${r} de sus habitantes tiene alguna discapacidad`,
+        sinint:  r => `donde ${r} de los hogares no tiene internet`,
+        jefa:    r => `donde ${r} de los hogares tiene a una mujer como jefa de hogar`,
+        pueblo:  r => `donde ${r} de sus habitantes pertenece a un pueblo originario`,
+        mineria: r => `donde ${r} de quienes trabajan lo hace en la minería`,
+        agua:    r => `donde ${r} de las viviendas recibe agua de camión, pozo o río (sin red pública)`,
+        irrec:   r => `donde ${r} de las viviendas está en condición irrecuperable`,
+        deficit: r => `donde faltan viviendas para ${r} de sus hogares`,
+        allegados: r => `donde ${r} de los hogares vive como allegado en una vivienda de otro hogar`,
+        sincontrato: r => `donde ${r} de los hogares arrienda sin contrato`,
         relave:  r => `que están ${r.replace(/^hasta /, 'a menos de ').replace(/ o más$/, ' o más')} del relave más cercano`
       };
       const condicion = conRango && FRASES[v.clave] ? ' ' + FRASES[v.clave](rangoPalabras) : '';
@@ -1870,13 +1899,23 @@
     // =====================================================================
     // CONTROLES
     // =====================================================================
+    const GRUPOS_VARIABLES = [
+      ['Población', ['per', 'dens', 'ninos', 'mayores', 'inm', 'pueblo', 'disc']],
+      ['Educación y trabajo', ['esc', 'desoc', 'mineria']],
+      ['Hogares y vivienda', ['hacin', 'irrec', 'deficit', 'allegados', 'sincontrato', 'jefa', 'sinint', 'agua']],
+      ['Transporte', ['tp', 'auto', 'dist']],
+      ['Relaves mineros', ['relave']]
+    ];
+
     function opcionesColor() {
       return `<optgroup label="Clasificación"><option value="perfil">Perfil de la manzana (A–E)</option></optgroup>
-        <optgroup label="Indicadores Censo 2024">${VARIABLES.map(v => `<option value="${v.clave}">${v.nombre}</option>`).join('')}</optgroup>`;
+        ${GRUPOS_VARIABLES.map(([t, ks]) => `<optgroup label="${t}">${ks.map(k => VARIABLES.find(v => v.clave === k))
+          .filter(Boolean).map(v => `<option value="${v.clave}">${v.nombre}</option>`).join('')}</optgroup>`).join('')}`;
     }
 
     function opcionesAltura() {
-      return `<option value="plano">Sin altura (plano)</option>${VARIABLES.map(v => `<option value="${v.clave}">${v.nombre}</option>`).join('')}`;
+      return `<option value="plano">Sin altura (plano)</option>${GRUPOS_VARIABLES.map(([t, ks]) => `<optgroup label="${t}">${ks
+        .map(k => VARIABLES.find(v => v.clave === k)).filter(Boolean).map(v => `<option value="${v.clave}">${v.nombre}</option>`).join('')}</optgroup>`).join('')}`;
     }
 
     function construirControles() {
@@ -1948,7 +1987,7 @@
             <span><b>Pocas personas</b><small>Menos de 20 habitantes, sin perfil</small></span>
           </button>
           <div id="resumen-filtro" class="resumen-filtro" aria-live="polite"></div>
-          <p class="nota">Toque un perfil para filtrarlo. Ver detalle en <a href="#" onclick="abrirModal('perfiles');return false" style="color:var(--acento)">PERFILES</a>.${comunaActiva === 'TA' ? ' Tierra Amarilla tiene perfiles propios, hechos solo con datos demográficos del Censo (sin transporte).' : ''}</p>`;
+          <p class="nota">Toque un perfil para filtrarlo. Ver detalle en <a href="#" onclick="abrirModal('perfiles');return false" style="color:var(--acento)">PERFILES</a>. Cada comuna tiene perfiles propios, hechos solo con datos demográficos del Censo.</p>`;
         actualizarResumenFiltro();
         return;
       }
@@ -1968,7 +2007,7 @@
             <output id="out-hasta">${fmtVar(v.clave, valorRango(estado.rango[1]))}</output></div>
         </div>
         <div id="resumen-filtro" class="resumen-filtro" aria-live="polite"></div>
-        <p class="nota">${v.clave === 'relave' ? 'Escala fija de 0 a 2 km: más cerca de un relave, color más oscuro. Distancia desde el centro de la manzana al borde del relave más cercano.' : `Escala entre el 2 % y el 98 % de las manzanas de ${NOMBRE_COMUNA[comunaActiva]}.`} En gris: sin dato o con menos de 20 personas (porcentajes poco confiables).${v.clave === 'dist' && comunaActiva === 'TA' ? ' Tierra Amarilla no tiene recorridos de bus en el Atlas.' : ''}</p>`;
+        <p class="nota">${v.clave === 'relave' ? 'Escala fija de 0 a 2 km: más cerca de un relave, color más oscuro. Distancia desde el centro de la manzana al borde del relave más cercano.' : `Escala entre el 2 % y el 98 % de las manzanas de ${NOMBRE_COMUNA[comunaActiva]}.`} En gris: sin dato o con menos de 20 personas (porcentajes poco confiables).${v.clave === 'dist' && comunaActiva === 'TA' ? ' Tierra Amarilla no tiene recorridos de bus en el Atlas.' : ''}${v.clave === 'pueblo' ? ' El INE oculta las cifras pequeñas por confidencialidad: esas manzanas quedan sin dato y el total puede estar subestimado.' : ''}${v.clave === 'jefa' || v.clave === 'sinint' ? ' Porcentaje sobre los hogares de la manzana.' : ''}${NOTAS_VARIABLE[v.clave] ? ' ' + NOTAS_VARIABLE[v.clave] : ''}</p>`;
 
       const d = document.getElementById('rango-desde'), h = document.getElementById('rango-hasta');
       const mover = () => {
@@ -2084,7 +2123,8 @@
             map.getCanvas().style.cursor = 'pointer';
             etiqueta.remove();
             mostrarTip(`RELAVE · ${esc(p.nombre)}<br>${esc(NOMBRE_ESTADO_RELAVE[p.estado] || p.estado)}${p.toneladas ? ' · ' + fmtTon(p.toneladas) : ''}<br>${p.pob_1000
-              ? `${fmt(p.pob_1000)} personas viven a menos de 1 km` : 'Sin viviendas a menos de 1 km'}`, e.originalEvent);
+              ? `${fmt(p.pob_1000)} personas viven a menos de 1 km` : 'Sin viviendas a menos de 1 km'}${p.peor && p.peor_veces > 1 && ELEMENTOS_RELAVE[p.peor]
+              ? `<br><span style="color:#ff6b5b">${ELEMENTOS_RELAVE[p.peor].nombre}: ${fmtVeces(p.peor_veces)} veces la referencia</span>` : ''}`, e.originalEvent);
           });
           map.on('mouseleave', 'relaves-3d', () => { map.getCanvas().style.cursor = ''; ocultarTip(); });
         }
@@ -2177,6 +2217,15 @@
         ['Escolaridad (18+)', fmtVar('esc', p.esc), fmtVar('esc', pr.esc)],
         ['Desocupación', fmtVar('desoc', p.desoc), fmtVar('desoc', pr.desoc)],
         ['Con discapacidad', p.disc == null ? '–' : fmt(p.disc, 1) + ' %', fmt(pr.disc, 1) + ' %'],
+        ['Hogares sin internet', p.sinint == null ? '–' : fmt(p.sinint, 1) + ' %', null],
+        ['Jefatura femenina', p.jefa == null ? '–' : fmt(p.jefa, 1) + ' %', null],
+        ['Pueblos originarios', p.pueblo == null ? 'Sin dato' : fmt(p.pueblo, 1) + ' %', null],
+        ['Trabaja en minería', p.mineria == null ? '–' : fmt(p.mineria, 1) + ' %', null],
+        ['Sin agua de red pública', p.agua == null ? '–' : fmt(p.agua, 1) + ' %', null],
+        ['Viviendas irrecuperables', p.irrec == null ? '–' : fmt(p.irrec, 1) + ' %', null],
+        ['Déficit habitacional', p.deficit == null ? '–' : fmt(p.deficit, 1) + ' %', null],
+        ['Hogares allegados', p.allegados == null ? '–' : fmt(p.allegados, 1) + ' %', null],
+        ['Arriendo sin contrato', p.sincontrato == null ? '–' : fmt(p.sincontrato, 1) + ' %', null],
         ['Distancia al bus', fmtVar('dist', p.dist), fmtVar('dist', pr.dist)],
         ['Relave más cercano', p.relave == null ? '–' : `${fmt(p.relave)} m${p.relave_id != null && relavePorId(p.relave_id)
           ? ' · ' + esc(nombreCorto(relavePorId(p.relave_id).properties.nombre)) : ''}`, null]
@@ -2185,7 +2234,7 @@
         <div class="modal-cabecera">
           <div class="ruta">${ta ? 'TIERRA AMARILLA / ' : ''}${esc(p.uv || 'SIN UV')} / ${perfil ? 'PERFIL ' + perfil.letra : 'SIN PERFIL'}</div>
           <h2 id="titulo-modal">${esc(p.uv ? 'Manzana · ' + p.uv : 'Manzana')}</h2>
-          <p>${perfil ? esc(perfil.nombre) + ' · ' : ''}${fmt(p.per)} personas · ${fmt(p.hog)} hogares${ta && p.localidad && p.localidad !== 'TIERRA AMARILLA' ? ' · ' + esc(nombreCorto(p.localidad)) : ''}</p>
+          <p>${perfil ? esc(perfil.nombre) + ' · ' : ''}${fmt(p.per)} personas · ${fmt(p.hog)} hogares${p.localidad && !['TIERRA AMARILLA', 'COPIAPÓ'].includes(p.localidad) ? ' · ' + esc(nombreCorto(p.localidad)) : ''}</p>
           ${botonCerrar}
         </div>
         <div class="modal-cuerpo">
@@ -2232,20 +2281,16 @@
 
     function htmlPerfiles() {
       const C = CA(), ta = comunaActiva === 'TA';
-      const filas = ta ? [
+      const filas = [
         ['Niños 0–13', 'ninos', '#7cc4ff'], ['Mayores 60+', 'mayores', '#f6c544'], ['Inmigrantes', 'inm', '#ff5d73'],
         ['Pueblos originarios', 'pueblo', '#b39dfb'], ['Hacinamiento', 'hacin', '#ff9d4d'], ['Desocupación', 'desoc', '#8b95a3']
-      ] : [
-        ['Transporte público', 'tp', '#ff8a3d'], ['Auto', 'auto', '#5b8ff9'], ['Niños 0–13', 'ninos', '#7cc4ff'],
-        ['Mayores 60+', 'mayores', '#f6c544'], ['Inmigrantes', 'inm', '#ff5d73'], ['Hacinamiento', 'hacin', '#ff9d4d'],
-        ['Desocupación', 'desoc', '#b39dfb']
       ];
       const maximos = Object.fromEntries(filas.map(([, k]) => [k, Math.max(...C.geo.metadata.perfiles.map(p => p[k]), C.promedios[k])]));
       const tarjetas = C.perfiles.map((pf, i) => {
         const m = C.geo.metadata.perfiles[i];
         return `<div class="tarjeta">
           <h3><span class="letra" style="color:${pf.color}">${pf.letra}</span>${pf.nombre}</h3>
-          <p>${pf.desc}<br><span class="mono" style="font-size:10.5px">${fmt(m.manzanas)} manzanas · ${fmt(m.poblacion)} personas · ${fmt(m.esc, 1)} años de escolaridad${ta ? '' : ' · ' + fmt(m.dist) + ' m al bus'}</span></p>
+          <p>${pf.desc}<br><span class="mono" style="font-size:10.5px">${fmt(m.manzanas)} manzanas · ${fmt(m.poblacion)} personas · ${fmt(m.esc, 1)} años de escolaridad</span></p>
           ${filas.map(([n, k, color]) => `
             <div class="fila-barra"><span>${n}</span>
               <div class="pista">
@@ -2258,9 +2303,9 @@
       }).join('');
       return `
         <div class="modal-cabecera">
-          <div class="ruta">K-MEANS · ${C.perfiles.length} PERFILES · ${ta ? 'SOLO DEMOGRAFÍA · ' : ''}CENSO 2024</div>
+          <div class="ruta">K-MEANS · ${C.perfiles.length} PERFILES · SOLO DEMOGRAFÍA · CENSO 2024</div>
           <h2 id="titulo-modal">Perfiles de manzana · ${C.nombre}</h2>
-          <p>Línea blanca = promedio de ${C.nombre}${ta ? ' · Perfiles propios: niños, mayores, inmigrantes, pueblos originarios, hacinamiento, escolaridad, desocupación y densidad' : ''}</p>
+          <p>Línea blanca = promedio de ${C.nombre} · Perfiles propios de cada comuna, hechos con niños, mayores, inmigrantes, pueblos originarios, hacinamiento, escolaridad, desocupación y densidad</p>
           ${botonCerrar}
         </div>
         <div class="modal-cuerpo una-columna"><div class="tarjetas-perfil">${tarjetas}</div></div>`;
@@ -2272,31 +2317,34 @@
       const totalPf = pf.reduce((s, p) => s + p.poblacion, 0);
       const prioritarias = resumenUV ? Object.entries(resumenUV.uv)
         .sort((a, b) => b[1].tp_lejos_200 - a[1].tp_lejos_200).slice(0, 3) : [];
-      const pctE = 100 * pf[4].poblacion / totalPf;
+      // Perfil con más migración y hacinamiento (el más vulnerable) y cuánto depende del bus
+      const vul = pf.slice().sort((a, b) => b.inm - a.inm)[0];
+      const rel = relavesMz && relavesMz.totales.CP;
       return `
         <div class="modal-cabecera">
           <div class="ruta">INFORME · HALLAZGOS PRINCIPALES</div>
-          <h2 id="titulo-modal">Copiapó: población y transporte</h2>
-          <p>Censo 2024 (INE) · ${fmt(t ? t.poblacion : totalPf)} habitantes en ${fmt(datos.features.length)} manzanas</p>
+          <h2 id="titulo-modal">Copiapó: población, transporte y relaves</h2>
+          <p>Censo 2024 (INE) · ${fmt(datos.features.reduce((s, f) => s + (f.properties.per || 0), 0))} habitantes en ${fmt(datos.features.length)} manzanas</p>
           ${botonCerrar}
         </div>
         <div class="modal-cuerpo una-columna">
           <div class="hallazgos">
-            ${t ? `<div class="hallazgo"><b>${fmt(100 * t.menos_200 / t.poblacion, 1)} %</b><span>de la población vive a menos de 200 m de un recorrido de bus.</span></div>
+            ${t ? `<div class="hallazgo"><b>${fmt(100 * t.menos_200 / t.poblacion, 1)} %</b><span>de la población urbana vive a menos de 200 m de un recorrido de bus.</span></div>
             <div class="hallazgo"><b>${fmt(t.tp_lejos_200)}</b><span>personas que usan transporte público viven a 200 m o más de un recorrido.</span></div>` : ''}
-            <div class="hallazgo"><b>${fmt(promedios.tp, 1)} %</b><span>de quienes se trasladan a trabajar o estudiar usa transporte público (manzanas con perfil).</span></div>
-            <div class="hallazgo"><b>${fmt(pctE, 1)} %</b><span>de la población vive en manzanas de perfil E: mayoría migrante, hacinamiento alto y a ${fmt(pf[4].dist)} m promedio de un recorrido.</span></div>
+            <div class="hallazgo"><b>${fmt(100 * vul.poblacion / totalPf, 1)} %</b><span>de la población vive en manzanas de perfil ${vul.letra} (${esc(vul.nombre.toLowerCase())}):
+              ${fmt(vul.inm, 0)} % de inmigrantes, ${fmt(vul.hacin, 0)} % de viviendas hacinadas y un ${fmt(vul.tp, 0)} % que se traslada en bus.</span></div>
+            ${rel ? `<div class="hallazgo"><b>${fmt(rel.menos_1000)}</b><span>personas (${fmt(100 * rel.menos_1000 / rel.poblacion, 0)} %) viven a menos de 1 km de un relave minero.</span></div>` : ''}
           </div>
           <div class="texto-informe">
             <h3 class="subtitulo" style="margin-top:24px">Lectura</h3>
-            <p>Las manzanas de Copiapó se agrupan en cinco perfiles. Los perfiles <b>A</b> y <b>B</b> concentran hogares que se
-            trasladan en auto y con mayor escolaridad; el <b>C</b> corresponde a barrios envejecidos; el <b>D</b> a barrios densos
-            que dependen del bus, y el <b>E</b> a sectores con alta migración y hacinamiento —en gran parte en los sectores altos—,
-            que son a la vez los más dependientes del transporte público y los más alejados de los recorridos.</p>
+            <p>Las manzanas de Copiapó se agrupan en ${pf.length} perfiles demográficos:
+              ${pf.map(p => `<b>${p.letra}</b>, ${esc(p.nombre.toLowerCase())} (${fmt(100 * p.poblacion / totalPf, 0)} %)`).join('; ')}.
+              Los perfiles no usan datos de transporte, así que se pueden cruzar con él: el perfil <b>${vul.letra}</b>, concentrado en los
+              sectores altos, es a la vez el más dependiente del bus y uno de los más alejados de los recorridos.</p>
             ${prioritarias.length ? `<p>Las unidades vecinales con más usuarios de bus lejos de un recorrido son:
-              ${prioritarias.map(([n, v]) => `<b>${esc(n)}</b> (${fmt(v.tp_lejos_200)})`).join(', ')}.</p>` : ''}
+              ${prioritarias.map(([n, v]) => `<b>${esc(nombreCorto(n))}</b> (${fmt(v.tp_lejos_200)})`).join(', ')}.</p>` : ''}
             <p>Explore estos patrones eligiendo <b>"Colorear por: Uso del transporte público"</b> y <b>"Altura por: Distancia al bus"</b>:
-            los bloques altos y claros son manzanas que dependen del bus y están lejos de él.</p>
+            los bloques altos y oscuros son manzanas que dependen del bus y están lejos de él.</p>
           </div>
         </div>`;
     }
@@ -2317,8 +2365,10 @@
             <li><b>Recorridos de buses:</b> elaboración propia en QGIS.</li>
             <li><b>Relieve:</b> Terrain Tiles (Mapzen / AWS Open Data), derivado de SRTM y otras fuentes.</li>
             <li><b>Imagen satelital:</b> Esri World Imagery (Esri, Maxar, Earthstar Geographics).</li>
-            <li><b>Perfiles:</b> k-means (5 grupos, semilla fija) sobre variables estandarizadas: uso de transporte público y auto,
-              niños, mayores, inmigrantes, hacinamiento, escolaridad y densidad (logarítmica). Manzanas con menos de 20 personas sin perfil.</li>
+            <li><b>Perfiles:</b> k-means con semilla fija, por separado en cada comuna (5 grupos en Copiapó, 4 en Tierra Amarilla), sobre
+              variables demográficas estandarizadas: niños, mayores, inmigrantes, pueblos originarios, hacinamiento, escolaridad,
+              desocupación y densidad (logarítmica). El transporte no entra en los perfiles. Manzanas con menos de 20 personas sin perfil.
+              Copiapó incluye la ciudad, San Pedro y Quebrada Paipote.</li>
             <li><b>Distancia al bus:</b> línea recta desde el centro de cada manzana al recorrido más cercano.</li>
             <li><b>Relaves mineros:</b> Sernageomin, Catastro de Depósitos de Relaves (polígonos, estado 2026). Población cercana:
               personas de las manzanas del Censo 2024 cuyo centro está a menos de 500 m o 1 km del borde del depósito
@@ -2596,6 +2646,13 @@
       { clave: 'ninos',   nombre: 'Niños',               unidad: '%',    dec: 1 },
       { clave: 'inm',     nombre: 'Inmigrantes',         unidad: '%',    dec: 1 },
       { clave: 'pueblo',  nombre: 'Pueblos originarios', unidad: '%',    dec: 1 },
+      { clave: 'disc',    nombre: 'Discapacidad',        unidad: '%',    dec: 1 },
+      { clave: 'sinint',  nombre: 'Sin internet',        unidad: '%',    dec: 1 },
+      { clave: 'jefa',    nombre: 'Jefatura femenina',   unidad: '%',    dec: 1 },
+      { clave: 'mineria', nombre: 'Minería',             unidad: '%',    dec: 1 },
+      { clave: 'agua',    nombre: 'Sin agua de red',     unidad: '%',    dec: 1 },
+      { clave: 'deficit', nombre: 'Déficit habitacional', unidad: '%',   dec: 1 },
+      { clave: 'allegados', nombre: 'Allegados',         unidad: '%',    dec: 1 },
       { clave: 'desoc',   nombre: 'Desocupación',        unidad: '%',    dec: 1 }
     ];
     const COLORES_NIVEL = ['#f9f871', '#fbb13c', '#f06b4e', '#c2417a'];
@@ -3647,6 +3704,51 @@
         <p class="nota">Altura según el tonelaje autorizado. Toque un relave para ver su ficha. Fuente: Sernageomin.</p>`;
     }
 
+    // Elementos analizados por Sernageomin: referencia (CCME, suelo residencial, mg/kg) y posibles efectos en la salud
+    // por exposición prolongada (ATSDR, OMS, IARC). Redactado como asociación, no como diagnóstico.
+    const ELEMENTOS_RELAVE = {
+      AS: { nombre: 'Arsénico', ref: 12, efectos: 'La exposición prolongada se asocia a cáncer de piel, pulmón y vejiga (la IARC lo clasifica como cancerígeno para humanos), a manchas y engrosamiento de la piel y a enfermedades cardiovasculares.' },
+      PB: { nombre: 'Plomo', ref: 140, efectos: 'Daña el sistema nervioso. En niños se asocia, aun en dosis bajas, a menor coeficiente intelectual y a problemas de aprendizaje y conducta; en adultos, a hipertensión, anemia y daño renal.' },
+      CD: { nombre: 'Cadmio', ref: 10, efectos: 'Se acumula en los riñones y puede dañarlos. Se asocia a pérdida de masa ósea y a cáncer de pulmón (cancerígeno según la IARC).' },
+      HG: { nombre: 'Mercurio', ref: 6.6, efectos: 'Afecta el sistema nervioso y los riñones: temblores, problemas de memoria y alteraciones del desarrollo en niños expuestos antes de nacer.' },
+      CU: { nombre: 'Cobre', ref: 63, efectos: 'Es esencial en pequeñas dosis, pero en exceso causa molestias gastrointestinales (náuseas, vómitos, dolor abdominal) y, en exposiciones altas y prolongadas, daño al hígado.' },
+      ZN: { nombre: 'Zinc', ref: 250, efectos: 'En exceso provoca molestias gastrointestinales y, a largo plazo, anemia por falta de cobre en el organismo.' },
+      CR: { nombre: 'Cromo', ref: 64, efectos: 'En su forma hexavalente es cancerígeno (pulmón) e irrita la piel y las vías respiratorias. El análisis mide el cromo total, sin distinguir esa forma.' },
+      NI: { nombre: 'Níquel', ref: 45, efectos: 'Causa alergia y dermatitis por contacto; algunos de sus compuestos inhalados se asocian a cáncer de pulmón y de cavidad nasal.' },
+      SB: { nombre: 'Antimonio', ref: 20, efectos: 'Su polvo irrita ojos, piel y pulmones; la exposición prolongada se asocia a problemas respiratorios y cardíacos.' },
+      CO: { nombre: 'Cobalto', ref: 50, efectos: 'La inhalación prolongada de su polvo se asocia a asma y otros problemas pulmonares; en dosis altas puede afectar el corazón y la tiroides.' },
+      MO: { nombre: 'Molibdeno', ref: 10, efectos: 'De baja toxicidad; en exposiciones altas y prolongadas se ha asociado a dolores articulares parecidos a la gota.' }
+    };
+    const fmtVeces = v => v >= 10 ? fmt(v, 0) : fmt(v, 1);
+
+    // Sección "Qué contiene" de la ficha de un relave
+    function htmlQuimicaRelave(p) {
+      if (!p.quimica) return `<h3 class="subtitulo">Qué contiene</h3>
+        <p class="nota">Sernageomin no tiene análisis químico de este depósito.</p>`;
+      const q = typeof p.quimica === 'string' ? JSON.parse(p.quimica) : p.quimica;
+      const filas = Object.entries(q.el).filter(([e]) => ELEMENTOS_RELAVE[e]);
+      const sobre = filas.filter(([, x]) => x.veces > 1).sort((a, b) => b[1].veces - a[1].veces);
+      const bajo = filas.filter(([, x]) => x.veces <= 1 && !x.bajo).map(([e]) => ELEMENTOS_RELAVE[e].nombre.toLowerCase());
+      const noDet = filas.filter(([, x]) => x.bajo).map(([e]) => ELEMENTOS_RELAVE[e].nombre.toLowerCase());
+      const lista = arr => arr.length > 1 ? arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1] : arr[0];
+      return `<h3 class="subtitulo">Qué contiene · ${q.n} ${q.n === 1 ? 'muestra' : 'muestras'}</h3>
+        ${sobre.length ? sobre.map(([e, x]) => {
+          const el = ELEMENTOS_RELAVE[e];
+          const ancho = Math.min(100, 12 + 22 * Math.log10(x.veces));
+          return `<div class="elemento-relave">
+            <div class="cabeza"><b>${el.nombre}</b><span class="veces">${fmtVeces(x.veces)} veces la referencia</span></div>
+            <div class="pista-veces"><i style="width:${ancho}%"></i></div>
+            <small class="mono">Promedio ${fmt(x.prom, x.prom < 10 ? 1 : 0)} mg/kg · máximo ${fmt(x.max, x.max < 10 ? 1 : 0)} · referencia ${fmt(el.ref, el.ref < 10 ? 1 : 0)}</small>
+            <p>${el.efectos}</p>
+          </div>`;
+        }).join('') : '<p class="nota">Ningún elemento analizado supera la referencia en promedio.</p>'}
+        ${bajo.length ? `<p class="nota">Bajo la referencia: ${lista(bajo)}.</p>` : ''}
+        ${noDet.length ? `<p class="nota">No detectados (bajo el límite del laboratorio): ${lista(noDet)}.</p>` : ''}
+        <p class="nota aviso-salud"><i class="fa-solid fa-circle-info"></i> Son concentraciones del material del relave, no del aire, el agua
+          ni el suelo de las casas. El riesgo real depende de cuánto llega a las personas (polvo que levanta el viento, contacto directo,
+          agua o alimentos) y por cuánto tiempo. Los efectos descritos son los asociados a exposiciones prolongadas, no un diagnóstico.</p>`;
+    }
+
     function abrirFichaRelave(id) {
       const f = relavePorId(id);
       if (!f) return;
@@ -3682,6 +3784,7 @@
             </div>
             ${p.pob_1000 ? `<button class="chip" style="margin-top:16px;border-right:1px solid var(--borde)" onclick="cerrarModal(); destacarRelave(${p.id})">
               <i class="fa-solid fa-people-group"></i> VER EN EL MAPA LA POBLACIÓN A MENOS DE 1 KM</button>` : ''}
+            ${htmlQuimicaRelave(p)}
           </div>
           <div>
             <h3 class="subtitulo">Datos del depósito</h3>
@@ -3691,6 +3794,8 @@
         <p class="nota" style="padding:0 26px 22px;margin:0">
           Fuente: Sernageomin, Catastro de Depósitos de Relaves (estado 2026). Población: Censo 2024, manzanas cuyo centro está a menos
           de 500 m o 1 km del borde del depósito. En el mapa, la altura es proporcional a la raíz del tonelaje autorizado (no es su altura real).
+          Química: Sernageomin, Geoquímica de Relaves (promedio de las muestras del depósito). Referencia: Guías de calidad de suelo de Canadá
+          (CCME), uso residencial, porque Chile no tiene norma de suelos. Efectos en la salud: ATSDR, OMS e IARC.
         </p>`);
     }
 
@@ -3849,10 +3954,13 @@
       const c = comunaDeHash();
       if (c !== comunaActiva && datos) irAComuna(c);
     });
-    // Si se llega moviendo el mapa, cambia de comuna sola (Tierra Amarilla queda al sur de -27,43)
+    // Si se llega moviendo el mapa, cambia de comuna sola
     map.on('moveend', () => {
       if (!datos) return;
-      const c = map.getCenter().lat < -27.43 ? 'TA' : 'CP';
+      // Frontera con margen: Copiapó llega hasta -27,424 (San Pedro) y Tierra Amarilla parte en -27,462.
+      // Entre -27,435 y -27,455 se mantiene la comuna actual, para no saltar al acercarse a San Pedro.
+      const lat = map.getCenter().lat;
+      const c = lat < -27.455 ? 'TA' : lat > -27.435 ? 'CP' : comunaActiva;
       if (c !== comunaActiva) activarComuna(c);
     });
 

@@ -17,3 +17,9 @@ inputs/manzanas_copiapo.geojson
 # Datos originales de Tierra Amarilla (manzanas INE y UV dibujadas a mano).
 # El Atlas usa los archivos que genera scripts/manzanas_tierra_amarilla.mjs
 inputs/TierraAmarilla/
+
+# Dashboards ficticios (solo se guardan aquí, no se publican)
+dash-anonimos/
+
+# Manzanas de Copiapó con todos los campos del Censo (16 MB): solo la leen los scripts
+inputs/manzanas_copiapo_V3.geojson

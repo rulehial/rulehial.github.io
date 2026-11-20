@@ -155,6 +155,26 @@ function uvDe(g, codigo, per) {
 // ---------------------------------------------------------------------
 // Indicadores (igual que clusters_manzanas.mjs)
 // ---------------------------------------------------------------------
+// ---------------------------------------------------------------------
+// Vivienda, agua y trabajo (Censo 2024): porcentajes por manzana
+// ---------------------------------------------------------------------
+function indicadoresVivienda(q) {
+  if (!q) return { mineria: null, agua: null, irrec: null, deficit: null, allegados: null, sincontrato: null };
+  const n = k => q[k] || 0;
+  const d = (a, b) => b ? a / b : null;
+  const agua = ['publica', 'pozo', 'camion', 'rio'].reduce((s, k) => s + n('n_fuente_agua_' + k), 0);
+  const tenencia = ['propia_pagada', 'propia_pagandose', 'arrendada_contrato', 'arrendada_sin_contrato', 'cedida_trabajo', 'cedida_familiar', 'otro']
+    .reduce((s, k) => s + n('n_tenencia_' + k), 0);
+  return {
+    mineria: d(n('n_caenes_B'), n('n_ocupado')),                                     // ocupados en minería
+    agua: d(n('n_fuente_agua_pozo') + n('n_fuente_agua_camion') + n('n_fuente_agua_rio'), agua),   // sin red pública
+    irrec: d(n('n_viv_irrecuperables'), n('n_vp_ocupada')),                          // viviendas irrecuperables
+    deficit: d(n('n_deficit_cuantitativo'), n('n_hog')),                             // viviendas faltantes por hogar
+    allegados: d(n('n_hog_allegados'), n('n_hog')),                                  // hogares allegados
+    sincontrato: d(n('n_tenencia_arrendada_sin_contrato'), tenencia)                 // arriendo sin contrato
+  };
+}
+
 const MODOS = ['publico', 'auto', 'camina', 'bicicleta', 'motocicleta', 'cab_lan_bote', 'otros'];
 const div = (a, b) => b ? a / b : null;
 
@@ -173,6 +193,9 @@ const filas = censo.map((f, i) => {
     adol: div(p.n_edad_14_17 || 0, per),
     adultos: div((p.n_edad_18_24 || 0) + (p.n_edad_25_44 || 0) + (p.n_edad_45_59 || 0), per),
     disc: div(p.n_discapacidad || 0, per),
+    sinint: div(Math.max(0, (p.n_hog || 0) - (p.n_internet || 0)), p.n_hog || 0),   // hogares sin internet
+    jefa: div(p.n_jefatura_mujer || 0, p.n_hog || 0),                                 // jefatura femenina
+    viv: indicadoresVivienda(p),
     hog: p.n_hog || 0,
     edad: p.prom_edad ?? null,
     ninos: div((p.n_edad_0_5 || 0) + (p.n_edad_6_13 || 0), per),
@@ -297,8 +320,10 @@ const salida = {
         id: ID_BASE + i, comuna: 'TA', uv: r.uv, localidad: r.localidad, cluster: r.cluster,
         per: r.per, dens: red(r.dens, 0), tp: pct(r.tp), auto: pct(r.auto), camina: pct(r.camina), otros: pct(r.otros),
         adol: pct(r.adol), adultos: pct(r.adultos), disc: pct(r.disc), hog: r.hog, edad: red(r.edad),
-        ninos: pct(r.ninos), mayores: pct(r.mayores), inm: pct(r.inm), pueblo: pct(r.pueblo), hacin: pct(r.hacin), esc: red(r.esc),
-        desoc: pct(r.desoc), dist: null
+        ninos: pct(r.ninos), mayores: pct(r.mayores), inm: pct(r.inm), pueblo: f.properties.n_pueblos_orig == null ? null : pct(r.pueblo), hacin: pct(r.hacin), esc: red(r.esc),
+        desoc: pct(r.desoc), dist: null, sinint: pct(r.sinint), jefa: pct(r.jefa),
+        mineria: pct(r.viv.mineria), agua: pct(r.viv.agua), irrec: pct(r.viv.irrec),
+        deficit: pct(r.viv.deficit), allegados: pct(r.viv.allegados), sincontrato: pct(r.viv.sincontrato)
       },
       geometry: { type: f.geometry.type, coordinates: redCoords(f.geometry.coordinates) }
     };
@@ -309,7 +334,8 @@ const salida = {
       id: ID_BASE + censo.length + k, comuna: 'TA', uv: uvDe(a.geometry, a.manzana + ' (parte sin viviendas)', 0),
       cluster: -1, sinPoblacion: true, nombre: a.nombre, manzana: a.manzana,
       per: null, dens: null, tp: null, auto: null, camina: null, otros: null, adol: null, adultos: null, disc: null, hog: null,
-      edad: null, ninos: null, mayores: null, inm: null, pueblo: null, hacin: null, esc: null, desoc: null, dist: null
+      edad: null, ninos: null, mayores: null, inm: null, pueblo: null, hacin: null, esc: null, desoc: null, dist: null, sinint: null, jefa: null,
+      mineria: null, agua: null, irrec: null, deficit: null, allegados: null, sincontrato: null
     },
     geometry: { type: 'Polygon', coordinates: redCoords(a.geometry.coordinates) }
   })))

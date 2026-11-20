@@ -21,6 +21,25 @@
 import fs from 'node:fs';
 
 const ORIGEN = 'inputs/Respaldos/Sernageomin/geojson/Relaves_y_Pasivos_Ambientales_Depositos_de_R_2.geojson';
+// Geoquímica: muestras del material de los relaves (concentraciones en mg/kg = ppm)
+const GEOQUIMICA = 'inputs/Respaldos/Sernageomin/geojson/Relaves_y_Pasivos_Ambientales_Geoquimica_de_Relaves.geojson';
+
+// Valores de referencia: Guías de calidad de suelo de Canadá (CCME), uso residencial/parques, mg/kg.
+// Chile no tiene norma de suelos; esta guía es la referencia más usada en estudios nacionales.
+// "piso" = valor que el laboratorio informa cuando el elemento está bajo su límite de detección.
+const ELEMENTOS = {
+  AS: { ref: 12,  piso: 10 },   // arsénico
+  PB: { ref: 140, piso: 2.5 },  // plomo
+  CD: { ref: 10,  piso: 0.5 },  // cadmio
+  HG: { ref: 6.6, piso: 0.01 }, // mercurio
+  CU: { ref: 63,  piso: null }, // cobre
+  ZN: { ref: 250, piso: 2.5 },  // zinc
+  CR: { ref: 64,  piso: 5 },    // cromo total
+  NI: { ref: 45,  piso: 2.5 },  // níquel
+  SB: { ref: 20,  piso: 5 },    // antimonio
+  CO: { ref: 50,  piso: 2.5 },  // cobalto
+  MO: { ref: 10,  piso: 2.5 }   // molibdeno
+};
 const COMUNAS = { '03101': 'CP', '03103': 'TA' };
 
 const leer = f => JSON.parse(fs.readFileSync(f, 'utf8'));
@@ -85,9 +104,37 @@ const mzPorRelave = {};
 const num = v => (v === '' || v == null || isNaN(+v)) ? null : +v;
 const titulo = t => String(t || '').trim();
 
+const muestras = leer(GEOQUIMICA).features
+  .filter(f => /COPIAP|TIERRA AMARILLA/i.test(String(f.properties.COMUNA)) && f.geometry)
+  .map(f => ({ pt: aM(f.geometry.coordinates), p: f.properties }));
+const muestrasDe = new Map();      // índice del depósito → muestras
+const anillosDep = depositos.map(f => poligonos(f.geometry).map(pl => pl.map(r => r.map(aM))));
+let sinDeposito = 0;
+muestras.forEach(m => {
+  let mejor = -1, md = 150;
+  anillosDep.forEach((a, k) => { const d = distancia(m.pt, a); if (d < md || (d === 0 && md !== 0)) { md = d; mejor = k; } });
+  if (mejor < 0) { sinDeposito++; return; }
+  if (!muestrasDe.has(mejor)) muestrasDe.set(mejor, []);
+  muestrasDe.get(mejor).push(m.p);
+});
+// Resumen químico de un depósito: promedio y máximo de cada elemento, y veces sobre la referencia
+function quimicaDe(lista) {
+  if (!lista || !lista.length) return null;
+  const q = { n: lista.length, el: {} };
+  Object.entries(ELEMENTOS).forEach(([e, { ref, piso }]) => {
+    const vs = lista.map(m => +m['CON_' + e]).filter(v => isFinite(v) && v > 0);
+    if (!vs.length) return;
+    const bajoLimite = piso != null && vs.every(v => v <= piso);
+    const prom = vs.reduce((a, b) => a + b, 0) / vs.length, max = Math.max(...vs);
+    q.el[e] = { prom: +prom.toPrecision(3), max: +max.toPrecision(3), veces: bajoLimite ? 0 : +(prom / ref).toFixed(1), bajo: bajoLimite || undefined };
+  });
+  return q;
+}
+
 const salida = depositos
-  .filter(f => titulo(f.properties.ESTADO_INSTALACION_2026).toUpperCase() !== 'ELIMINADO')
-  .map((f, i) => {
+  .map((f, k) => ({ f, quimica: quimicaDe(muestrasDe.get(k)) }))
+  .filter(({ f }) => titulo(f.properties.ESTADO_INSTALACION_2026).toUpperCase() !== 'ELIMINADO')
+  .map(({ f, quimica }, i) => {
     const p = f.properties;
     const anillosM = poligonos(f.geometry).map(pl => pl.map(r => r.map(aM)));
     let p500 = 0, p1000 = 0, minDist = Infinity;
@@ -121,7 +168,12 @@ const salida = depositos
         fecha_res: p.FECHA_RES_APRUEBA ? String(p.FECHA_RES_APRUEBA).slice(0, 10) : '',
         pob_500: p500,
         pob_1000: p1000,
-        dist_casas: Math.round(minDist)
+        dist_casas: Math.round(minDist),
+        // Química del material (se guarda como texto: las propiedades de un mapa no pueden ser objetos anidados)
+        quimica: quimica ? JSON.stringify(quimica) : null,
+        // Elemento que más supera su referencia (para la leyenda y el tooltip)
+        peor: quimica ? (Object.entries(quimica.el).sort((a, b) => b[1].veces - a[1].veces)[0] || [null])[0] : null,
+        peor_veces: quimica ? Math.max(0, ...Object.values(quimica.el).map(x => x.veces)) : null
       },
       geometry: { type: f.geometry.type, coordinates: f.geometry.type === 'Polygon' ? coords[0] : coords }
     };
@@ -155,6 +207,11 @@ fs.writeFileSync('inputs/relaves.geojson', JSON.stringify({
 }));
 
 // Reporte
+console.log(`\nGeoquímica: ${muestras.length} muestras · ${muestras.length - sinDeposito} asignadas a ${muestrasDe.size} depósitos · ${sinDeposito} lejos de todo depósito`);
+console.log(`Depósitos del Atlas con análisis químico: ${salida.filter(f => f.properties.quimica).length} de ${salida.length}`);
+console.table(salida.filter(f => f.properties.quimica).sort((a, b) => b.properties.peor_veces - a.properties.peor_veces).slice(0, 10)
+  .map(f => ({ comuna: f.properties.comuna, nombre: f.properties.nombre, muestras: JSON.parse(f.properties.quimica).n,
+    'peor elemento': f.properties.peor, 'veces la ref.': f.properties.peor_veces, 'pers <1 km': f.properties.pob_1000 })));
 console.log(`\nRelaves: ${salida.length} (sin los eliminados)`);
 const resumen = {};
 salida.forEach(f => {
