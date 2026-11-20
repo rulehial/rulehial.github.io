@@ -113,6 +113,39 @@
 
     .marca b { display: block; font: 600 13px var(--mono); letter-spacing: 0.12em; color: var(--acento); }
     .marca span { font: 400 10px var(--mono); letter-spacing: 0.14em; color: var(--texto-suave); }
+    /* Selector de comuna */
+    .comunas { display: flex; margin-top: 5px; }
+    .comunas button {
+      font: 500 9.5px var(--mono); letter-spacing: 0.1em; color: var(--texto-suave);
+      background: rgba(11, 15, 20, 0.55); border: 1px solid var(--borde); padding: 3px 8px; cursor: pointer;
+    }
+    .comunas button + button { border-left: 0; }
+    .comunas button:hover { color: var(--texto); }
+    .comunas button.activo { background: var(--acento); border-color: var(--acento); color: var(--acento-texto); }
+    .comunas button:focus-visible { outline: 2px solid var(--acento); outline-offset: 1px; }
+    .comunas button span { font: inherit; letter-spacing: inherit; color: inherit; }
+    .comunas .texto-corto { display: none; }
+    /* Resumen en tiempo real del filtro (leyenda) */
+    .resumen-filtro { margin-top: 12px; }
+    .resumen-filtro:empty { display: none; }
+    .resumen-filtro .pista { font-size: 11px; color: var(--texto-suave); }
+    .resumen-filtro .etq { display: block; margin-bottom: 4px; font: 500 9.5px var(--mono); letter-spacing: 0.12em; color: var(--acento); }
+    .resumen-filtro .cifras { font-size: 12px; }
+    .resumen-filtro .cifras b { font: 600 18px var(--mono); color: var(--texto); }
+    .resumen-filtro .cifras span { color: var(--texto-suave); }
+    .resumen-filtro .barra-pct { height: 4px; margin: 6px 0; background: rgba(255, 255, 255, 0.08); }
+    .resumen-filtro .barra-pct i { display: block; height: 100%; background: var(--acento); transition: width 0.15s; }
+    .resumen-filtro small { display: block; font-size: 12px; line-height: 1.5; color: var(--texto-suave); }
+    .resumen-filtro small b { color: var(--texto); font-weight: 600; }
+    /* Capa de relaves mineros */
+    .leyenda-relaves { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--borde); }
+    .leyenda-relaves .fila-rel { display: flex; align-items: center; gap: 8px; margin: 5px 0; font-size: 12px; }
+    .leyenda-relaves .fila-rel i { width: 18px; height: 12px; border: 1.5px solid #ff3b30; }
+    .leyenda-relaves .cifra { margin: 10px 0 0; font-size: 12px; line-height: 1.5; }
+    .leyenda-relaves .cifra b { color: #ff6b5b; font: 600 13px var(--mono); }
+    .comunas button.cargando { opacity: 0.6; cursor: progress; }
+    /* Solo se muestran los nombres de UV de la comuna que se está viendo */
+    .etiqueta-uv.otra-comuna { display: none !important; }
 
     .nav { display: flex; gap: 4px; }
 
@@ -563,6 +596,13 @@
     }
 
     /* Créditos del mapa: legibles sobre el satélite */
+    /* Botón de modo giro (junto al zoom) */
+    .maplibregl-ctrl-group .boton-giro { font-size: 13px; color: #333; }
+    .maplibregl-ctrl-group .boton-giro.activo { background: var(--acento); color: var(--acento-texto); }
+    .maplibregl-ctrl-group .boton-giro.activo:hover { background: var(--acento); }
+    .modo-giro, .modo-giro .maplibregl-canvas { cursor: grab !important; }
+    .girando, .girando .maplibregl-canvas { cursor: grabbing !important; }
+
     .maplibregl-ctrl-attrib {
       background: rgba(11, 15, 20, 0.92) !important;
       border: 1px solid var(--borde);
@@ -902,6 +942,13 @@
     .grupo-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 0; margin-bottom: 16px; }
     .etq-chips { margin-right: 12px; font: 500 10.5px var(--mono); letter-spacing: 0.12em; color: var(--texto-suave); }
     .grupo-chips .separa { width: 24px; }
+    /* Selector del pictograma (dentro del marco, más compacto) */
+    .chips-picto { gap: 4px; margin-bottom: 10px; }
+    .chips-picto .chip { padding: 5px 8px; font-size: 9.5px; border-right: 1px solid var(--borde); }
+    .leyenda-picto { display: flex; flex-wrap: wrap; gap: 4px 14px; min-height: 18px; margin-bottom: 14px;
+      font: 400 11px var(--mono); color: var(--texto-suave); }
+    .leyenda-picto span { display: inline-flex; align-items: center; gap: 6px; }
+    .leyenda-picto i { width: 10px; height: 10px; border-radius: 50%; }
 
     /* Leyenda con clic para ocultar */
     .lista-leyenda button {
@@ -939,7 +986,7 @@
     /* Tooltip de gráficos */
     .tip {
       position: fixed;
-      z-index: 35;
+      z-index: 1000;
       display: none;
       max-width: 270px;
       padding: 7px 10px;
@@ -1047,6 +1094,11 @@
       }
       .marca b { font-size: 12px; }
       .marca span { font-size: 9px; }
+      .comunas { margin-top: 4px; }
+      .comunas button { font-size: 9px; padding: 4px 6px; letter-spacing: 0.05em; }
+      .modal-cabecera .ruta { padding-right: 104px; line-height: 1.5; }
+      .comunas .texto-largo { display: none; }
+      .comunas .texto-corto { display: inline; }
       .barra-derecha { margin-left: auto; gap: 0; }
       .barra-derecha > .boton-sync { display: none; }     /* está en el panel ⚙ */
       .boton-modo { padding: 9px 9px; font-size: 9.5px; letter-spacing: 0.08em; }
@@ -1111,7 +1163,10 @@
   <header class="barra">
     <div class="marca">
       <b>ATLAS COPIAPÓ</b>
-      <span>MANZANAS · CENSO 2024</span>
+      <div class="comunas" role="group" aria-label="Comuna">
+        <button data-comuna="CP" class="activo" aria-pressed="true" onclick="irAComuna('CP')">COPIAPÓ</button>
+        <button data-comuna="TA" aria-pressed="false" onclick="irAComuna('TA')"><span class="texto-largo">TIERRA</span><span class="texto-corto">T.</span> AMARILLA</button>
+      </div>
     </div>
     <nav class="nav" aria-label="Secciones">
       <button onclick="irAHistoria()">ANÁLISIS</button>
@@ -1150,6 +1205,7 @@
           <button class="capa-mapa activo" data-capa="rutas" aria-pressed="true" aria-label="Mostrar u ocultar: Recorridos de buses" data-tip="Recorridos de buses"><i class="fa-solid fa-route"></i></button>
           <button class="capa-mapa activo" data-capa="cortes" aria-pressed="true" aria-label="Mostrar u ocultar: Líneas de corte" data-tip="Líneas de corte"><i class="fa-solid fa-scissors"></i></button>
           <button class="capa-mapa activo" data-capa="uv" aria-pressed="true" aria-label="Mostrar u ocultar: Nombres de UV" data-tip="Nombres de UV"><i class="fa-solid fa-location-dot"></i></button>
+          <button class="capa-mapa activo" data-capa="relaves" aria-pressed="true" aria-label="Mostrar u ocultar: Relaves mineros" data-tip="Relaves mineros"><i class="fa-solid fa-triangle-exclamation"></i></button>
         </div>
       </div>
     </div>
@@ -1167,6 +1223,7 @@
       <select id="sel-altura-m"></select>
     </div>
     <div id="contenido-leyenda"></div>
+    <div id="leyenda-relaves" class="leyenda-relaves" hidden></div>
     <label class="alternar">
       <input type="checkbox" id="chk-rutas" checked onchange="alternarRutas(this.checked)">
       <i class="fa-solid fa-route"></i> Recorridos de buses
@@ -1202,8 +1259,8 @@
 
     <section class="bloque aparece" id="sec-datos">
       <div class="eyebrow">01 — Los datos</div>
-      <h2>Las manzanas de Copiapó</h2>
-      <p class="intro">
+      <h2 id="h-datos">Las manzanas de Copiapó</h2>
+      <p class="intro" id="intro-datos">
         Censo 2024 a nivel de manzana. Cada manzana se clasificó en un perfil según cómo se traslada su
         población, su edad, migración, hacinamiento, escolaridad y densidad. Pase el cursor por la dona para
         aislar un perfil; toque una unidad vecinal para verla en el mapa.
@@ -1215,7 +1272,9 @@
           <div id="cifras-perfiles" class="cifras-perfil"></div>
         </div>
         <div class="marco">
-          <h3 class="titulo-marco">Población por unidad vecinal · color = perfil · cada punto = 500 personas</h3>
+          <h3 class="titulo-marco" id="t-picto">Población por unidad vecinal · color = perfil · cada punto = 500 personas</h3>
+          <div id="chips-picto" class="grupo-chips chips-picto" role="toolbar" aria-label="Color de los puntos"></div>
+          <div id="leyenda-picto" class="leyenda-picto"></div>
           <div id="pictograma"></div>
         </div>
       </div>
@@ -1223,9 +1282,9 @@
     </section>
 
     <section class="bloque aparece" id="sec-dispersion">
-      <div class="eyebrow">02 — Bus o auto</div>
-      <h2>Cómo se mueve cada manzana</h2>
-      <p class="intro">
+      <div class="eyebrow" id="eb-disp">02 — Bus o auto</div>
+      <h2 id="h-disp">Cómo se mueve cada manzana</h2>
+      <p class="intro" id="intro-disp">
         Cada punto es una manzana, según el porcentaje de quienes se trasladan a trabajar o estudiar en auto
         (horizontal) y en transporte público (vertical). Su tamaño indica la población. Las líneas punteadas
         marcan el promedio de Copiapó. Toque un punto para abrir la ficha de la manzana.
@@ -1244,20 +1303,20 @@
     <section class="bloque aparece" id="sec-uv">
       <div class="eyebrow">03 — Composición por unidad vecinal</div>
       <h2>Cómo cambia de un barrio a otro</h2>
-      <p class="intro">
+      <p class="intro" id="intro-uv">
         A la izquierda, cómo se traslada y qué edad tiene la población de cada unidad vecinal, ordenadas de
         mayor a menor uso del transporte público. A la derecha, la cobertura de los recorridos frente al uso
         del bus: las UV del recuadro dependen del bus más que el promedio y están peor cubiertas.
       </p>
       <div class="grid-2">
         <div class="marco">
-          <h3 class="titulo-marco">Cómo se trasladan, %</h3>
+          <h3 class="titulo-marco" id="t-barras1">Cómo se trasladan, %</h3>
           <div id="barras-transporte" class="barras-uv"></div>
-          <h3 class="titulo-marco">Edades, %</h3>
+          <h3 class="titulo-marco" id="t-barras2">Edades, %</h3>
           <div id="barras-edades" class="barras-uv"></div>
         </div>
         <div class="marco">
-          <h3 class="titulo-marco">Cobertura de recorridos frente a uso del bus · tamaño = población</h3>
+          <h3 class="titulo-marco" id="t-burbujas">Cobertura de recorridos frente a uso del bus · tamaño = población</h3>
           <div id="burbujas"></div>
         </div>
       </div>
@@ -1265,8 +1324,8 @@
 
     <section class="bloque aparece" id="sec-cortes">
       <div class="eyebrow">04 — Cortes</div>
-      <h2>Copiapó en corte</h2>
-      <p class="intro">
+      <h2 id="h-cortes">Copiapó en corte</h2>
+      <p class="intro" id="intro-cortes">
         Perfiles de elevación reales del valle con las manzanas que atraviesan (a menos de 150 m de la línea),
         levantadas según la variable elegida y coloreadas por perfil. Se marcan los recorridos de buses que
         cruza cada corte y las unidades vecinales. Pase el cursor para leer distancia, cota y barrio; las
@@ -1284,7 +1343,7 @@
             <div class="seg" id="seg-var-corte"></div>
           </div>
           <div class="checks">
-            <label><input type="checkbox" id="chk-corte-rutas" checked> Recorridos</label>
+            <label id="lbl-corte-rutas"><input type="checkbox" id="chk-corte-rutas" checked> Recorridos</label>
             <label><input type="checkbox" id="chk-corte-uv" checked> Unidades vecinales</label>
           </div>
         </div>
@@ -1337,7 +1396,8 @@
       { clave: 'hacin',   nombre: 'Hacinamiento',           unidad: '%',        pct: true,  dec: 1 },
       { clave: 'desoc',   nombre: 'Desocupación',           unidad: '%',        pct: true,  dec: 1 },
       { clave: 'esc',     nombre: 'Escolaridad (18+)',      unidad: 'años',     pct: false, dec: 1 },
-      { clave: 'dist',    nombre: 'Distancia al bus',       unidad: 'm',        pct: false, dec: 0 }
+      { clave: 'dist',    nombre: 'Distancia al bus',       unidad: 'm',        pct: false, dec: 0 },
+      { clave: 'relave',  nombre: 'Distancia a un relave',  unidad: 'm',        pct: false, dec: 0, invertir: true }   // cerca = oscuro
     ];
     // De claro (valor bajo) a oscuro (valor alto)
     const ESCALA_COLOR = ['#f9f871', '#fbb13c', '#f06b4e', '#c2417a', '#7b3294', '#3b2c84', '#1b1f4b'];
@@ -1346,6 +1406,10 @@
     // Mirando hacia el NE: el valle queda horizontal (Cancha Rayada a la izquierda, Paipote a la derecha)
     const VISTA_3D = { center: [-70.316, -27.381], zoom: 13.0, pitch: 62, bearing: 40 };
     const VISTA_2D = { pitch: 0, bearing: 0 };
+    // Tierra Amarilla: mirando al oriente, el valle queda horizontal (Luis Uribe a la izquierda, Algarrobo a la derecha)
+    const VISTA_TA = { center: [-70.2665, -27.4875], zoom: 13.9, pitch: 56, bearing: 74 };
+    // En celular (pantalla angosta) el valle se muestra en vertical: Luis Uribe arriba, Algarrobo abajo
+    const VISTA_TA_MOVIL = { center: [-70.2655, -27.4905], zoom: 12.85, pitch: 50, bearing: -10 };
 
     let estado = {
       color: 'perfil',
@@ -1356,6 +1420,78 @@
       sync: false          // color y altura con la misma variable
     };
     let datos = null, estad = {}, promedios = {}, resumenUV = null;
+    // Comunas: el mapa carga solo la que se está viendo (Tierra Amarilla se descarga al elegirla).
+    // Cada una tiene sus propios perfiles, escalas y promedios. `datos` = Copiapó (análisis de abajo).
+    const COMUNAS = {
+      CP: { nombre: 'Copiapó', geo: null, resumen: null, perfiles: PERFILES, estad: {}, promedios: {} },
+      TA: { nombre: 'Tierra Amarilla', geo: null, resumen: null, perfiles: null, estad: {}, promedios: {}, cargando: null }
+    };
+    let comunaActiva = 'CP';
+    const NOMBRE_COMUNA = { CP: 'Copiapó', TA: 'Tierra Amarilla' };
+    const CA = () => COMUNAS[comunaActiva];      // comuna activa
+    const PA = () => CA().perfiles;              // perfiles de la comuna activa
+    const comunaDeUV = n => (COMUNAS.TA.resumen && COMUNAS.TA.resumen.uv[n] ? 'TA' : 'CP');
+    const resumenDeUV = n => (resumenUV && resumenUV.uv[n]) || (COMUNAS.TA.resumen && COMUNAS.TA.resumen.uv[n]) || null;
+    let bordesUV = [], bordesTA = [];                 // bordes de UV de cada comuna
+
+    // Relaves mineros (Sernageomin): capa aparte, distancia de cada manzana al relave más cercano
+    let relavesGeo = null, relavesMz = null;
+    const relaveDestacado = { id: null, ids: null };
+    const COLOR_ESTADO_RELAVE = { 'ACTIVO': '#ff3b30', 'EN CONSTRUCCION': '#ff3b30', 'INACTIVO': '#b0bec5', 'ABANDONADO': '#f5f5f5' };
+    const NOMBRE_ESTADO_RELAVE = { 'ACTIVO': 'Activo', 'EN CONSTRUCCION': 'En construcción', 'INACTIVO': 'Inactivo', 'ABANDONADO': 'Abandonado' };
+    const fmtTon = t => t >= 1e6 ? fmt(t / 1e6, 1) + ' Mt' : fmt(t) + ' t';
+    const relavePorId = id => relavesGeo && relavesGeo.features.find(f => f.properties.id === +id);
+    function agregarDistRelave(geo) {
+      if (!relavesMz) return;
+      geo.features.forEach(f => {
+        const r = relavesMz.manzanas[f.properties.id];
+        if (r && !f.properties.sinPoblacion) { f.properties.relave = r[0]; f.properties.relave_id = r[1]; }
+      });
+    }
+    // Altura: raíz del tonelaje autorizado (los grandes no aplastan a los chicos); en 2D, plano
+    // El relave destacado se levanta (al menos 90 m) y se pinta rojo intenso para que no lo tapen las manzanas
+    const alturaRelave = () => {
+      if (!estado.en3D) return 0;
+      const base = ['+', 14, ['*', 240, ['sqrt', ['/', ['coalesce', ['get', 'toneladas'], 0], 600000000]]]];
+      return relaveDestacado.id == null ? base : ['case', ['==', ['get', 'id'], relaveDestacado.id], ['max', 90, base], base];
+    };
+    // Relaves con franjas diagonales (como cinta de advertencia): ningún perfil ni escala usa franjas
+    const FONDO_RELAVE = '#1b1d21';
+    const PATRONES_RELAVE = {
+      'rel-activo': ['#ff3b30', FONDO_RELAVE], 'rel-inactivo': ['#9aa7b0', FONDO_RELAVE],
+      'rel-abandonado': ['#ffffff', FONDO_RELAVE], 'rel-foco': ['#ff1f1f', '#ffffff']
+    };
+    const PATRON_ESTADO = { 'ACTIVO': 'rel-activo', 'EN CONSTRUCCION': 'rel-activo', 'INACTIVO': 'rel-inactivo', 'ABANDONADO': 'rel-abandonado' };
+    const franjasCSS = estadoRel => {
+      const [c, f] = PATRONES_RELAVE[PATRON_ESTADO[estadoRel] || 'rel-inactivo'];
+      return `repeating-linear-gradient(135deg, ${c} 0 3px, ${f} 3px 6px)`;
+    };
+    function crearPatronesRelaves() {
+      Object.entries(PATRONES_RELAVE).forEach(([nombre, [linea, fondo]]) => {
+        if (map.hasImage(nombre)) return;
+        const n = 24, cv = document.createElement('canvas');
+        cv.width = cv.height = n;
+        const x = cv.getContext('2d');
+        x.fillStyle = fondo;
+        x.fillRect(0, 0, n, n);
+        x.strokeStyle = linea;
+        x.lineWidth = 5;
+        x.beginPath();
+        for (let k = -n; k <= 2 * n; k += 12) { x.moveTo(k, 0); x.lineTo(k + n, n); }   // diagonales que empalman entre mosaicos
+        x.stroke();
+        map.addImage(nombre, x.getImageData(0, 0, n, n), { pixelRatio: 1.5 });
+      });
+    }
+    const patronRelave = () => {
+      const base = ['match', ['get', 'estado'], ...Object.entries(PATRON_ESTADO).flat(), 'rel-inactivo'];
+      return relaveDestacado.id == null ? base : ['case', ['==', ['get', 'id'], relaveDestacado.id], 'rel-foco', base];
+    };
+    function pintarRelaves() {
+      if (!map.getLayer('relaves-3d')) return;
+      map.setPaintProperty('relaves-3d', 'fill-extrusion-height', alturaRelave());
+      map.setPaintProperty('relaves-3d', 'fill-extrusion-pattern', patronRelave());
+    }
+    const marcadoresUV = {}, marcadoresCorte = [];    // se sacan del mapa al cambiar de comuna
 
     const esMovil = () => window.matchMedia('(max-width: 900px)').matches;
     const ES_TACTIL = window.matchMedia('(hover: none)').matches;
@@ -1403,21 +1539,69 @@
       attributionControl: { compact: true, customAttribution: 'Censo 2024 (INE) · © OpenStreetMap' }
     });
 
-    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
+    const controlNav = new maplibregl.NavigationControl({ visualizePitch: true });
+    map.addControl(controlNav, 'bottom-right');
+
+    // Modo giro: con el botón activo, arrastrar con el clic izquierdo gira (← →) e inclina (↑ ↓) el mapa,
+    // sin tener que apretar Ctrl. Apagado, arrastrar vuelve a mover el mapa.
+    const giro = { activo: false, arrastrando: false, x: 0, y: 0, rumbo: 0, inclinacion: 0 };
+    const botonGiro = document.createElement('button');
+    botonGiro.type = 'button';
+    botonGiro.className = 'boton-giro';
+    botonGiro.title = 'Girar e inclinar con el mouse';
+    botonGiro.setAttribute('aria-label', 'Girar e inclinar el mapa arrastrando con el mouse');
+    botonGiro.setAttribute('aria-pressed', 'false');
+    botonGiro.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i>';
+    controlNav._container.appendChild(botonGiro);
+    function alternarGiro(activar = !giro.activo) {
+      giro.activo = activar;
+      botonGiro.classList.toggle('activo', activar);
+      botonGiro.setAttribute('aria-pressed', activar);
+      botonGiro.title = activar ? 'Modo giro activo · arrastre para girar e inclinar (clic para apagar)' : 'Girar e inclinar con el mouse';
+      if (activar) map.dragPan.disable(); else map.dragPan.enable();
+      map.getCanvasContainer().classList.toggle('modo-giro', activar);
+    }
+    botonGiro.addEventListener('click', () => alternarGiro());
+    map.getCanvasContainer().addEventListener('mousedown', e => {
+      if (!giro.activo || e.button !== 0) return;
+      Object.assign(giro, { arrastrando: true, x: e.clientX, y: e.clientY, rumbo: map.getBearing(), inclinacion: map.getPitch() });
+      map.getCanvasContainer().classList.add('girando');
+    });
+    window.addEventListener('mousemove', e => {
+      if (!giro.arrastrando) return;
+      const dx = e.clientX - giro.x, dy = e.clientY - giro.y;
+      map.jumpTo({
+        bearing: giro.rumbo + dx * 0.4,
+        // En Satélite 2D solo gira; en Relieve 3D también inclina
+        pitch: estado.en3D ? Math.max(0, Math.min(map.getMaxPitch(), giro.inclinacion - dy * 0.3)) : map.getPitch()
+      });
+    });
+    window.addEventListener('mouseup', () => {
+      if (!giro.arrastrando) return;
+      giro.arrastrando = false;
+      map.getCanvasContainer().classList.remove('girando');
+    });
 
     map.on('load', async () => {
       map.setTerrain({ source: 'relieve', exaggeration: 1.6 });
       if (map.setSky) map.setSky({ 'sky-color': '#0b0f14', 'horizon-color': '#1a2430', 'fog-color': '#0b0f14', 'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.6, 'fog-ground-blend': 0.3 });
 
-      const [manzanas, rutas, uvs, ficticias, cobertura] = await Promise.all([
+      const [manzanas, rutas, uvs, ficticias, cobertura, relaves, relavesPorMz] = await Promise.all([
         fetch('inputs/manzanas_3d.geojson').then(r => r.json()),
         fetch('inputs/RutaBusesV2.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/UV_COPIAPO.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/UV_FICTICIAS.geojson').then(r => r.json()).catch(() => null),
-        fetch('inputs/cobertura_uv.json').then(r => r.json()).catch(() => null)
+        fetch('inputs/cobertura_uv.json').then(r => r.json()).catch(() => null),
+        fetch('inputs/relaves.geojson').then(r => r.json()).catch(() => null),
+        fetch('inputs/relaves_manzanas.json').then(r => r.json()).catch(() => null)
       ]);
+      relavesGeo = relaves;
+      relavesMz = relavesPorMz;
+      agregarDistRelave(manzanas);
       datos = manzanas;
       resumenUV = cobertura;
+      COMUNAS.CP.geo = datos;
+      COMUNAS.CP.resumen = cobertura;
       calcularEstadisticas();
 
       map.addSource('manzanas', { type: 'geojson', data: datos, promoteId: 'id' });
@@ -1448,14 +1632,32 @@
         ficticiasGeo = ficticias;
         agregarEtiquetasUV(uvs, ficticias);
         // Bordes de UV (solo se ve la destacada). Incluye UV ficticias y sus extensiones.
-        const bordes = uvs.features.filter(f => f.properties.urbano === 1)
+        bordesUV = uvs.features.filter(f => f.properties.urbano === 1)
           .concat(ficticias ? ficticias.features : []);
-        map.addSource('uv-bordes', { type: 'geojson', data: { type: 'FeatureCollection', features: bordes } });
+        map.addSource('uv-bordes', { type: 'geojson', data: { type: 'FeatureCollection', features: bordesUV } });
         const sinUV = ['==', ['get', 'NOMBRE_UV'], '__ninguna__'];
         map.addLayer({ id: 'uv-halo', type: 'line', source: 'uv-bordes', filter: sinUV,
           paint: { 'line-color': '#c6f24e', 'line-width': 9, 'line-opacity': 0.25, 'line-blur': 3 } });
         map.addLayer({ id: 'uv-borde', type: 'line', source: 'uv-bordes', filter: sinUV,
           paint: { 'line-color': '#c6f24e', 'line-width': 2.6 } });
+      }
+      // Relaves mineros: altura según el tonelaje autorizado, franjas según su estado
+      if (relavesGeo) {
+        crearPatronesRelaves();
+        const soloComuna = ['==', ['get', 'comuna'], comunaActiva];
+        map.addSource('relaves', { type: 'geojson', data: relavesGeo });
+        map.addLayer({ id: 'relaves-3d', type: 'fill-extrusion', source: 'relaves', filter: soloComuna,
+          paint: {
+            'fill-extrusion-pattern': patronRelave(),
+            'fill-extrusion-height': alturaRelave(),
+            'fill-extrusion-height-transition': { duration: 700 },
+            'fill-extrusion-opacity': 0.88
+          } });
+        map.addLayer({ id: 'relaves-borde', type: 'line', source: 'relaves', filter: soloComuna,
+          paint: { 'line-color': '#ff3b30', 'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 15, 2.6] } });
+        // Contorno del relave destacado (se ve aunque sea chico o lo tapen las manzanas)
+        map.addLayer({ id: 'relave-foco', type: 'line', source: 'relaves', filter: ['==', ['get', 'id'], -1],
+          paint: { 'line-color': '#ff3b30', 'line-width': 7, 'line-blur': 2, 'line-opacity': 0.95 } });
       }
       map.setLight({ anchor: 'map', color: '#fff4e0', intensity: 0.45, position: [1.3, 220, 40] });
 
@@ -1465,37 +1667,58 @@
       construirFiltros();
       construirHistoria(rutas);
       activarInteraccion();
+      filtrarPinesComuna();
+      if (comunaDeHash() === 'TA') irAComuna('TA', true);
     });
 
     // ---------------------------------------------------------------------
     function calcularEstadisticas() {
-      const conPerfil = datos.features.filter(f => f.properties.cluster >= 0);
+      estad = estadDe(datos);
+      promedios = promediosDe(datos.metadata.perfiles);
+      Object.assign(COMUNAS.CP, { estad, promedios });
+    }
+
+    // Escala de cada variable: del 2 % al 98 % de las manzanas con perfil
+    function estadDe(geo) {
+      const r = {};
+      const conPerfil = geo.features.filter(f => f.properties.cluster >= 0);
       VARIABLES.forEach(v => {
         const xs = conPerfil.map(f => f.properties[v.clave]).filter(x => x != null && isFinite(x)).sort((a, b) => a - b);
         const q = p => xs[Math.min(xs.length - 1, Math.floor(p * xs.length))];
-        estad[v.clave] = { min: q(0.02), max: q(0.98) };
+        r[v.clave] = xs.length ? { min: q(0.02), max: q(0.98) } : { min: 0, max: 1 };
+        if (v.clave === 'relave') r[v.clave] = { min: 0, max: 2000 };   // escala fija: lo que importa es el primer par de km   // sin datos (p. ej. bus en T. Amarilla)
       });
-      const perfiles = datos.metadata.perfiles;
-      const pob = perfiles.reduce((s, p) => s + p.poblacion, 0);
-      Object.keys(perfiles[0]).filter(k => !['cluster', 'manzanas', 'poblacion'].includes(k)).forEach(k => {
-        promedios[k] = perfiles.reduce((s, p) => s + (p[k] || 0) * p.poblacion, 0) / pob;
-      });
+      return r;
+    }
+
+    function promediosDe(perfiles) {
+      const r = {};
+      const pob = perfiles.reduce((s, p) => s + p.poblacion, 0) || 1;
+      Object.keys(perfiles[0]).filter(k => !['cluster', 'manzanas', 'poblacion'].includes(k) && typeof perfiles[0][k] !== 'string')
+        .forEach(k => { r[k] = perfiles.reduce((s, p) => s + (p[k] || 0) * p.poblacion, 0) / pob; });
+      return r;
     }
 
     // Color: por perfil o por variable continua
     // Con una UV destacada, las manzanas de las demás UV se apagan
     function exprColorFinal() {
       const base = exprColor();
+      // Relave destacado: solo las manzanas a menos de 1 km mantienen su color
+      if (relaveDestacado.ids) return ['case', ['in', ['get', 'id'], ['literal', relaveDestacado.ids]], base, '#3c424b'];
       return uvDestacada.nombre ? ['case', ['==', ['get', 'uv'], uvDestacada.nombre], base, '#3c424b'] : base;
     }
 
+    // Escala de color de una variable (algunas van al revés: p. ej. cerca de un relave = oscuro)
+    const escalaDe = v => v.invertir ? ESCALA_COLOR.slice().reverse() : ESCALA_COLOR;
+
     function exprColor() {
       if (estado.color === 'perfil') {
-        return ['match', ['get', 'cluster'], ...PERFILES.flatMap((p, i) => [i, p.color]), COLOR_SIN_PERFIL];
+        return ['match', ['get', 'cluster'], ...PA().flatMap((p, i) => [i, p.color]), COLOR_SIN_PERFIL];
       }
       const v = VARIABLES.find(x => x.clave === estado.color);
-      const { min, max } = estad[v.clave];
-      const pasos = ESCALA_COLOR.flatMap((c, i) => [min + (max - min) * i / (ESCALA_COLOR.length - 1), c]);
+      const { min, max } = CA().estad[v.clave];
+      const escala = escalaDe(v);
+      const pasos = escala.flatMap((c, i) => [min + (max - min) * i / (escala.length - 1), c]);
       const valor = ['get', v.clave];
       const sinDato = v.pct ? ['any', ['==', valor, null], ['==', ['get', 'cluster'], -1]] : ['==', valor, null];
       return ['case', sinDato, COLOR_SIN_PERFIL, ['interpolate', ['linear'], valor, ...pasos]];
@@ -1504,25 +1727,93 @@
     function exprAltura() {
       if (estado.altura === 'plano') return 4;
       const v = VARIABLES.find(x => x.clave === estado.altura);
-      const factor = ALTURA_MAX_M / (estad[v.clave].max || 1);
+      const factor = ALTURA_MAX_M / (CA().estad[v.clave].max || 1);
       const valor = ['coalesce', ['get', v.clave], 0];
       return ['case',
         ['all', ['==', ['get', 'cluster'], -1], v.pct], 4,
-        ['max', 4, ['*', ['min', valor, estad[v.clave].max * 1.3], factor]]];
+        ['max', 4, ['*', ['min', valor, CA().estad[v.clave].max * 1.3], factor]]];
     }
 
     function exprFiltro() {
       const cond = ['all'];
       if (estado.perfil !== 'todos') cond.push(['==', ['get', 'cluster'], estado.perfil]);
       if (estado.color !== 'perfil' && (estado.rango[0] > 0 || estado.rango[1] < 100)) {
-        const { min, max } = estad[estado.color];
+        const { min, max } = CA().estad[estado.color];
         const desde = min + (max - min) * estado.rango[0] / 100;
         const hasta = min + (max - min) * estado.rango[1] / 100;
         const valor = ['coalesce', ['get', estado.color], -1e9];
+        cond.push(['!=', ['get', estado.color], null]);          // sin dato: fuera del filtro
         if (estado.rango[0] > 0) cond.push(['>=', valor, desde]);
         if (estado.rango[1] < 100) cond.push(['<=', valor, hasta]);
       }
       return cond.length > 1 ? cond : null;
+    }
+
+    // Resumen en tiempo real: personas y manzanas que quedan con el filtro actual
+    function actualizarResumenFiltro() {
+      const el = document.getElementById('resumen-filtro');
+      if (!el || !CA().geo) return;
+      const conRango = estado.color !== 'perfil' && (estado.rango[0] > 0 || estado.rango[1] < 100);
+      const conPerfil = estado.perfil !== 'todos';
+      if (!conRango && !conPerfil) {
+        el.innerHTML = estado.color !== 'perfil'
+          ? '<span class="pista">Mueva DESDE / HASTA para ver cuánta población queda en el rango.</span>' : '';
+        return;
+      }
+      let desde = -Infinity, hasta = Infinity;
+      if (conRango) {
+        const { min, max } = CA().estad[estado.color];
+        if (estado.rango[0] > 0) desde = min + (max - min) * estado.rango[0] / 100;
+        if (estado.rango[1] < 100) hasta = min + (max - min) * estado.rango[1] / 100;
+      }
+      let pob = 0, mz = 0, total = 0;
+      CA().geo.features.forEach(f => {
+        const p = f.properties;
+        if (p.sinPoblacion) return;
+        total += p.per || 0;
+        if (conPerfil && p.cluster !== estado.perfil) return;
+        if (conRango) {
+          const v = p[estado.color];
+          if (v == null || v < desde || v > hasta) return;
+        }
+        pob += p.per || 0;
+        mz++;
+      });
+      const pct = total ? 100 * pob / total : 0;
+      const v = VARIABLES.find(x => x.clave === estado.color);
+
+      // Rango en palabras: "entre el 10 % y el 20 %", "el 26,5 % o más", "hasta el 36,4 %"
+      const art = v && v.pct ? 'el ' : '';
+      const fv = x => fmtVar(v.clave, x);
+      const fn = x => v.pct ? fv(x) : fmt(x, v.dec);           // en "entre X y Y unidad" la unidad va solo al final
+      const rangoPalabras = desde === -Infinity ? `hasta ${art}${fv(hasta)}`
+        : hasta === Infinity ? `${art}${fv(desde)} o más`
+        : `entre ${art}${fn(desde)} y ${art}${fv(hasta)}`;
+      // Cómo se lee cada variable en una frase
+      const FRASES = {
+        per:     r => `con ${r} habitantes`.replace(' personas habitantes', ' habitantes'),
+        dens:    r => `con una densidad de ${r}`.replace(/hab\/ha/g, 'habitantes por hectárea'),
+        tp:      r => `donde ${r} de quienes viajan a trabajar o estudiar usa transporte público`,
+        auto:    r => `donde ${r} de quienes viajan a trabajar o estudiar usa auto`,
+        ninos:   r => `donde ${r} de sus habitantes son niños de 0 a 13 años`,
+        mayores: r => `donde ${r} de sus habitantes tiene 60 años o más`,
+        inm:     r => `donde ${r} de sus habitantes son inmigrantes`,
+        hacin:   r => `donde ${r} de las viviendas están hacinadas`,
+        desoc:   r => `donde ${r} de quienes buscan trabajo o trabajan está desocupado`,
+        esc:     r => `donde los adultos (18 años o más) estudiaron en promedio ${r}`,
+        dist:    r => `que están ${r.replace(/^entre /, 'entre ').replace(/^hasta /, 'a menos de ')} de un recorrido de bus`,
+        relave:  r => `que están ${r.replace(/^hasta /, 'a menos de ').replace(/ o más$/, ' o más')} del relave más cercano`
+      };
+      const condicion = conRango && FRASES[v.clave] ? ' ' + FRASES[v.clave](rangoPalabras) : '';
+      const perfil = conPerfil
+        ? (estado.perfil >= 0 ? `${condicion ? ', y que son del' : ' del'} perfil ${PA()[estado.perfil].letra} (${esc(PA()[estado.perfil].nombre.toLowerCase())})`
+          : `${condicion ? ', y que tienen' : ' con'} menos de 20 habitantes (sin perfil)`)
+        : '';
+      el.innerHTML = `<span class="etq">EN EL FILTRO</span>
+        <div class="cifras"><b>${fmt(pob)}</b> personas</div>
+        <div class="barra-pct"><i style="width:${Math.min(100, pct)}%"></i></div>
+        <small>Son el <b>${fmt(pct, 1)} %</b> de la población de ${NOMBRE_COMUNA[comunaActiva]} y viven en
+          ${fmt(mz)} ${mz === 1 ? 'manzana' : 'manzanas'}${condicion}${perfil}.</small>`;
     }
 
     function actualizarMapa() {
@@ -1557,7 +1848,7 @@
         });
         etiquetasUV[f.properties.NOMBRE_UV] = el;
         // anchor 'bottom': el punto queda sobre el terreno y la etiqueta flota encima
-        new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(c).addTo(map);
+        marcadoresUV[f.properties.NOMBRE_UV] = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(c).addTo(map);
       });
     }
 
@@ -1640,12 +1931,13 @@
 
     function actualizarLeyenda() {
       const cont = document.getElementById('contenido-leyenda');
+      const fuente = CA().geo;
       if (estado.color === 'perfil') {
-        const total = datos.metadata.perfiles.reduce((s, p) => s + p.poblacion, 0);
+        const total = fuente.metadata.perfiles.reduce((s, p) => s + p.poblacion, 0) || 1;
         cont.innerHTML = `
-          <h2 class="titulo-caja">Perfil de la manzana</h2>
-          ${PERFILES.map((p, i) => {
-            const m = datos.metadata.perfiles[i];
+          <h2 class="titulo-caja">Perfil de la manzana · ${NOMBRE_COMUNA[comunaActiva]}</h2>
+          ${PA().map((p, i) => {
+            const m = fuente.metadata.perfiles[i];
             return `<button class="item-cluster" onclick="elegirPerfil(${i})">
               <span class="letra" style="color:${p.color}">${p.letra}</span>
               <span><b>${p.nombre}</b><small>${fmt(m.manzanas)} manzanas · ${fmt(100 * m.poblacion / total)} % de la población</small></span>
@@ -1655,15 +1947,17 @@
             <span class="letra" style="color:${COLOR_SIN_PERFIL}">·</span>
             <span><b>Pocas personas</b><small>Menos de 20 habitantes, sin perfil</small></span>
           </button>
-          <p class="nota">Toque un perfil para filtrarlo. Ver detalle en <a href="#" onclick="abrirModal('perfiles');return false" style="color:var(--acento)">PERFILES</a>.</p>`;
+          <div id="resumen-filtro" class="resumen-filtro" aria-live="polite"></div>
+          <p class="nota">Toque un perfil para filtrarlo. Ver detalle en <a href="#" onclick="abrirModal('perfiles');return false" style="color:var(--acento)">PERFILES</a>.${comunaActiva === 'TA' ? ' Tierra Amarilla tiene perfiles propios, hechos solo con datos demográficos del Censo (sin transporte).' : ''}</p>`;
+        actualizarResumenFiltro();
         return;
       }
       const v = VARIABLES.find(x => x.clave === estado.color);
-      const { min, max } = estad[v.clave];
+      const { min, max } = CA().estad[v.clave];
       const valorRango = p => min + (max - min) * p / 100;
       cont.innerHTML = `
         <h2 class="titulo-caja">${esc(v.nombre)}</h2>
-        <div class="gradiente" style="background:linear-gradient(90deg,${ESCALA_COLOR.join(',')})"></div>
+        <div class="gradiente" style="background:linear-gradient(90deg,${escalaDe(v).join(',')})"></div>
         <div class="extremos"><span>${fmtVar(v.clave, min)}</span><span>${fmtVar(v.clave, max)}</span></div>
         <div class="rango">
           <div class="rango-fila"><span>DESDE</span>
@@ -1673,7 +1967,8 @@
             <input type="range" id="rango-hasta" min="0" max="100" value="${estado.rango[1]}" aria-label="Valor máximo">
             <output id="out-hasta">${fmtVar(v.clave, valorRango(estado.rango[1]))}</output></div>
         </div>
-        <p class="nota">Escala entre el 2 % y el 98 % de las manzanas. En gris: sin dato o con menos de 20 personas (porcentajes poco confiables).</p>`;
+        <div id="resumen-filtro" class="resumen-filtro" aria-live="polite"></div>
+        <p class="nota">${v.clave === 'relave' ? 'Escala fija de 0 a 2 km: más cerca de un relave, color más oscuro. Distancia desde el centro de la manzana al borde del relave más cercano.' : `Escala entre el 2 % y el 98 % de las manzanas de ${NOMBRE_COMUNA[comunaActiva]}.`} En gris: sin dato o con menos de 20 personas (porcentajes poco confiables).${v.clave === 'dist' && comunaActiva === 'TA' ? ' Tierra Amarilla no tiene recorridos de bus en el Atlas.' : ''}</p>`;
 
       const d = document.getElementById('rango-desde'), h = document.getElementById('rango-hasta');
       const mover = () => {
@@ -1683,16 +1978,20 @@
         document.getElementById('out-desde').textContent = fmtVar(v.clave, valorRango(a));
         document.getElementById('out-hasta').textContent = fmtVar(v.clave, valorRango(b));
         map.setFilter('manzanas', exprFiltro());
+        actualizarResumenFiltro();
       };
+      actualizarResumenFiltro();
       d.addEventListener('input', mover);
       h.addEventListener('input', mover);
     }
 
     function construirFiltros() {
       const cont = document.getElementById('filtros');
-      const chips = [['todos', 'TODAS'], ...PERFILES.map((p, i) => [i, 'PERFIL ' + p.letra]), [-1, 'SIN PERFIL']];
+      const chips = [['todos', 'TODAS'], ...PA().map((p, i) => [i, 'PERFIL ' + p.letra]), [-1, 'SIN PERFIL']];
       cont.innerHTML = chips.map(([v, t]) =>
         `<button class="chip ${v === estado.perfil ? 'activo' : ''}" data-v="${v}" aria-pressed="${v === estado.perfil}">${t}</button>`).join('');
+      if (cont.dataset.listo) return;     // el clic se registra una sola vez (los chips cambian con la comuna)
+      cont.dataset.listo = '1';
       cont.addEventListener('click', e => {
         const b = e.target.closest('.chip');
         if (!b) return;
@@ -1709,6 +2008,7 @@
         c.setAttribute('aria-pressed', activo);
       });
       map.setFilter('manzanas', exprFiltro());
+      actualizarResumenFiltro();
     }
 
     function cambiarModo(tresD) {
@@ -1716,19 +2016,21 @@
       document.getElementById('modo-3d').classList.toggle('activo', tresD);
       document.getElementById('modo-2d').classList.toggle('activo', !tresD);
       map.setTerrain(tresD ? { source: 'relieve', exaggeration: 1.6 } : null);
-      map.easeTo({ ...(tresD ? { pitch: VISTA_3D.pitch, bearing: VISTA_3D.bearing } : VISTA_2D), duration: 900 });
+      const v3 = comunaActiva === 'TA' ? (esMovil() ? VISTA_TA_MOVIL : VISTA_TA) : VISTA_3D;
+      map.easeTo({ ...(tresD ? { pitch: v3.pitch, bearing: v3.bearing } : VISTA_2D), duration: 900 });
       map.setPaintProperty('manzanas', 'fill-extrusion-height', tresD ? exprAltura() : 0);
+      if (map.getLayer('relaves-3d')) map.setPaintProperty('relaves-3d', 'fill-extrusion-height', alturaRelave());
     }
 
     function alternarRutas(ver) {
-      ['rutas', 'rutas-borde'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ver ? 'visible' : 'none'));
+      ['rutas', 'rutas-borde'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ver && comunaActiva === 'CP' ? 'visible' : 'none'));
       const chk = document.getElementById('chk-rutas');
       if (chk) chk.checked = ver;
       marcarCapaMapa('rutas', ver);
     }
 
     // Selector de elementos sobre el mapa (bajo Satélite 2D / Relieve 3D)
-    const capasVisibles = { rutas: true, cortes: true, uv: true };
+    const capasVisibles = { rutas: true, cortes: true, uv: true, relaves: true };
     function marcarCapaMapa(clave, ver) {
       capasVisibles[clave] = ver;
       const b = document.querySelector(`.capa-mapa[data-capa="${clave}"]`);
@@ -1741,8 +2043,13 @@
         document.body.classList.toggle('sin-cortes', !ver);
       }
       if (clave === 'uv') document.body.classList.toggle('sin-nombres-uv', !ver);
+      if (clave === 'relaves') {
+        ['relaves-3d', 'relaves-borde', 'relave-foco'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ver ? 'visible' : 'none'));
+        if (!ver && relaveDestacado.id != null) quitarUV(true);
+      }
       if (clave === 'cortes') acomodarPines();
       marcarCapaMapa(clave, ver);
+      if (clave === 'relaves') actualizarLeyendaRelaves();
     }
     document.querySelectorAll('.capa-mapa').forEach(b => { b.dataset.estado = 'visible'; });
     document.querySelector('.capas-mapa').addEventListener('click', e => {
@@ -1760,7 +2067,7 @@
           const p = e.features[0].properties;
           map.getCanvas().style.cursor = 'pointer';
           programarUV(p.uv);
-          const perfil = p.cluster >= 0 ? 'PERFIL ' + PERFILES[p.cluster].letra : 'SIN PERFIL';
+          const perfil = p.sinPoblacion ? 'SIN VIVIENDAS' : p.cluster >= 0 ? 'PERFIL ' + PA()[p.cluster].letra : 'SIN PERFIL';
           const valor = estado.color !== 'perfil' ? ' · ' + fmtVar(estado.color, p[estado.color]) : '';
           etiqueta.setLngLat(e.lngLat).setHTML(`${esc(p.uv || 'MANZANA')} · ${perfil}${valor}`).addTo(map);
         });
@@ -1770,7 +2077,22 @@
           programarUV(null);
         });
       }
+      if (map.getLayer('relaves-3d')) {
+        if (!ES_TACTIL) {
+          map.on('mousemove', 'relaves-3d', e => {
+            const p = e.features[0].properties;
+            map.getCanvas().style.cursor = 'pointer';
+            etiqueta.remove();
+            mostrarTip(`RELAVE · ${esc(p.nombre)}<br>${esc(NOMBRE_ESTADO_RELAVE[p.estado] || p.estado)}${p.toneladas ? ' · ' + fmtTon(p.toneladas) : ''}<br>${p.pob_1000
+              ? `${fmt(p.pob_1000)} personas viven a menos de 1 km` : 'Sin viviendas a menos de 1 km'}`, e.originalEvent);
+          });
+          map.on('mouseleave', 'relaves-3d', () => { map.getCanvas().style.cursor = ''; ocultarTip(); });
+        }
+        map.on('click', 'relaves-3d', e => { ocultarTip(); abrirFichaRelave(e.features[0].properties.id); });
+      }
       map.on('click', 'manzanas', e => {
+        // Si se tocó un relave, abre el relave (no la manzana de abajo)
+        if (map.getLayer('relaves-3d') && map.queryRenderedFeatures(e.point, { layers: ['relaves-3d'] }).length) return;
         etiqueta.remove();
         abrirFichaManzana(e.features[0].properties);
       });
@@ -1830,24 +2152,40 @@
     const botonCerrar = '<button class="cerrar" onclick="cerrarModal()">CERRAR <i class="fa-solid fa-xmark"></i></button>';
 
     function abrirFichaManzana(p) {
-      const perfil = p.cluster >= 0 ? PERFILES[p.cluster] : null;
+      if (p.sinPoblacion) {
+        return abrirModal(null, `
+          <div class="modal-cabecera">
+            <div class="ruta">TIERRA AMARILLA / ${esc(p.uv || 'SIN UV')} / SIN VIVIENDAS</div>
+            <h2 id="titulo-modal">${esc(p.nombre || 'Área sin viviendas')}</h2>
+            <p>Parte de la manzana censal ${esc(String(p.manzana || ''))} sin viviendas</p>
+            ${botonCerrar}
+          </div>
+          <div class="modal-cuerpo una-columna">
+            <p class="nota">El INE dibujó esta manzana en dos piezas separadas. Esta pieza no tiene viviendas, así que se muestra
+              en gris y sin datos: la población de la manzana quedó en la otra pieza.</p>
+          </div>`);
+      }
+      const perfil = p.cluster >= 0 ? COMUNAS[p.comuna === 'TA' ? 'TA' : 'CP'].perfiles[p.cluster] : null;
       const pocas = p.cluster < 0;
+      const ta = p.comuna === 'TA', pr = ta ? COMUNAS.TA.promedios : promedios, nc = NOMBRE_COMUNA[ta ? 'TA' : 'CP'];
       const aviso = pocas ? '<p class="nota">Manzana con menos de 20 personas: los porcentajes son poco confiables.</p>' : '';
       const filasTabla = [
         ['Población', fmt(p.per) + ' personas', null],
         ['Hogares', fmt(p.hog), null],
-        ['Densidad', fmtVar('dens', p.dens), promedios.dens && fmtVar('dens', promedios.dens)],
+        ['Densidad', fmtVar('dens', p.dens), pr.dens && fmtVar('dens', pr.dens)],
         ['Edad promedio', p.edad == null ? '–' : fmt(p.edad, 1) + ' años', null],
-        ['Escolaridad (18+)', fmtVar('esc', p.esc), fmtVar('esc', promedios.esc)],
-        ['Desocupación', fmtVar('desoc', p.desoc), fmtVar('desoc', promedios.desoc)],
-        ['Con discapacidad', p.disc == null ? '–' : fmt(p.disc, 1) + ' %', fmt(promedios.disc, 1) + ' %'],
-        ['Distancia al bus', fmtVar('dist', p.dist), fmtVar('dist', promedios.dist)]
+        ['Escolaridad (18+)', fmtVar('esc', p.esc), fmtVar('esc', pr.esc)],
+        ['Desocupación', fmtVar('desoc', p.desoc), fmtVar('desoc', pr.desoc)],
+        ['Con discapacidad', p.disc == null ? '–' : fmt(p.disc, 1) + ' %', fmt(pr.disc, 1) + ' %'],
+        ['Distancia al bus', fmtVar('dist', p.dist), fmtVar('dist', pr.dist)],
+        ['Relave más cercano', p.relave == null ? '–' : `${fmt(p.relave)} m${p.relave_id != null && relavePorId(p.relave_id)
+          ? ' · ' + esc(nombreCorto(relavePorId(p.relave_id).properties.nombre)) : ''}`, null]
       ];
       const html = `
         <div class="modal-cabecera">
-          <div class="ruta">${esc(p.uv || 'SIN UV')} / ${perfil ? 'PERFIL ' + perfil.letra : 'SIN PERFIL'}</div>
+          <div class="ruta">${ta ? 'TIERRA AMARILLA / ' : ''}${esc(p.uv || 'SIN UV')} / ${perfil ? 'PERFIL ' + perfil.letra : 'SIN PERFIL'}</div>
           <h2 id="titulo-modal">${esc(p.uv ? 'Manzana · ' + p.uv : 'Manzana')}</h2>
-          <p>${perfil ? esc(perfil.nombre) + ' · ' : ''}${fmt(p.per)} personas · ${fmt(p.hog)} hogares</p>
+          <p>${perfil ? esc(perfil.nombre) + ' · ' : ''}${fmt(p.per)} personas · ${fmt(p.hog)} hogares${ta && p.localidad && p.localidad !== 'TIERRA AMARILLA' ? ' · ' + esc(nombreCorto(p.localidad)) : ''}</p>
           ${botonCerrar}
         </div>
         <div class="modal-cuerpo">
@@ -1856,14 +2194,15 @@
               <div><span>Población</span><b>${fmt(p.per)}</b></div>
               <div><span>Perfil</span><b style="color:${perfil ? perfil.color : COLOR_SIN_PERFIL}">${perfil ? 'Perfil ' + perfil.letra : 'Sin perfil'}</b></div>
               <div><span>Usa transporte público</span><b>${p.tp == null ? '–' : fmt(p.tp, 1) + ' %'}</b></div>
-              <div><span>Distancia al bus</span><b>${fmt(p.dist)} m</b></div>
+              <div><span>Distancia al bus</span><b>${p.dist == null ? 'Sin datos' : fmt(p.dist) + ' m'}</b></div>
             </div>
             ${perfil ? `<p class="nota" style="color:${perfil.color}">${esc(perfil.desc)}</p>` : aviso}
+            ${ta ? '<p class="nota">Tierra Amarilla: perfiles propios, solo con datos demográficos del Censo. Sin recorridos de bus en el Atlas.</p>' : ''}
             ${p.uv ? `<button class="chip boton-uv-ficha" data-uv="${esc(p.uv)}" onclick="cerrarModal(); destacarUV(this.dataset.uv, true)">
               <i class="fa-solid fa-draw-polygon"></i> DESTACAR ${esc(nombreCorto(p.uv).toUpperCase())} EN EL MAPA</button>` : ''}
             <h3 class="subtitulo">Indicadores</h3>
             <table class="datos">
-              <thead><tr><th>Indicador</th><th>Manzana</th><th>Copiapó</th></tr></thead>
+              <thead><tr><th>Indicador</th><th>Manzana</th><th>${nc}</th></tr></thead>
               <tbody>${filasTabla.map(([n, v, c]) => `<tr><td>${n}</td><td>${v}</td><td>${c || '–'}</td></tr>`).join('')}</tbody>
             </table>
           </div>
@@ -1877,14 +2216,14 @@
                 { n: '0–13', v: p.ninos, color: '#7cc4ff' }, { n: '14–17', v: p.adol, color: '#b39dfb' },
                 { n: '18–59', v: p.adultos, color: '#cfd5dd' }, { n: '60+', v: p.mayores, color: '#f6c544' }])}</div>
             </div>
-            <h3 class="subtitulo">Comparación con Copiapó</h3>
+            <h3 class="subtitulo">Comparación con ${nc}</h3>
             <div class="barras">${barrasComparadas([
-              { n: 'TRANSPORTE PÚB.', v: p.tp, prom: promedios.tp, t: fmt(p.tp, 1) + ' %', color: '#ff8a3d' },
-              { n: 'AUTO', v: p.auto, prom: promedios.auto, t: fmt(p.auto, 1) + ' %', color: '#5b8ff9' },
-              { n: 'NIÑOS 0–13', v: p.ninos, prom: promedios.ninos, t: fmt(p.ninos, 1) + ' %', color: '#7cc4ff' },
-              { n: 'MAYORES 60+', v: p.mayores, prom: promedios.mayores, t: fmt(p.mayores, 1) + ' %', color: '#f6c544' },
-              { n: 'INMIGRANTES', v: p.inm, prom: promedios.inm, t: fmt(p.inm, 1) + ' %', color: '#ff5d73' },
-              { n: 'HACINAMIENTO', v: p.hacin, prom: promedios.hacin, t: fmt(p.hacin, 1) + ' %', color: '#ff9d4d' }
+              { n: 'TRANSPORTE PÚB.', v: p.tp, prom: pr.tp, t: fmt(p.tp, 1) + ' %', color: '#ff8a3d' },
+              { n: 'AUTO', v: p.auto, prom: pr.auto, t: fmt(p.auto, 1) + ' %', color: '#5b8ff9' },
+              { n: 'NIÑOS 0–13', v: p.ninos, prom: pr.ninos, t: fmt(p.ninos, 1) + ' %', color: '#7cc4ff' },
+              { n: 'MAYORES 60+', v: p.mayores, prom: pr.mayores, t: fmt(p.mayores, 1) + ' %', color: '#f6c544' },
+              { n: 'INMIGRANTES', v: p.inm, prom: pr.inm, t: fmt(p.inm, 1) + ' %', color: '#ff5d73' },
+              { n: 'HACINAMIENTO', v: p.hacin, prom: pr.hacin, t: fmt(p.hacin, 1) + ' %', color: '#ff9d4d' }
             ])}</div>
           </div>
         </div>`;
@@ -1892,22 +2231,26 @@
     }
 
     function htmlPerfiles() {
-      const filas = [
+      const C = CA(), ta = comunaActiva === 'TA';
+      const filas = ta ? [
+        ['Niños 0–13', 'ninos', '#7cc4ff'], ['Mayores 60+', 'mayores', '#f6c544'], ['Inmigrantes', 'inm', '#ff5d73'],
+        ['Pueblos originarios', 'pueblo', '#b39dfb'], ['Hacinamiento', 'hacin', '#ff9d4d'], ['Desocupación', 'desoc', '#8b95a3']
+      ] : [
         ['Transporte público', 'tp', '#ff8a3d'], ['Auto', 'auto', '#5b8ff9'], ['Niños 0–13', 'ninos', '#7cc4ff'],
         ['Mayores 60+', 'mayores', '#f6c544'], ['Inmigrantes', 'inm', '#ff5d73'], ['Hacinamiento', 'hacin', '#ff9d4d'],
         ['Desocupación', 'desoc', '#b39dfb']
       ];
-      const maximos = Object.fromEntries(filas.map(([, k]) => [k, Math.max(...datos.metadata.perfiles.map(p => p[k]), promedios[k])]));
-      const tarjetas = PERFILES.map((pf, i) => {
-        const m = datos.metadata.perfiles[i];
+      const maximos = Object.fromEntries(filas.map(([, k]) => [k, Math.max(...C.geo.metadata.perfiles.map(p => p[k]), C.promedios[k])]));
+      const tarjetas = C.perfiles.map((pf, i) => {
+        const m = C.geo.metadata.perfiles[i];
         return `<div class="tarjeta">
           <h3><span class="letra" style="color:${pf.color}">${pf.letra}</span>${pf.nombre}</h3>
-          <p>${pf.desc}<br><span class="mono" style="font-size:10.5px">${fmt(m.manzanas)} manzanas · ${fmt(m.poblacion)} personas · ${fmt(m.esc, 1)} años de escolaridad · ${fmt(m.dist)} m al bus</span></p>
+          <p>${pf.desc}<br><span class="mono" style="font-size:10.5px">${fmt(m.manzanas)} manzanas · ${fmt(m.poblacion)} personas · ${fmt(m.esc, 1)} años de escolaridad${ta ? '' : ' · ' + fmt(m.dist) + ' m al bus'}</span></p>
           ${filas.map(([n, k, color]) => `
             <div class="fila-barra"><span>${n}</span>
               <div class="pista">
                 <div class="relleno" style="width:${100 * m[k] / maximos[k]}%;background:${color}"></div>
-                <div class="marca-prom" style="left:${100 * promedios[k] / maximos[k]}%"></div>
+                <div class="marca-prom" style="left:${100 * C.promedios[k] / maximos[k]}%"></div>
               </div>
               <b>${fmt(m[k], 1)} %</b></div>`).join('')}
           <button class="chip" style="margin-top:10px;border-right:1px solid var(--borde)" onclick="cerrarModal();elegirPerfil(${i})">VER EN EL MAPA</button>
@@ -1915,9 +2258,9 @@
       }).join('');
       return `
         <div class="modal-cabecera">
-          <div class="ruta">K-MEANS · 5 PERFILES · CENSO 2024</div>
-          <h2 id="titulo-modal">Perfiles de manzana</h2>
-          <p>Línea blanca = promedio de Copiapó</p>
+          <div class="ruta">K-MEANS · ${C.perfiles.length} PERFILES · ${ta ? 'SOLO DEMOGRAFÍA · ' : ''}CENSO 2024</div>
+          <h2 id="titulo-modal">Perfiles de manzana · ${C.nombre}</h2>
+          <p>Línea blanca = promedio de ${C.nombre}${ta ? ' · Perfiles propios: niños, mayores, inmigrantes, pueblos originarios, hacinamiento, escolaridad, desocupación y densidad' : ''}</p>
           ${botonCerrar}
         </div>
         <div class="modal-cuerpo una-columna"><div class="tarjetas-perfil">${tarjetas}</div></div>`;
@@ -1977,8 +2320,15 @@
             <li><b>Perfiles:</b> k-means (5 grupos, semilla fija) sobre variables estandarizadas: uso de transporte público y auto,
               niños, mayores, inmigrantes, hacinamiento, escolaridad y densidad (logarítmica). Manzanas con menos de 20 personas sin perfil.</li>
             <li><b>Distancia al bus:</b> línea recta desde el centro de cada manzana al recorrido más cercano.</li>
+            <li><b>Relaves mineros:</b> Sernageomin, Catastro de Depósitos de Relaves (polígonos, estado 2026). Población cercana:
+              personas de las manzanas del Censo 2024 cuyo centro está a menos de 500 m o 1 km del borde del depósito
+              (<span class="mono" style="font-size:11px">scripts/relaves.mjs</span>).</li>
+            <li><b>Tierra Amarilla:</b> manzanas del Censo 2024 (INE) y unidades vecinales dibujadas a mano. Perfiles propios:
+              k-means (4 grupos, semilla fija) solo con variables demográficas: niños, mayores, inmigrantes, pueblos originarios,
+              hacinamiento, escolaridad, desocupación y densidad (logarítmica). Sin recorridos de bus ni datos de servicios por ahora.</li>
             <li><b>Herramientas:</b> MapLibre GL JS, QGIS y scripts propios en JavaScript
               (<span class="mono" style="font-size:11px">scripts/clusters_manzanas.mjs</span>,
+              <span class="mono" style="font-size:11px">scripts/manzanas_tierra_amarilla.mjs</span>,
               <span class="mono" style="font-size:11px">scripts/calcular_cobertura.mjs</span>).</li>
           </ul>
           <p class="nota">Desarrollo: Rubén Hidalgo · <a href="./">Portafolio</a> · <a href="Rutas_Buses">Mapa de recorridos</a></p>
@@ -1994,10 +2344,10 @@
     let rutasGeo = null;
 
     const GRUPOS = () => [
-      ...PERFILES.map((p, i) => ({ k: i, color: p.color, letra: p.letra, nombre: p.nombre })),
+      ...HIS.perfiles.map((p, i) => ({ k: i, color: p.color, letra: p.letra, nombre: p.nombre })),
       { k: -1, color: COLOR_SIN_PERFIL, letra: '·', nombre: 'Pocas personas' }
     ];
-    const colorPerfil = k => k >= 0 ? PERFILES[k].color : COLOR_SIN_PERFIL;
+    const colorPerfil = k => k >= 0 ? HIS.perfiles[k].color : COLOR_SIN_PERFIL;
 
     // "ALAMEDA J.A.M." → "Alameda J.A.M."; "COPIAPÓ ESTE (SECTOR URBANO)" → "Copiapó Este alto"
     function nombreCorto(n) {
@@ -2031,15 +2381,83 @@
     }
     const ocultarTip = () => { tip.style.display = 'none'; };
 
+    // Tooltips propios en lugar del "title" del navegador: cualquier elemento con title (o data-titulo)
+    // muestra el tooltip del sitio. El title se pasa a data-titulo para que el navegador no muestre el suyo.
+    // (Los botones con data-tip ya tienen su propio tooltip y se dejan tal cual.)
+    let conTitulo = null;
+    document.addEventListener('mouseover', e => {
+      if (ES_TACTIL) return;
+      const el = e.target.closest('[title], [data-titulo]');
+      if (!el || el.closest('[data-tip]')) return;
+      if (el.hasAttribute('title')) {
+        if (el.getAttribute('title')) el.dataset.titulo = el.getAttribute('title');
+        el.removeAttribute('title');
+      }
+      if (!el.dataset.titulo) return;
+      conTitulo = el;
+      mostrarTip(esc(el.dataset.titulo), e);
+    });
+    document.addEventListener('mousemove', e => {
+      if (!conTitulo) return;
+      if (conTitulo.isConnected && conTitulo.contains(e.target)) {
+        // Si el elemento cambió su texto (p. ej. el botón de giro), se toma el nuevo
+        if (conTitulo.hasAttribute('title')) { conTitulo.dataset.titulo = conTitulo.getAttribute('title'); conTitulo.removeAttribute('title'); }
+        mostrarTip(esc(conTitulo.dataset.titulo), e);
+      } else { conTitulo = null; ocultarTip(); }
+    });
+    document.addEventListener('mouseout', e => {
+      if (conTitulo && !(e.relatedTarget && conTitulo.contains(e.relatedTarget))) { conTitulo = null; ocultarTip(); }
+    });
+
+    // Contexto de la historia: sigue a la comuna activa
+    let HIS = null;
+    function contextoHistoria() {
+      const C = CA(), cp = comunaActiva === 'CP';
+      HIS = {
+        id: comunaActiva, cp, nombre: C.nombre,
+        features: C.geo.features.filter(f => !f.properties.sinPoblacion),
+        perfiles: C.perfiles, promedios: C.promedios, resumen: cp ? resumenUV : C.resumen,
+        cortes: cp ? CORTES_CP : CORTES_TA, porPunto: cp ? 500 : 100
+      };
+      porId = new Map(HIS.features.map(f => [f.properties.id, f]));
+    }
+
+    // Textos que cambian con la comuna (los de Copiapó se leen del HTML al inicio)
+    const IDS_TEXTOS = ['h-datos', 'intro-datos', 't-picto', 'eb-disp', 'h-disp', 'intro-disp', 'intro-uv',
+      't-barras1', 't-barras2', 't-burbujas', 'h-cortes', 'intro-cortes'];
+    const TEXTOS = {
+      CP: {},
+      TA: {
+        'h-datos': 'Las manzanas de Tierra Amarilla',
+        'intro-datos': `Censo 2024 a nivel de manzana. En Tierra Amarilla cada manzana se clasificó en uno de cuatro perfiles
+          propios, hechos solo con datos demográficos: edad, migración, pueblos originarios, hacinamiento, escolaridad,
+          desocupación y densidad. Pase el cursor por la dona para aislar un perfil; toque una unidad vecinal para verla en el mapa.`,
+        't-picto': 'Población por unidad vecinal · color = perfil · cada punto = 100 personas',
+        'eb-disp': '02 — Estructura de edad',
+        'h-disp': 'Qué tan joven o envejecida es cada manzana',
+        'intro-disp': `Cada punto es una manzana, según su porcentaje de adultos mayores de 60 años (horizontal) y de niños de 0 a 13
+          años (vertical). Su tamaño indica la población. Las líneas punteadas marcan el promedio de Tierra Amarilla: arriba a la
+          izquierda, las manzanas más jóvenes; abajo a la derecha, las más envejecidas. Toque un punto para abrir la ficha de la manzana.`,
+        'intro-uv': `A la izquierda, las edades y la situación laboral de cada unidad vecinal, ordenadas de más a menos adultos
+          mayores. A la derecha, escolaridad frente a hacinamiento: las UV del recuadro tienen menos años de estudio y más
+          viviendas hacinadas que el promedio de la comuna.`,
+        't-barras1': 'Edades, %',
+        't-barras2': 'Situación laboral (15 años o más), %',
+        't-burbujas': 'Escolaridad frente a hacinamiento · tamaño = población',
+        'h-cortes': 'Tierra Amarilla en corte',
+        'intro-cortes': `Perfiles de elevación reales del valle con las manzanas que atraviesan (a menos de 150 m de la línea),
+          levantadas según la variable elegida y coloreadas por perfil. Se marcan las unidades vecinales. Pase el cursor para
+          leer distancia, cota y barrio; las líneas de corte también están en el mapa.`
+      }
+    };
+
     function construirHistoria(rutas) {
       rutasGeo = rutas;
-      porId = new Map(datos.features.map(f => [f.properties.id, f]));
-      construirKPIs();
-      construirDona();
-      construirPictograma();
-      construirDispersion();
-      construirComposicionUV();
+      IDS_TEXTOS.forEach(id => { TEXTOS.CP[id] = document.getElementById(id).innerHTML; });
+      contextoHistoria();
       prepararCortes();
+      renderHistoria();
+      mostrarCapasComuna();
 
       // Aparición al desplazarse; el corte se calcula al llegar a su sección
       const obs = new IntersectionObserver(entradas => entradas.forEach(e => {
@@ -2047,7 +2465,7 @@
         e.target.classList.add('visible');
         if (e.target.id === 'sec-cortes' && !corteDibujado) dibujarCorte();
         obs.unobserve(e.target);
-      }), { threshold: 0.08 });
+      }), { threshold: 0, rootMargin: '0px 0px -8% 0px' });
       document.querySelectorAll('.aparece').forEach(el => obs.observe(el));
 
       window.addEventListener('scroll', () => {
@@ -2056,18 +2474,41 @@
       }, { passive: true });
     }
 
+    // Dibuja (o vuelve a dibujar) todos los gráficos con la comuna activa
+    function renderHistoria() {
+      IDS_TEXTOS.forEach(id => { document.getElementById(id).innerHTML = TEXTOS[HIS.id][id]; });
+      document.getElementById('lbl-corte-rutas').style.display = HIS.cp ? '' : 'none';
+      construirKPIs();
+      construirDona();
+      construirPictograma();
+      construirDispersion();
+      construirComposicionUV();
+      pintarControlesCorte();
+      if (corteDibujado) dibujarCorte();
+    }
+
+    function cambiarHistoria() {
+      contextoHistoria();
+      dispersion.ocultos.clear();
+      cortesUI.actual = HIS.cortes[0].id;
+      if (cortesUI.variable === (HIS.cp ? 'mayores' : 'tp')) cortesUI.variable = 'dens';
+      renderHistoria();
+    }
+
     // ---------------------------------------------------------------------
     // 01 · KPIs, dona y pictograma
     // ---------------------------------------------------------------------
     function construirKPIs() {
-      const t = resumenUV && resumenUV.total, c = t && t.censo;
+      const t = HIS.resumen && HIS.resumen.total, c = t && t.censo;
       const tras = c ? MODOS_TRASLADO.reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0) : 0;
-      const pob = datos.features.reduce((s, f) => s + (f.properties.per || 0), 0);
+      const pob = HIS.features.reduce((s, f) => s + (f.properties.per || 0), 0);
       const items = [
-        [fmt(datos.features.length), 'Manzanas censales'],
+        [fmt(HIS.features.length), 'Manzanas censales'],
         [fmt(pob), 'Habitantes · Censo 2024'],
-        [resumenUV ? fmt(Object.keys(resumenUV.uv).length) : '–', 'Unidades vecinales'],
-        [c ? fmt(100 * c.n_transporte_publico / tras, 1) + ' %' : '–', 'Se traslada en transporte público']
+        [HIS.resumen ? fmt(Object.keys(HIS.resumen.uv).length) : '–', 'Unidades vecinales'],
+        HIS.cp
+          ? [c ? fmt(100 * c.n_transporte_publico / tras, 1) + ' %' : '–', 'Se traslada en transporte público']
+          : [c ? fmt(100 * c.n_pueblos_orig / c.n_per, 1) + ' %' : '–', 'Pertenece a un pueblo originario']
       ];
       document.getElementById('kpis-grandes').innerHTML = items.map(([v, n]) => `<div><b>${v}</b><span>${n}</span></div>`).join('');
     }
@@ -2075,7 +2516,7 @@
     function construirDona() {
       const grupos = GRUPOS();
       grupos.forEach(g => {
-        const fs = datos.features.filter(f => f.properties.cluster === g.k);
+        const fs = HIS.features.filter(f => f.properties.cluster === g.k);
         g.mz = fs.length;
         g.pob = fs.reduce((s, f) => s + (f.properties.per || 0), 0);
       });
@@ -2102,16 +2543,15 @@
           const [x, y] = punto(a, r);
           return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(0.8 + azar() * 1.4).toFixed(1)}" fill="${g.color}" opacity="${(0.25 + azar() * 0.5).toFixed(2)}"/>`;
         }).join('');
-        svg += `<g class="tajada" data-k="${g.k}">
+        svg += `<g class="tajada" data-k="${g.k}" data-titulo="${esc(`Perfil ${g.letra} · ${g.nombre}: ${fmt(100 * g.pob / total, 1)} % de la población`)}">
           <path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${R},${R} 0 ${grande} 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z"
                 fill="${g.color}" fill-opacity="0.2" stroke="${g.color}" stroke-opacity="0.55"/>
           ${puntosDentro}${puntosFuera}
-          <title>Perfil ${g.letra} · ${g.nombre}: ${fmt(100 * g.pob / total, 1)} % de la población</title>
         </g>`;
         ang = a1;
       });
       svg += `<circle cx="${cx}" cy="${cy}" r="62" fill="#0d1218" opacity="0.82" pointer-events="none"/>
-        <text x="${cx}" y="${cy + 10}" text-anchor="middle" fill="#e6e9ee" font-family="Space Grotesk" font-weight="600" font-size="44" pointer-events="none">${fmt(datos.features.length)}</text>
+        <text x="${cx}" y="${cy + 10}" text-anchor="middle" fill="#e6e9ee" font-family="Space Grotesk" font-weight="600" font-size="44" pointer-events="none">${fmt(HIS.features.length)}</text>
         <text x="${cx}" y="${cy + 32}" text-anchor="middle" fill="#8b95a3" font-family="IBM Plex Mono" font-size="10" letter-spacing="1.5" pointer-events="none">MANZANAS</text>`;
       const dona = document.getElementById('dona-perfiles');
       dona.innerHTML = `<svg class="dona-grande" viewBox="0 0 440 440" role="img" aria-label="Población por perfil de manzana">${svg}</svg>`;
@@ -2130,6 +2570,8 @@
         document.querySelectorAll('#pictograma .puntos i').forEach(el =>
           el.classList.toggle('atenuado', k !== null && +el.dataset.k !== k));
       };
+      if (dona.dataset.listo) return;      // los eventos se registran una sola vez
+      dona.dataset.listo = '1';
       let fijo = null;
       [dona, document.getElementById('cifras-perfiles')].forEach(cont => {
         if (!ES_TACTIL) {
@@ -2145,28 +2587,98 @@
       });
     }
 
+    // Variables del pictograma: el color de cada punto indica el nivel de su manzana
+    // (cuartos de las manzanas de la comuna con 20 o más personas; claro = bajo, oscuro = alto)
+    const VARIABLES_PICTO = [
+      { clave: 'hacin',   nombre: 'Hacinamiento',        unidad: '%',    dec: 1 },
+      { clave: 'esc',     nombre: 'Escolaridad',         unidad: 'años', dec: 1 },
+      { clave: 'mayores', nombre: 'Adultos mayores',     unidad: '%',    dec: 1 },
+      { clave: 'ninos',   nombre: 'Niños',               unidad: '%',    dec: 1 },
+      { clave: 'inm',     nombre: 'Inmigrantes',         unidad: '%',    dec: 1 },
+      { clave: 'pueblo',  nombre: 'Pueblos originarios', unidad: '%',    dec: 1 },
+      { clave: 'desoc',   nombre: 'Desocupación',        unidad: '%',    dec: 1 }
+    ];
+    const COLORES_NIVEL = ['#f9f871', '#fbb13c', '#f06b4e', '#c2417a'];
+    const pictoUI = { variable: 'perfil' };
+
     function construirPictograma() {
+      const disponibles = VARIABLES_PICTO.filter(v => HIS.features.some(f => f.properties[v.clave] != null));
+      if (pictoUI.variable !== 'perfil' && !disponibles.some(v => v.clave === pictoUI.variable)) pictoUI.variable = 'perfil';
+      const chips = document.getElementById('chips-picto');
+      chips.innerHTML = [['perfil', 'PERFIL'], ...disponibles.map(v => [v.clave, v.nombre.toUpperCase()])]
+        .map(([v, t]) => `<button class="chip ${v === pictoUI.variable ? 'activo' : ''}" data-v="${v}" aria-pressed="${v === pictoUI.variable}">${t}</button>`).join('');
+
+      const V = disponibles.find(v => v.clave === pictoUI.variable);
+      const fmtV = x => fmt(x, V.dec) + (V.unidad === '%' ? ' %' : ' ' + V.unidad);
+
+      // Niveles: cortes en los cuartos (sin repetir) de las manzanas con perfil
+      let cortes = [], niveles = [];
+      if (V) {
+        const xs = HIS.features.map(f => f.properties).filter(p => p.cluster >= 0 && p[V.clave] != null)
+          .map(p => p[V.clave]).sort((a, b) => a - b);
+        const q = t => xs[Math.min(xs.length - 1, Math.floor(t * xs.length))];
+        cortes = [...new Set([q(0.25), q(0.5), q(0.75)])];
+        const n = cortes.length + 1;
+        const colores = n === 4 ? COLORES_NIVEL : COLORES_NIVEL.slice(4 - n);
+        niveles = Array.from({ length: n }, (_, i) => ({
+          color: colores[i],
+          texto: i === 0 ? (cortes[0] === 0 ? fmtV(0).replace(',0', '') : `hasta ${fmtV(cortes[0])}`)
+            : i === n - 1 ? `más de ${fmtV(cortes[n - 2])}`
+            : `${cortes[i - 1] === 0 ? 'más de 0' : fmtV(cortes[i - 1]).replace(/ (%|años)$/, '')} a ${fmtV(cortes[i])}`,
+          nombre: n === 4 ? ['Bajo', 'Medio-bajo', 'Medio-alto', 'Alto'][i] : i === 0 ? 'Bajo' : i === n - 1 ? 'Alto' : 'Medio'
+        }));
+      }
+      const nivelDe = p => {
+        if (p.cluster < 0 || p[V.clave] == null) return -1;      // pocas personas: sin dato
+        const i = cortes.findIndex(c => p[V.clave] <= c);
+        return i === -1 ? cortes.length : i;
+      };
+
+      document.getElementById('t-picto').textContent = V
+        ? `Población por unidad vecinal · color = ${V.nombre.toLowerCase()} de la manzana · cada punto = ${HIS.porPunto} personas`
+        : `Población por unidad vecinal · color = perfil · cada punto = ${HIS.porPunto} personas`;
+      document.getElementById('leyenda-picto').innerHTML = V
+        ? niveles.map(nv => `<span><i style="background:${nv.color}"></i>${nv.nombre} · ${nv.texto}</span>`).join('') +
+          `<span><i style="background:${COLOR_SIN_PERFIL}"></i>Sin dato (menos de 20 personas)</span>`
+        : '';
+
+      // Población por UV y por grupo (perfil o nivel)
       const porUV = {};
-      datos.features.forEach(f => {
+      HIS.features.forEach(f => {
         const p = f.properties;
         if (!p.uv) return;
         const u = porUV[p.uv] = porUV[p.uv] || { pob: 0, c: {} };
+        const k = V ? nivelDe(p) : p.cluster;
         u.pob += p.per || 0;
-        u.c[p.cluster] = (u.c[p.cluster] || 0) + (p.per || 0);
+        u.c[k] = (u.c[k] || 0) + (p.per || 0);
       });
-      const filas = Object.entries(porUV).sort((a, b) => b[1].pob - a[1].pob);
-      const orden = [0, 1, 2, 3, 4, -1];
+      const alto = V ? niveles.length - 1 : null;
+      const filas = Object.entries(porUV).filter(([, u]) => u.pob > 0).sort(V
+        ? (a, b) => (b[1].c[alto] || 0) / b[1].pob - (a[1].c[alto] || 0) / a[1].pob || b[1].pob - a[1].pob   // más población en nivel alto primero
+        : (a, b) => b[1].pob - a[1].pob);
+      const orden = V ? [...niveles.keys(), -1].reverse().filter(k => k !== -1).concat(-1) : [0, 1, 2, 3, 4, -1];
       const cont = document.getElementById('pictograma');
       cont.innerHTML = filas.map(([n, u]) => {
-        const nd = Math.max(1, Math.round(u.pob / 500));
+        const nd = Math.max(1, Math.round(u.pob / HIS.porPunto));
         const base = orden.map(k => { const v = (u.c[k] || 0) / u.pob * nd; return { k, n: Math.floor(v), r: v - Math.floor(v) }; });
         const falta = nd - base.reduce((s, b) => s + b.n, 0);
         base.slice().sort((a, b) => b.r - a.r).slice(0, falta).forEach(b => b.n++);
-        const puntos = base.flatMap(b => Array(b.n).fill(b.k))
-          .map(k => `<i data-k="${k}" style="background:${colorPerfil(k)}"></i>`).join('');
-        return `<div class="picto-fila" data-uv="${esc(n)}" role="button" tabindex="0" title="Ver ${esc(nombreCorto(n))} en el mapa">
+        const puntos = base.flatMap(b => Array(b.n).fill(b.k)).map(k => V
+          ? `<i data-nivel="${k}" style="background:${k >= 0 ? niveles[k].color : COLOR_SIN_PERFIL}" title="${k >= 0 ? `${V.nombre} ${niveles[k].nombre.toLowerCase()} (${niveles[k].texto})` : 'Sin dato (menos de 20 personas)'} · ${HIS.porPunto} personas"></i>`
+          : `<i data-k="${k}" style="background:${colorPerfil(k)}" title="${k >= 0 ? `Perfil ${HIS.perfiles[k].letra} · ${esc(HIS.perfiles[k].nombre)}` : 'Pocas personas (sin perfil)'} · ${HIS.porPunto} personas"></i>`).join('');
+        const extra = V ? ` · ${fmt(100 * (u.c[alto] || 0) / u.pob, 0)} % en nivel alto` : '';
+        return `<div class="picto-fila" data-uv="${esc(n)}" role="button" tabindex="0" title="Ver ${esc(nombreCorto(n))} en el mapa${extra}">
           <span class="nombre">${esc(nombreCorto(n))}</span><span class="puntos">${puntos}</span><span class="cuenta">${fmt(u.pob)}</span></div>`;
       }).join('');
+
+      if (cont.dataset.listo) return;
+      cont.dataset.listo = '1';
+      chips.addEventListener('click', e => {
+        const b = e.target.closest('[data-v]');
+        if (!b) return;
+        pictoUI.variable = b.dataset.v;
+        construirPictograma();
+      });
       cont.addEventListener('click', e => { const f = e.target.closest('.picto-fila'); if (f) irAUVMapa(f.dataset.uv); });
       cont.addEventListener('keydown', e => {
         const f = e.target.closest('.picto-fila');
@@ -2184,6 +2696,8 @@
       chips.innerHTML = `<span class="etq-chips">MANZANAS</span>
         ${[[20, 'TODAS (20+ PERSONAS)'], [100, 'MÁS DE 100 PERSONAS'], [300, 'MÁS DE 300 PERSONAS']]
           .map(([v, t]) => `<button class="chip ${v === dispersion.minimo ? 'activo' : ''}" data-min="${v}">${t}</button>`).join('')}`;
+      if (chips.dataset.listo) return dibujarDispersion();
+      chips.dataset.listo = '1';
       chips.addEventListener('click', e => {
         const b = e.target.closest('[data-min]');
         if (!b) return;
@@ -2206,8 +2720,8 @@
         const c = e.target.closest('circle[data-id]');
         if (!c) { ocultarTip(); return; }
         const p = porId.get(+c.dataset.id).properties;
-        mostrarTip(`${esc(nombreCorto(p.uv))} · PERFIL ${PERFILES[p.cluster].letra}<br>
-          ${fmt(p.per)} personas<br>BUS ${fmt(p.tp, 1)} % · AUTO ${fmt(p.auto, 1)} %`, e);
+        mostrarTip(`${esc(nombreCorto(p.uv))} · PERFIL ${HIS.perfiles[p.cluster].letra}<br>
+          ${fmt(p.per)} personas<br>${DISPERSION[HIS.id].tip(p)}`, e);
       });
       cont.addEventListener('mouseleave', ocultarTip);
       cont.addEventListener('click', e => {
@@ -2217,35 +2731,49 @@
       dibujarDispersion();
     }
 
+    // Copiapó: bus frente a auto · Tierra Amarilla: niños frente a adultos mayores
+    const DISPERSION = {
+      CP: { x: 'auto', y: 'tp', max: 100, paso: 20, xl: 'USA AUTO (%)', yl: 'USA TRANSPORTE PÚBLICO (%)',
+            arriba: ['DEPENDEN DEL BUS', '#ff9d4d'], abajo: ['DEPENDEN DEL AUTO', '#5b8ff9'],
+            aria: 'Uso del auto frente a uso del transporte público por manzana',
+            tip: p => `BUS ${fmt(p.tp, 1)} % · AUTO ${fmt(p.auto, 1)} %` },
+      TA: { x: 'mayores', y: 'ninos', max: 60, paso: 10, xl: 'ADULTOS MAYORES 60+ (%)', yl: 'NIÑOS 0–13 (%)',
+            arriba: ['MANZANAS MÁS JÓVENES', '#7cc4ff'], abajo: ['MANZANAS MÁS ENVEJECIDAS', '#f6c544'],
+            aria: 'Porcentaje de adultos mayores frente a porcentaje de niños por manzana',
+            tip: p => `NIÑOS ${fmt(p.ninos, 1)} % · MAYORES 60+ ${fmt(p.mayores, 1)} %` }
+    };
+
     function dibujarDispersion() {
-      const W = 640, H = 450, m = { l: 54, r: 16, t: 14, b: 46 };
-      const pw = W - m.l - m.r, ph = H - m.t - m.b;
-      const X = v => m.l + pw * v / 100, Y = v => m.t + ph * (1 - v / 100);
-      const base = datos.features.map(f => f.properties)
-        .filter(p => p.cluster >= 0 && p.per >= dispersion.minimo && p.tp != null && p.auto != null);
+      const cfg = DISPERSION[HIS.id];
+      const W = 640, ALTO = 450, m = { l: 54, r: 16, t: 14, b: 46 };
+      const pw = W - m.l - m.r, ph = ALTO - m.t - m.b;
+      const X = v => m.l + pw * Math.min(v, cfg.max) / cfg.max, Y = v => m.t + ph * (1 - Math.min(v, cfg.max) / cfg.max);
+      const base = HIS.features.map(f => f.properties)
+        .filter(p => p.cluster >= 0 && p.per >= dispersion.minimo && p[cfg.x] != null && p[cfg.y] != null);
       const visibles = base.filter(p => !dispersion.ocultos.has(p.cluster)).sort((a, b) => b.per - a.per);
 
       let g = '';
-      for (let v = 0; v <= 100; v += 20) {
+      for (let v = 0; v <= cfg.max; v += cfg.paso) {
         g += `<line x1="${X(v)}" y1="${m.t}" x2="${X(v)}" y2="${m.t + ph}" stroke="rgba(255,255,255,0.06)"/>
               <line x1="${m.l}" y1="${Y(v)}" x2="${m.l + pw}" y2="${Y(v)}" stroke="rgba(255,255,255,0.06)"/>
               <text x="${X(v)}" y="${m.t + ph + 18}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="middle">${v}</text>
               <text x="${m.l - 10}" y="${Y(v) + 4}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="end">${v}</text>`;
       }
-      g += `<text x="${m.l + pw / 2}" y="${H - 6}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">USA AUTO (%)</text>
-        <text transform="translate(14 ${m.t + ph / 2}) rotate(-90)" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">USA TRANSPORTE PÚBLICO (%)</text>
-        <line x1="${X(promedios.auto)}" y1="${m.t}" x2="${X(promedios.auto)}" y2="${m.t + ph}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.45"/>
-        <line x1="${m.l}" y1="${Y(promedios.tp)}" x2="${m.l + pw}" y2="${Y(promedios.tp)}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.45"/>
-        <text x="${X(2)}" y="${Y(97)}" fill="#ff9d4d" font-size="11" font-family="IBM Plex Mono" letter-spacing="1">DEPENDEN DEL BUS</text>
-        <text x="${X(98)}" y="${Y(3)}" fill="#5b8ff9" font-size="11" font-family="IBM Plex Mono" letter-spacing="1" text-anchor="end">DEPENDEN DEL AUTO</text>`;
-      g += visibles.map(p => `<circle data-id="${p.id}" cx="${X(p.auto).toFixed(1)}" cy="${Y(p.tp).toFixed(1)}"
-        r="${Math.min(8, 1.6 + Math.sqrt(p.per) / 5).toFixed(1)}" fill="${PERFILES[p.cluster].color}" fill-opacity="0.72"
+      const px = HIS.promedios[cfg.x], py = HIS.promedios[cfg.y];
+      g += `<text x="${m.l + pw / 2}" y="${ALTO - 6}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">${cfg.xl}</text>
+        <text transform="translate(14 ${m.t + ph / 2}) rotate(-90)" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">${cfg.yl}</text>
+        ${px != null ? `<line x1="${X(px)}" y1="${m.t}" x2="${X(px)}" y2="${m.t + ph}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.45"/>` : ''}
+        ${py != null ? `<line x1="${m.l}" y1="${Y(py)}" x2="${m.l + pw}" y2="${Y(py)}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.45"/>` : ''}
+        <text x="${X(cfg.max * 0.02)}" y="${Y(cfg.max * 0.97)}" fill="${cfg.arriba[1]}" font-size="11" font-family="IBM Plex Mono" letter-spacing="1">${cfg.arriba[0]}</text>
+        <text x="${X(cfg.max * 0.98)}" y="${Y(cfg.max * 0.03)}" fill="${cfg.abajo[1]}" font-size="11" font-family="IBM Plex Mono" letter-spacing="1" text-anchor="end">${cfg.abajo[0]}</text>`;
+      g += visibles.map(p => `<circle data-id="${p.id}" cx="${X(p[cfg.x]).toFixed(1)}" cy="${Y(p[cfg.y]).toFixed(1)}"
+        r="${Math.min(8, 1.6 + Math.sqrt(p.per) / 5).toFixed(1)}" fill="${HIS.perfiles[p.cluster].color}" fill-opacity="0.72"
         stroke="#0d1218" stroke-width="0.6"/>`).join('');
 
       document.getElementById('dispersion').innerHTML =
-        `<svg class="svg-grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Uso del auto frente a uso del transporte público por manzana">${g}</svg>`;
+        `<svg class="svg-grafico" viewBox="0 0 ${W} ${ALTO}" role="img" aria-label="${cfg.aria}">${g}</svg>`;
 
-      document.getElementById('leyenda-dispersion').innerHTML = PERFILES.map((pf, k) => {
+      document.getElementById('leyenda-dispersion').innerHTML = HIS.perfiles.map((pf, k) => {
         const n = base.filter(p => p.cluster === k).length;
         return `<button data-k="${k}" class="${dispersion.ocultos.has(k) ? 'oculto' : ''}" aria-pressed="${!dispersion.ocultos.has(k)}">
           <i style="background:${pf.color}"></i>Perfil ${pf.letra} · ${esc(pf.nombre)}<span class="n">${fmt(n)}</span></button>`;
@@ -2256,17 +2784,20 @@
     // 03 · Composición por UV y burbujas
     // ---------------------------------------------------------------------
     function construirComposicionUV() {
-      if (!resumenUV) return;
-      const filas = Object.entries(resumenUV.uv).filter(([, v]) => v.poblacion > 0).map(([n, v]) => {
+      if (!HIS.resumen) return;
+      const filas = Object.entries(HIS.resumen.uv).filter(([, v]) => v.poblacion > 0).map(([n, v]) => {
         const c = v.censo, per = c.n_per || v.poblacion;
         const tras = MODOS_TRASLADO.reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0) || 1;
         const tp = 100 * c.n_transporte_publico / tras, auto = 100 * c.n_transporte_auto / tras, camina = 100 * c.n_transporte_camina / tras;
         const ninos = 100 * ((c.n_edad_0_5 || 0) + (c.n_edad_6_13 || 0)) / per, adol = 100 * (c.n_edad_14_17 || 0) / per;
         const mayores = 100 * (c.n_edad_60_mas || 0) / per;
-        return { n, pob: v.poblacion, cob: 100 * v.menos_200 / v.poblacion, lejos: v.tp_lejos_200,
+        const pet = (c.n_ocupado || 0) + (c.n_desocupado || 0) + (c.n_fuera_fuerza_trabajo || 0) || 1;
+        return { n, pob: v.poblacion, cob: v.menos_200 != null ? 100 * v.menos_200 / v.poblacion : null, lejos: v.tp_lejos_200,
           tp, auto, camina, otros: Math.max(0, 100 - tp - auto - camina),
-          ninos, adol, mayores, adultos: Math.max(0, 100 - ninos - adol - mayores) };
-      }).sort((a, b) => b.tp - a.tp);
+          ninos, adol, mayores, adultos: Math.max(0, 100 - ninos - adol - mayores),
+          ocup: 100 * (c.n_ocupado || 0) / pet, desoc: 100 * (c.n_desocupado || 0) / pet, fuera: 100 * (c.n_fuera_fuerza_trabajo || 0) / pet,
+          esc: c.prom_escolaridad18 ?? null, hacin: c.n_vp_ocupada ? 100 * (c.n_viv_hacinadas || 0) / c.n_vp_ocupada : 0 };
+      }).sort(HIS.cp ? (a, b) => b.tp - a.tp : (a, b) => b.mayores - a.mayores);
 
       const barras = (id, partes) => {
         const cont = document.getElementById(id);
@@ -2278,56 +2809,99 @@
           </div>`).join('') + `
           <div class="eje">${[0, 20, 40, 60, 80, 100].map(v => `<span>${v}</span>`).join('')}</div>
           <div class="leyenda-linea">${partes.map(([, color, nombre]) => `<span><i style="background:${color}"></i>${nombre}</span>`).join('')}</div>`;
+        if (cont.dataset.listo) return;
+        cont.dataset.listo = '1';
         cont.addEventListener('click', e => { const f = e.target.closest('.fila'); if (f) irAUVMapa(f.dataset.uv); });
       };
-      barras('barras-transporte', [['tp', '#ff8a3d', 'Transporte público'], ['auto', '#5b8ff9', 'Auto'], ['camina', '#3ad1c4', 'A pie'], ['otros', '#5b6270', 'Otros']]);
-      barras('barras-edades', [['ninos', '#7cc4ff', '0–13'], ['adol', '#b39dfb', '14–17'], ['adultos', '#8b95a3', '18–59'], ['mayores', '#f6c544', '60+']]);
+      const TRANSPORTE = [['tp', '#ff8a3d', 'Transporte público'], ['auto', '#5b8ff9', 'Auto'], ['camina', '#3ad1c4', 'A pie'], ['otros', '#5b6270', 'Otros']];
+      const EDADES = [['ninos', '#7cc4ff', '0–13'], ['adol', '#b39dfb', '14–17'], ['adultos', '#8b95a3', '18–59'], ['mayores', '#f6c544', '60+']];
+      const LABORAL = [['ocup', '#3ad1c4', 'Ocupados'], ['desoc', '#ff5d73', 'Desocupados'], ['fuera', '#5b6270', 'Fuera de la fuerza de trabajo']];
+      if (HIS.cp) { barras('barras-transporte', TRANSPORTE); barras('barras-edades', EDADES); }
+      else { barras('barras-transporte', EDADES); barras('barras-edades', LABORAL); }
 
-      // Burbujas
-      const t = resumenUV.total, c = t.censo;
-      const tras = MODOS_TRASLADO.reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0);
-      const cobProm = 100 * t.menos_200 / t.poblacion, tpProm = 100 * c.n_transporte_publico / tras;
-      const W = 640, H = 520, m = { l: 54, r: 20, t: 20, b: 46 };
-      const pw = W - m.l - m.r, ph = H - m.t - m.b;
-      const yMax = 60;
-      const X = v => m.l + pw * v / 100, Y = v => m.t + ph * (1 - v / yMax);
-      let g = `<rect x="${m.l}" y="${m.t}" width="${X(cobProm) - m.l}" height="${Y(tpProm) - m.t}" fill="#c6f24e" fill-opacity="0.06" stroke="#c6f24e" stroke-opacity="0.4" stroke-dasharray="4 4"/>
-        <text x="${m.l + 8}" y="${m.t + 16}" fill="#c6f24e" font-size="10.5" font-family="IBM Plex Mono" letter-spacing="1">PRIORIDAD · MÁS BUS, MENOS COBERTURA</text>`;
-      for (let v = 0; v <= 100; v += 20) g += `<line x1="${X(v)}" y1="${m.t}" x2="${X(v)}" y2="${m.t + ph}" stroke="rgba(255,255,255,0.06)"/>
+      // Burbujas: Copiapó = cobertura de buses frente a uso del bus; Tierra Amarilla = escolaridad frente a hacinamiento
+      const t = HIS.resumen.total, c = t.censo;
+      let cfg;
+      if (HIS.cp) {
+        const tras = MODOS_TRASLADO.reduce((s, m) => s + (c['n_transporte_' + m] || 0), 0);
+        const cobProm = 100 * t.menos_200 / t.poblacion, tpProm = 100 * c.n_transporte_publico / tras;
+        cfg = { xv: 'cob', yv: 'tp', xmin: 0, xmax: 100, xpaso: 20, ymin: 0, ymax: 60, ypaso: 10, xprom: cobProm, yprom: tpProm,
+          xl: 'VIVE A MENOS DE 200 M DE UN RECORRIDO (%)', yl: 'USA TRANSPORTE PÚBLICO (%)',
+          caja: 'PRIORIDAD · MÁS BUS, MENOS COBERTURA', ref: `COPIAPÓ ${fmt(cobProm, 0)} %`,
+          aria: 'Cobertura de recorridos frente a uso del bus por UV',
+          tip: f => `COBERTURA ${fmt(f.cob, 1)} % · BUS ${fmt(f.tp, 1)} %<br>${fmt(f.lejos)} usuarios de bus lejos de un recorrido`,
+          nota: 'Naranja: UV con más uso del bus y menos cobertura que el promedio. Toque una burbuja para verla en el mapa.' };
+      } else {
+        const escProm = c.prom_escolaridad18, hacProm = c.n_vp_ocupada ? 100 * c.n_viv_hacinadas / c.n_vp_ocupada : 0;
+        const escs = filas.map(f => f.esc).filter(x => x != null);
+        cfg = { xv: 'esc', yv: 'hacin', xmin: Math.floor(Math.min(...escs) - 0.5), xmax: Math.ceil(Math.max(...escs) + 0.5), xpaso: 1,
+          ymin: 0, ymax: Math.max(10, Math.ceil(Math.max(...filas.map(f => f.hacin)) / 5) * 5 + 5), ypaso: 5,
+          xprom: escProm, yprom: hacProm,
+          xl: 'ESCOLARIDAD PROMEDIO, 18 AÑOS O MÁS (AÑOS)', yl: 'VIVIENDAS HACINADAS (%)',
+          caja: 'PRIORIDAD · MENOS ESCOLARIDAD, MÁS HACINAMIENTO', ref: `T. AMARILLA ${fmt(escProm, 1)} AÑOS`,
+          aria: 'Escolaridad frente a hacinamiento por UV',
+          tip: f => `ESCOLARIDAD ${fmt(f.esc, 1)} años · HACINAMIENTO ${fmt(f.hacin, 1)} %`,
+          nota: 'Naranja: UV con menos escolaridad y más hacinamiento que el promedio de Tierra Amarilla. Toque una burbuja para verla en el mapa.' };
+      }
+      dibujarBurbujas(filas.filter(f => f[cfg.xv] != null), cfg);
+    }
+
+    let filasBurbujas = [], cfgBurbujas = null;
+    function dibujarBurbujas(filas, cfg) {
+      filasBurbujas = filas;
+      cfgBurbujas = cfg;
+      const W = 640, ALTO = 520, m = { l: 54, r: 20, t: 20, b: 46 };
+      const pw = W - m.l - m.r, ph = ALTO - m.t - m.b;
+      const X = v => m.l + pw * (v - cfg.xmin) / (cfg.xmax - cfg.xmin);
+      const Y = v => m.t + ph * (1 - (Math.min(v, cfg.ymax) - cfg.ymin) / (cfg.ymax - cfg.ymin));
+      let g = `<rect x="${m.l}" y="${m.t}" width="${Math.max(0, X(cfg.xprom) - m.l)}" height="${Math.max(0, Y(cfg.yprom) - m.t)}" fill="#c6f24e" fill-opacity="0.06" stroke="#c6f24e" stroke-opacity="0.4" stroke-dasharray="4 4"/>
+        <text x="${m.l + 8}" y="${m.t + 16}" fill="#c6f24e" font-size="10.5" font-family="IBM Plex Mono" letter-spacing="1">${cfg.caja}</text>`;
+      for (let v = cfg.xmin; v <= cfg.xmax + 1e-9; v += cfg.xpaso) g += `<line x1="${X(v)}" y1="${m.t}" x2="${X(v)}" y2="${m.t + ph}" stroke="rgba(255,255,255,0.06)"/>
         <text x="${X(v)}" y="${m.t + ph + 18}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="middle">${v}</text>`;
-      for (let v = 0; v <= yMax; v += 10) g += `<line x1="${m.l}" y1="${Y(v)}" x2="${m.l + pw}" y2="${Y(v)}" stroke="rgba(255,255,255,0.06)"/>
+      for (let v = cfg.ymin; v <= cfg.ymax + 1e-9; v += cfg.ypaso) g += `<line x1="${m.l}" y1="${Y(v)}" x2="${m.l + pw}" y2="${Y(v)}" stroke="rgba(255,255,255,0.06)"/>
         <text x="${m.l - 10}" y="${Y(v) + 4}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="end">${v}</text>`;
-      g += `<text x="${m.l + pw / 2}" y="${H - 6}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">VIVE A MENOS DE 200 M DE UN RECORRIDO (%)</text>
-        <text transform="translate(14 ${m.t + ph / 2}) rotate(-90)" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">USA TRANSPORTE PÚBLICO (%)</text>
-        <line x1="${X(cobProm)}" y1="${m.t}" x2="${X(cobProm)}" y2="${m.t + ph}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.4"/>
-        <line x1="${m.l}" y1="${Y(tpProm)}" x2="${m.l + pw}" y2="${Y(tpProm)}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.4"/>
-        <text x="${X(cobProm) + 4}" y="${m.t + ph - 6}" fill="#8b95a3" font-size="10" font-family="IBM Plex Mono">COPIAPÓ ${fmt(cobProm, 0)} %</text>`;
-      filas.slice().sort((a, b) => b.pob - a.pob).forEach((f, i) => {
-        const prioridad = f.cob < cobProm && f.tp > tpProm;
+      g += `<text x="${m.l + pw / 2}" y="${ALTO - 6}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">${cfg.xl}</text>
+        <text transform="translate(14 ${m.t + ph / 2}) rotate(-90)" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">${cfg.yl}</text>
+        <line x1="${X(cfg.xprom)}" y1="${m.t}" x2="${X(cfg.xprom)}" y2="${m.t + ph}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.4"/>
+        <line x1="${m.l}" y1="${Y(cfg.yprom)}" x2="${m.l + pw}" y2="${Y(cfg.yprom)}" stroke="#e6e9ee" stroke-dasharray="4 5" opacity="0.4"/>
+        <text x="${X(cfg.xprom) + 4}" y="${m.t + ph - 6}" fill="#8b95a3" font-size="10" font-family="IBM Plex Mono">${cfg.ref}</text>`;
+      // Nombres: si chocan con otro ya puesto, se prueba arriba/abajo; si no caben, quedan en el tooltip
+      const cajas = [];
+      let etiquetas = '';
+      filas.slice().sort((a, b) => b.pob - a.pob).forEach(f => {
+        const prioridad = f[cfg.xv] < cfg.xprom && f[cfg.yv] > cfg.yprom;
         const r = 4 + Math.sqrt(f.pob) / 11;
-        const x = X(f.cob), y = Y(Math.min(f.tp, yMax));
+        const x = X(f[cfg.xv]), y = Y(f[cfg.yv]);
+        const nombre = nombreCorto(f.n), ancho = nombre.length * 5.6, aIzq = x + r + 4 + ancho > W - 4;
         g += `<circle data-i="${filas.indexOf(f)}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"
-                fill="${prioridad ? '#ff8a3d' : '#5b8ff9'}" fill-opacity="${prioridad ? 0.8 : 0.45}" stroke="${prioridad ? '#ff8a3d' : '#5b8ff9'}"/>
-              <text x="${(x + r + 4 + nombreCorto(f.n).length * 5.6 > W - 4 ? x - r - 4 : x + r + 4).toFixed(1)}" y="${(y + 4).toFixed(1)}"
-                    text-anchor="${x + r + 4 + nombreCorto(f.n).length * 5.6 > W - 4 ? 'end' : 'start'}" fill="${prioridad ? '#ffd2b0' : '#b5bdc8'}" font-size="10.5" font-family="Space Grotesk" pointer-events="none">${esc(nombreCorto(f.n))}</text>`;
+                fill="${prioridad ? '#ff8a3d' : '#5b8ff9'}" fill-opacity="${prioridad ? 0.8 : 0.45}" stroke="${prioridad ? '#ff8a3d' : '#5b8ff9'}"/>`;
+        const tx = aIzq ? x - r - 4 : x + r + 4, x0 = aIzq ? tx - ancho : tx;
+        const dy = [0, -12, 12, -24, 24].find(d => !cajas.some(c => x0 < c.x1 && x0 + ancho > c.x0 && y + d - 9 < c.y1 && y + d + 3 > c.y0));
+        if (dy === undefined) return;
+        cajas.push({ x0, x1: x0 + ancho, y0: y + dy - 9, y1: y + dy + 3 });
+        etiquetas += `<text x="${tx.toFixed(1)}" y="${(y + dy + 4).toFixed(1)}" text-anchor="${aIzq ? 'end' : 'start'}"
+                    fill="${prioridad ? '#ffd2b0' : '#b5bdc8'}" font-size="10.5" font-family="Space Grotesk" pointer-events="none">${esc(nombre)}</text>`;
       });
+      g += etiquetas;
       const cont = document.getElementById('burbujas');
-      cont.innerHTML = `<svg class="svg-grafico" viewBox="0 0 ${W} ${H}" role="img" aria-label="Cobertura de recorridos frente a uso del bus por UV">${g}</svg>
-        <p class="nota">Naranja: UV con más uso del bus y menos cobertura que el promedio. Toque una burbuja para verla en el mapa.</p>`;
+      cont.innerHTML = `<svg class="svg-grafico" viewBox="0 0 ${W} ${ALTO}" role="img" aria-label="${cfg.aria}">${g}</svg>
+        <p class="nota">${cfg.nota}</p>`;
+      if (cont.dataset.listo) return;
+      cont.dataset.listo = '1';
       cont.addEventListener('mousemove', e => {
         const c = e.target.closest('circle[data-i]');
         if (!c) { ocultarTip(); return; }
-        const f = filas[+c.dataset.i];
-        mostrarTip(`${esc(nombreCorto(f.n))}<br>${fmt(f.pob)} personas<br>COBERTURA ${fmt(f.cob, 1)} % · BUS ${fmt(f.tp, 1)} %<br>${fmt(f.lejos)} usuarios de bus lejos de un recorrido`, e);
+        const f = filasBurbujas[+c.dataset.i];
+        mostrarTip(`${esc(nombreCorto(f.n))}<br>${fmt(f.pob)} personas<br>${cfgBurbujas.tip(f)}`, e);
       });
       cont.addEventListener('mouseleave', ocultarTip);
-      cont.addEventListener('click', e => { const c = e.target.closest('circle[data-i]'); if (c) { ocultarTip(); irAUVMapa(filas[+c.dataset.i].n); } });
+      cont.addEventListener('click', e => { const c = e.target.closest('circle[data-i]'); if (c) { ocultarTip(); irAUVMapa(filasBurbujas[+c.dataset.i].n); } });
     }
 
     // ---------------------------------------------------------------------
     // 04 · Cortes (perfil de elevación + manzanas + recorridos + UV)
     // ---------------------------------------------------------------------
-    const CORTES = [
+    const CORTES_CP = [
       { id: 'A', nombre: 'A–A′', extremos: ['SO · Rosario', 'NE · Sectores altos'],
         titulo: 'Corte transversal del valle',
         desc: 'Desde Rosario, cruzando el río Copiapó y el centro, hasta los sectores altos del oriente.',
@@ -2341,6 +2915,18 @@
         desc: 'Desde Palomar, cruzando el centro y El Chañar, hasta Juan Pablo II en la ladera norte.',
         puntos: [[-70.342, -27.397], [-70.318, -27.352]] }
     ];
+    // Tierra Amarilla: el valle corre de norte a sur por el pueblo
+    const CORTES_TA = [
+      { id: 'D', nombre: 'D–D′', extremos: ['N · Luis Uribe', 'S · Algarrobo'],
+        titulo: 'Corte longitudinal del pueblo',
+        desc: 'Siguiendo el valle del río Copiapó por Tierra Amarilla, desde Luis Uribe hasta Algarrobo.',
+        puntos: [[-70.2685, -27.4625], [-70.2660, -27.4800], [-70.2650, -27.4945], [-70.2630, -27.5100]] },
+      { id: 'E', nombre: 'E–E′', extremos: ['O · Valle agrícola', 'E · Cerros'],
+        titulo: 'Corte transversal del valle',
+        desc: 'De poniente a oriente: el valle agrícola, el río, el Centro y Balmaceda - Gabriela Mistral hasta los cerros.',
+        puntos: [[-70.2790, -27.4785], [-70.2555, -27.4840]] }
+    ];
+    const TODOS_CORTES = CORTES_CP.map(c => ({ ...c, comuna: 'CP' })).concat(CORTES_TA.map(c => ({ ...c, comuna: 'TA' })));
     const cortesUI = { actual: 'A', exag: 'auto', variable: 'dens', rutas: true, uv: true };
     let corteDibujado = false;
     const cacheCortes = {};
@@ -2427,7 +3013,7 @@
 
       // Manzanas a menos de 150 m
       const manzanas = [];
-      datos.features.forEach(f => {
+      HIS.features.forEach(f => {
         const pr = proyectarEnLinea(aM(centroManzana(f.geometry)), pts, acum);
         if (pr.dist <= 150 && pr.d > 0 && pr.d < largo) manzanas.push({ d: pr.d, p: f.properties });
       });
@@ -2435,7 +3021,7 @@
 
       // Cruces con recorridos de buses
       const cruces = [];
-      if (rutasGeo) rutasGeo.features.forEach(f => {
+      if (rutasGeo && HIS.cp) rutasGeo.features.forEach(f => {
         const lineas = f.geometry.type === 'LineString' ? [f.geometry.coordinates] : f.geometry.coordinates;
         lineas.forEach(l => {
           const q = l.map(aM);
@@ -2469,7 +3055,6 @@
 
     function prepararCortes() {
       const tabs = document.getElementById('tabs-corte');
-      tabs.innerHTML = CORTES.map(c => `<button class="chip ${c.id === cortesUI.actual ? 'activo' : ''}" data-c="${c.id}">${c.nombre}</button>`).join('');
       tabs.addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (b) seleccionarCorte(b.dataset.c); });
 
       const exag = document.getElementById('seg-exag');
@@ -2484,8 +3069,6 @@
       });
 
       const vars = document.getElementById('seg-var-corte');
-      vars.innerHTML = [['dens', 'DENSIDAD'], ['per', 'POBLACIÓN'], ['tp', 'USO DEL BUS']]
-        .map(([v, t]) => `<button data-v="${v}" class="${v === cortesUI.variable ? 'activo' : ''}">${t}</button>`).join('');
       vars.addEventListener('click', e => {
         const b = e.target.closest('[data-v]');
         if (!b) return;
@@ -2498,21 +3081,31 @@
       document.getElementById('chk-corte-uv').addEventListener('change', e => { cortesUI.uv = e.target.checked; dibujarCorte(); });
 
       // Líneas de corte en el mapa
-      map.addSource('cortes', { type: 'geojson', data: { type: 'FeatureCollection', features: CORTES.map(c => ({
-        type: 'Feature', properties: { id: c.id }, geometry: { type: 'LineString', coordinates: c.puntos } })) } });
+      map.addSource('cortes', { type: 'geojson', data: { type: 'FeatureCollection', features: TODOS_CORTES.map(c => ({
+        type: 'Feature', properties: { id: c.id, comuna: c.comuna }, geometry: { type: 'LineString', coordinates: c.puntos } })) } });
       map.addLayer({ id: 'cortes', type: 'line', source: 'cortes',
         paint: { 'line-color': '#c6f24e', 'line-width': 2.2, 'line-dasharray': [3, 2] } });
       map.on('click', 'cortes', e => { e.preventDefault(); irACorte(e.features[0].properties.id); });
       map.on('mouseenter', 'cortes', () => { map.getCanvas().style.cursor = 'pointer'; });
       map.on('mouseleave', 'cortes', () => { map.getCanvas().style.cursor = ''; });
-      CORTES.forEach(c => [[c.puntos[0], c.id], [c.puntos[c.puntos.length - 1], c.id + '′']].forEach(([p, t]) => {
+      TODOS_CORTES.forEach(c => [[c.puntos[0], c.id], [c.puntos[c.puntos.length - 1], c.id + '′']].forEach(([p, t]) => {
         const el = document.createElement('div');
         el.className = 'etiqueta-corte';
         el.textContent = t;
         el.title = 'Ver corte ' + c.nombre;
         el.addEventListener('click', ev => { ev.stopPropagation(); irACorte(c.id); });
-        new maplibregl.Marker({ element: el }).setLngLat(p).addTo(map);
+        const marcador = new maplibregl.Marker({ element: el }).setLngLat(p).addTo(map);
+        marcador.comuna = c.comuna;
+        marcadoresCorte.push(marcador);
       }));
+    }
+
+    // Pestañas de cortes y variables de las barras según la comuna
+    function pintarControlesCorte() {
+      document.getElementById('tabs-corte').innerHTML = HIS.cortes.map(c =>
+        `<button class="chip ${c.id === cortesUI.actual ? 'activo' : ''}" data-c="${c.id}">${c.nombre}</button>`).join('');
+      document.getElementById('seg-var-corte').innerHTML = [['dens', 'DENSIDAD'], ['per', 'POBLACIÓN'], HIS.cp ? ['tp', 'USO DEL BUS'] : ['mayores', 'ADULTOS MAYORES']]
+        .map(([v, t]) => `<button data-v="${v}" class="${v === cortesUI.variable ? 'activo' : ''}">${t}</button>`).join('');
     }
 
     function seleccionarCorte(id) {
@@ -2529,7 +3122,7 @@
     async function dibujarCorte() {
       corteDibujado = true;
       const cont = document.getElementById('svg-corte');
-      const C = CORTES.find(c => c.id === cortesUI.actual);
+      const C = HIS.cortes.find(c => c.id === cortesUI.actual) || HIS.cortes[0];
       if (!cacheCortes[C.id]) cont.innerHTML = '<p class="lectura" style="border:none">Calculando el perfil de elevación…</p>';
       const dat = await calcularCorte(C);
       if (cortesUI.actual !== C.id) return;
@@ -2591,7 +3184,7 @@
       const alturaMax = ph * 0.34;
       dat.manzanas.forEach((mz, i) => {
         const val = mz.p[v];
-        if (val == null || (v === 'tp' && mz.p.cluster < 0)) return;
+        if (val == null || (['tp', 'mayores'].includes(v) && mz.p.cluster < 0)) return;
         const h = Math.max(2, Math.min(1.15, val / vmax) * alturaMax);
         const x = X(mz.d), yb = Y(zEn(mz.d));
         g += `<rect class="barra-mz" data-i="${i}" x="${(x - 2).toFixed(1)}" y="${(yb - h).toFixed(1)}" width="4" height="${h.toFixed(1)}"
@@ -2646,7 +3239,7 @@
         let cerca = null;
         dat.manzanas.forEach(mz => { if (Math.abs(mz.d - d) < 70 && (!cerca || Math.abs(mz.d - d) < Math.abs(cerca.d - d))) cerca = mz; });
         lectura.innerHTML = `${fmt(d / 1000, 2)} km · cota ${fmt(zEn(d))} m s. n. m.` + (cerca
-          ? ` · ${esc(nombreCorto(cerca.p.uv))} · ${cerca.p.cluster >= 0 ? 'perfil ' + PERFILES[cerca.p.cluster].letra : 'sin perfil'} · ${fmt(cerca.p.per)} personas · ${fmt(cerca.p.dens)} hab/ha${cerca.p.tp != null ? ' · bus ' + fmt(cerca.p.tp, 1) + ' %' : ''}`
+          ? ` · ${esc(nombreCorto(cerca.p.uv))} · ${cerca.p.cluster >= 0 ? 'perfil ' + HIS.perfiles[cerca.p.cluster].letra : 'sin perfil'} · ${fmt(cerca.p.per)} personas · ${fmt(cerca.p.dens)} hab/ha${HIS.cp ? (cerca.p.tp != null ? ' · bus ' + fmt(cerca.p.tp, 1) + ' %' : '') : (cerca.p.mayores != null ? ' · 60+ ' + fmt(cerca.p.mayores, 1) + ' %' : '')}`
           : ' · sin manzanas cercanas');
       };
       svg.addEventListener('mousemove', leer);
@@ -2661,11 +3254,11 @@
       });
 
       // Leyenda y ficha del corte
-      const nombreVar = { dens: 'densidad (hab/ha)', per: 'población', tp: '% que usa transporte público' }[v];
+      const nombreVar = { dens: 'densidad (hab/ha)', per: 'población', tp: '% que usa transporte público', mayores: '% de adultos mayores (60+)' }[v];
       document.getElementById('ley-corte').innerHTML = `
         <div><i style="background:url(#);background:#e8d5a6"></i>Terreno (relieve SRTM)</div>
-        <div><i style="background:#ea580c;width:14px;height:12px;clip-path:polygon(0 0,100% 0,50% 100%)"></i>Cruce con un recorrido de bus (L = línea)</div>
-        ${PERFILES.map(p => `<div><i style="background:${p.color};width:12px"></i>Manzana perfil ${p.letra} · ${esc(p.nombre)}</div>`).join('')}
+        ${HIS.cp ? '<div><i style="background:#ea580c;width:14px;height:12px;clip-path:polygon(0 0,100% 0,50% 100%)"></i>Cruce con un recorrido de bus (L = línea)</div>' : ''}
+        ${HIS.perfiles.map(p => `<div><i style="background:${p.color};width:12px"></i>Manzana perfil ${p.letra} · ${esc(p.nombre)}</div>`).join('')}
         <div><i style="background:#2563eb;width:2px;border:none"></i>Altura de la barra: ${nombreVar}</div>`;
 
       const pob = dat.manzanas.reduce((s, mz) => s + (mz.p.per || 0), 0);
@@ -2681,8 +3274,8 @@
           <tr><td>Longitud</td><td>${fmt(dat.largo / 1000, 1)} km</td></tr>
           <tr><td>Cotas</td><td>${fmt(zmin)}–${fmt(zmax)} m s. n. m. (desnivel ${fmt(zmax - zmin)} m)</td></tr>
           <tr><td>Manzanas en la franja</td><td>${fmt(dat.manzanas.length)} · ${fmt(pob)} personas (±150 m)</td></tr>
-          <tr><td>Perfil predominante</td><td>${dom ? `Perfil ${PERFILES[dom[0]].letra} · ${esc(PERFILES[dom[0]].nombre)} (${fmt(100 * dom[1] / pob, 0)} %)` : '–'}</td></tr>
-          <tr><td>Recorridos que cruza</td><td>${lineasCruzadas.length ? lineasCruzadas.map(l => esc(l.replace('Línea ', 'L'))).join(', ') : 'Ninguno'}</td></tr>
+          <tr><td>Perfil predominante</td><td>${dom ? `Perfil ${HIS.perfiles[dom[0]].letra} · ${esc(HIS.perfiles[dom[0]].nombre)} (${fmt(100 * dom[1] / pob, 0)} %)` : '–'}</td></tr>
+          ${HIS.cp ? `<tr><td>Recorridos que cruza</td><td>${lineasCruzadas.length ? lineasCruzadas.map(l => esc(l.replace('Línea ', 'L'))).join(', ') : 'Ninguno'}</td></tr>` : ''}
         </table>`;
     }
 
@@ -2698,7 +3291,7 @@
     let temporizadorUV = null, uvPendiente = null;
 
     function programarUV(nombre) {
-      if (uvDestacada.fija) return;
+      if (uvDestacada.fija || relaveDestacado.id != null) return;
       if (nombre === uvPendiente) return;
       uvPendiente = nombre;
       clearTimeout(temporizadorUV);
@@ -2727,6 +3320,10 @@
       uvDestacada.nombre = null;
       uvDestacada.fija = false;
       uvPendiente = null;
+      relaveDestacado.id = null;
+      relaveDestacado.ids = null;
+      if (map.getLayer('relave-foco')) map.setFilter('relave-foco', ['==', ['get', 'id'], -1]);
+      pintarRelaves();
       ['uv-halo', 'uv-borde'].forEach(id => map.getLayer(id) && map.setFilter(id, ['==', ['get', 'NOMBRE_UV'], '__ninguna__']));
       map.setPaintProperty('manzanas', 'fill-extrusion-color', exprColorFinal());
       Object.values(etiquetasUV).forEach(el => el.classList.remove('activa'));
@@ -2735,17 +3332,18 @@
 
     // Tarjeta con el resumen de la UV destacada
     function mostrarTarjetaUV(nombre, fija) {
-      const fs = datos.features.filter(f => f.properties.uv === nombre);
+      const CU = COMUNAS[comunaDeUV(nombre)], PF = CU.perfiles;
+      const fs = (CU.geo ? CU.geo.features : []).filter(f => f.properties.uv === nombre && !f.properties.sinPoblacion);
       const pob = fs.reduce((s, f) => s + (f.properties.per || 0), 0) || 1;
       const porPerfil = {};
       fs.forEach(f => { porPerfil[f.properties.cluster] = (porPerfil[f.properties.cluster] || 0) + (f.properties.per || 0); });
       const barra = [0, 1, 2, 3, 4, -1].map(k => porPerfil[k]
-        ? `<i style="width:${100 * porPerfil[k] / pob}%;background:${k >= 0 ? PERFILES[k].color : COLOR_SIN_PERFIL}" title="${k >= 0 ? 'Perfil ' + PERFILES[k].letra : 'Sin perfil'}: ${fmt(100 * porPerfil[k] / pob)} %"></i>` : '').join('');
+        ? `<i style="width:${100 * porPerfil[k] / pob}%;background:${k >= 0 ? PF[k].color : COLOR_SIN_PERFIL}" title="${k >= 0 ? 'Perfil ' + PF[k].letra : 'Sin perfil'}: ${fmt(100 * porPerfil[k] / pob)} %"></i>` : '').join('');
       const r = resumenUV && resumenUV.uv[nombre];
       const t = document.getElementById('tarjeta-uv');
       t.innerHTML = `
         <div class="tarjeta-uv-cabecera">
-          <span><span class="mono">UNIDAD VECINAL</span><b>${esc(nombreCorto(nombre))}</b></span>
+          <span><span class="mono">UNIDAD VECINAL${comunaDeUV(nombre) === 'TA' ? ' · TIERRA AMARILLA' : ''}</span><b>${esc(nombreCorto(nombre))}</b></span>
           <span class="tarjeta-uv-botones">
             <button data-uv="${esc(nombre)}" onclick="abrirFichaUV(this.dataset.uv)" title="Ver ficha completa">FICHA</button>
             ${fija ? '<button onclick="quitarUV(true)" aria-label="Quitar destacado" title="Quitar destacado"><i class="fa-solid fa-xmark"></i></button>' : ''}
@@ -2769,10 +3367,10 @@
     function acomodarPines() {
       // Celular: si una etiqueta no cabe sin encimarse, se oculta (gana la UV más poblada)
       const ocultarSiChoca = esMovil();
-      const pob = n => (resumenUV && resumenUV.uv[n] ? resumenUV.uv[n].poblacion : 0);
+      const pob = n => (resumenDeUV(n) || { poblacion: 0 }).poblacion;
       const pines = Object.entries(etiquetasUV).map(([n, el]) => {
         const c = centrosUV[n];
-        if (!c) return null;
+        if (!c || el.classList.contains('otra-comuna')) return null;
         el.classList.remove('choca');
         const pt = map.project(c);
         const t = el.querySelector('.pin-texto');
@@ -2903,27 +3501,29 @@
     }
 
     function abrirFichaUV(nombre) {
-      const r = resumenUV && resumenUV.uv[nombre];
+      const r = resumenDeUV(nombre);
       if (!r) return;
-      const c = r.censo, u = indicadoresUV(c), cp = indicadoresUV(resumenUV.total.censo);
+      const ta = comunaDeUV(nombre) === 'TA', nc = NOMBRE_COMUNA[ta ? 'TA' : 'CP'];
+      const c = r.censo, u = indicadoresUV(c), cp = indicadoresUV((ta ? COMUNAS.TA.resumen : resumenUV).total.censo);
       const props = ((uvsGeo ? uvsGeo.features : []).concat(ficticiasGeo ? ficticiasGeo.features : [])
         .find(f => f.properties.NOMBRE_UV === nombre && !f.properties.extension) || { properties: {} }).properties;
       const ficticia = !!props.ficticia;
       const pct = v => fmt(100 * v, 1) + ' %';
 
       // Perfiles de sus manzanas
-      const fs = datos.features.filter(f => f.properties.uv === nombre);
+      const CU = COMUNAS[ta ? 'TA' : 'CP'], PF = CU.perfiles;
+      const fs = (CU.geo ? CU.geo.features : []).filter(f => f.properties.uv === nombre && !f.properties.sinPoblacion);
       const porPerfil = {};
       fs.forEach(f => { porPerfil[f.properties.cluster] = (porPerfil[f.properties.cluster] || 0) + (f.properties.per || 0); });
       const pobMz = Object.values(porPerfil).reduce((a, b) => a + b, 0) || 1;
       const perfilesHtml = [0, 1, 2, 3, 4, -1].filter(k => porPerfil[k]).map(k => {
-        const color = k >= 0 ? PERFILES[k].color : COLOR_SIN_PERFIL;
+        const color = k >= 0 ? PF[k].color : COLOR_SIN_PERFIL;
         return `<div class="fila-perfil-uv"><i style="background:${color}"></i>
-          <span>${k >= 0 ? `Perfil ${PERFILES[k].letra} · ${esc(PERFILES[k].nombre)}` : 'Pocas personas (sin perfil)'}</span>
+          <span>${k >= 0 ? `Perfil ${PF[k].letra} · ${esc(PF[k].nombre)}` : 'Pocas personas (sin perfil)'}</span>
           <b>${fmt(100 * porPerfil[k] / pobMz, 0)} %</b></div>`;
       }).join('');
       const barraPerfiles = [0, 1, 2, 3, 4, -1].filter(k => porPerfil[k]).map(k =>
-        `<i style="width:${100 * porPerfil[k] / pobMz}%;background:${k >= 0 ? PERFILES[k].color : COLOR_SIN_PERFIL}"></i>`).join('');
+        `<i style="width:${100 * porPerfil[k] / pobMz}%;background:${k >= 0 ? PF[k].color : COLOR_SIN_PERFIL}"></i>`).join('');
 
       // Indicadores: UV vs Copiapó
       const filas = [
@@ -2954,7 +3554,9 @@
         ['fa-shield-halved', 'Carabineros / PDI', num('CARABINERO') + num('PDI'), ''],
         ['fa-fire-extinguisher', 'Bomberos', num('BOMBEROS'), '']
       ];
-      const serviciosHtml = ficticia
+      const serviciosHtml = ta
+        ? `<p class="nota">Sin datos de servicios: en Tierra Amarilla las UV se dibujaron a mano y no traen equipamiento (salud, colegios, comercio…).</p>`
+        : ficticia
         ? `<p class="nota">UV creada para el análisis (sectores altos y tomas): el archivo de UV no tiene datos de servicios para este sector.</p>`
         : `<div class="servicios-uv">${servicios.map(([ic, n, v, d]) => `
             <div class="${v === 0 ? 'cero' : ''}"><i class="fa-solid ${ic}"></i>
@@ -2965,7 +3567,7 @@
 
       const html = `
         <div class="modal-cabecera">
-          <div class="ruta">${ficticia ? 'UV FICTICIA · CREADA PARA EL ANÁLISIS' : 'UNIDAD VECINAL' + (props.CODIGO_UV ? ' · N° ' + esc(props.CODIGO_UV) : '')}</div>
+          <div class="ruta">${ficticia ? 'UV FICTICIA · CREADA PARA EL ANÁLISIS' : 'UNIDAD VECINAL' + (ta ? ' · TIERRA AMARILLA' : '') + (props.CODIGO_UV ? ' · N° ' + esc(props.CODIGO_UV) : '')}</div>
           <h2 id="titulo-modal">${esc(nombreCorto(nombre))}</h2>
           <p>${fmt(u.per)} personas · ${fmt(c.n_hog)} hogares · ${fmt(fs.length)} manzanas · Censo 2024</p>
           ${botonCerrar}
@@ -2975,8 +3577,9 @@
             <div class="kpis">
               <div><span>Habitantes</span><b>${fmt(u.per)}</b></div>
               <div><span>Usa transporte público</span><b>${pct(u.tp)}</b></div>
-              <div><span>A menos de 200 m del bus</span><b>${fmt(100 * r.menos_200 / r.poblacion, 1)} %</b></div>
-              <div><span>Usuarios de bus lejos</span><b style="color:${r.tp_lejos_200 > 300 ? '#ff8a3d' : 'inherit'}">${fmt(r.tp_lejos_200)}</b></div>
+              ${ta ? `<div><span>Hogares</span><b>${fmt(c.n_hog)}</b></div>
+              <div><span>Manzanas</span><b>${fmt(fs.length)}</b></div>` : `<div><span>A menos de 200 m del bus</span><b>${fmt(100 * r.menos_200 / r.poblacion, 1)} %</b></div>
+              <div><span>Usuarios de bus lejos</span><b style="color:${r.tp_lejos_200 > 300 ? '#ff8a3d' : 'inherit'}">${fmt(r.tp_lejos_200)}</b></div>`}
             </div>
 
             <h3 class="subtitulo">Perfiles de sus manzanas</h3>
@@ -2985,7 +3588,7 @@
 
             <h3 class="subtitulo">Indicadores</h3>
             <table class="datos">
-              <thead><tr><th>Indicador</th><th>UV</th><th>Copiapó</th></tr></thead>
+              <thead><tr><th>Indicador</th><th>UV</th><th>${nc}</th></tr></thead>
               <tbody>${filas.map(([n, v, p, f]) => `<tr><td>${n}</td><td>${v}${f}</td><td>${p}</td></tr>`).join('')}</tbody>
             </table>
           </div>
@@ -3000,28 +3603,258 @@
                 { n: '18–59', v: 100 * u.adultos, color: '#cfd5dd' }, { n: '60+', v: 100 * u.mayores, color: '#f6c544' }])}</div>
             </div>
 
-            <h3 class="subtitulo">Distancia de la población a un recorrido</h3>
+            ${ta ? '' : `<h3 class="subtitulo">Distancia de la población a un recorrido</h3>
             <div class="barra-perfiles-uv">${bandas.map(([k, , col]) => `<i style="width:${100 * r[k] / r.poblacion}%;background:${col}"></i>`).join('')}</div>
-            ${bandas.map(([k, n, col]) => `<div class="fila-perfil-uv"><i style="background:${col}"></i><span>${n}</span><b>${fmt(100 * r[k] / r.poblacion, 1)} %</b></div>`).join('')}
+            ${bandas.map(([k, n, col]) => `<div class="fila-perfil-uv"><i style="background:${col}"></i><span>${n}</span><b>${fmt(100 * r[k] / r.poblacion, 1)} %</b></div>`).join('')}`}
 
             <h3 class="subtitulo">Servicios</h3>
             ${serviciosHtml}
 
-            <h3 class="subtitulo">Líneas de bus que la recorren · ${lineas.length}</h3>
+            ${ta ? `<h3 class="subtitulo">Buses</h3>
+            <p class="nota">Los recorridos del Atlas son solo de Copiapó: aún no hay datos de buses para Tierra Amarilla.</p>` : `<h3 class="subtitulo">Líneas de bus que la recorren · ${lineas.length}</h3>
             <div class="lineas-uv">${lineas.length
               ? lineas.map(([l, f]) => `<span><i class="fa-solid fa-bus"></i>${esc(l)}${f ? `<small>${esc(f)}</small>` : ''}</span>`).join('')
-              : '<p class="nota">Ninguna línea pasa por esta UV.</p>'}</div>
+              : '<p class="nota">Ninguna línea pasa por esta UV.</p>'}</div>`}
 
             <button class="chip" style="margin-top:18px;border-right:1px solid var(--borde)" onclick="cerrarModal()">
               <i class="fa-solid fa-map"></i> VER EN EL MAPA</button>
           </div>
         </div>
         <p class="nota" style="padding:0 26px 22px;margin:0">
-          Población, movilidad, empleo, hogares y vivienda: Censo 2024 (INE), por manzana. Servicios: archivo de UV.
-          Cobertura: distancia en línea recta desde cada manzana al recorrido más cercano. "Copiapó" = total de las UV urbanas.
+          ${ta ? `Población, movilidad, empleo, hogares y vivienda: Censo 2024 (INE), suma de las manzanas de la UV.
+          UV dibujadas a mano. "Tierra Amarilla" = total de sus manzanas censales (incluye Nantoco y Los Loros).`
+          : `Población, movilidad, empleo, hogares y vivienda: Censo 2024 (INE), por manzana. Servicios: archivo de UV.
+          Cobertura: distancia en línea recta desde cada manzana al recorrido más cercano. "Copiapó" = total de las UV urbanas.`}
         </p>`;
       abrirModal(null, html);
     }
+
+    // =====================================================================
+    // RELAVES MINEROS
+    // =====================================================================
+    function actualizarLeyendaRelaves() {
+      const el = document.getElementById('leyenda-relaves');
+      if (!el) return;
+      if (!relavesGeo || !capasVisibles.relaves) { el.hidden = true; return; }
+      const t = relavesMz && relavesMz.totales[comunaActiva];
+      el.hidden = false;
+      el.innerHTML = `
+        <h2 class="titulo-caja">Relaves mineros · ${NOMBRE_COMUNA[comunaActiva]}</h2>
+        ${[['ACTIVO', 'Activo o en construcción'], ['INACTIVO', 'Inactivo'], ['ABANDONADO', 'Abandonado']]
+          .map(([k, n]) => `<div class="fila-rel"><i style="background:${franjasCSS(k)}"></i>${n}</div>`).join('')}
+        ${t ? `<p class="cifra"><b>${fmt(t.menos_500)}</b> personas (${fmt(100 * t.menos_500 / t.poblacion, 0)} %) viven a menos de 500 m
+          de alguno de sus ${t.relaves} relaves, y <b>${fmt(t.menos_1000)}</b> (${fmt(100 * t.menos_1000 / t.poblacion, 0)} %) a menos de 1 km.</p>` : ''}
+        <p class="nota">Altura según el tonelaje autorizado. Toque un relave para ver su ficha. Fuente: Sernageomin.</p>`;
+    }
+
+    function abrirFichaRelave(id) {
+      const f = relavePorId(id);
+      if (!f) return;
+      const p = f.properties;
+      const estadoTxt = NOMBRE_ESTADO_RELAVE[p.estado] || p.estado;
+      const filas = [
+        ['Empresa', esc(p.empresa || '–')],
+        ['Faena', esc(p.faena || '–')],
+        ['Tipo de depósito', esc(nombreCorto(p.tipo || '–'))],
+        ['Mineral', esc(nombreCorto(p.recurso || '–'))],
+        ['Estado (2026)', esc(estadoTxt)],
+        ['Tonelaje autorizado', p.toneladas ? fmt(p.toneladas) + ' t' : 'Sin dato'],
+        ['Volumen autorizado', p.volumen ? fmt(p.volumen) + ' m³' : 'Sin dato'],
+        ['Superficie', fmt(p.area_ha, 1) + ' ha'],
+        ['Resolución que lo aprueba', p.resolucion ? `N° ${esc(p.resolucion)}${p.fecha_res ? ' · ' + p.fecha_res.split('-').reverse().join('-') : ''}` : 'Sin dato'],
+        ['Código Sernageomin', esc(p.codigo || '–')]
+      ];
+      const rojo = v => v ? 'color:#ff6b5b' : '';
+      abrirModal(null, `
+        <div class="modal-cabecera">
+          <div class="ruta">RELAVE MINERO · ${esc(estadoTxt.toUpperCase())} · ${esc(NOMBRE_COMUNA[p.comuna].toUpperCase())}</div>
+          <h2 id="titulo-modal">${esc(nombreCorto(p.nombre))}</h2>
+          <p>${esc(p.empresa || '')}${p.faena ? ' · ' + esc(p.faena) : ''}</p>
+          ${botonCerrar}
+        </div>
+        <div class="modal-cuerpo">
+          <div>
+            <div class="kpis">
+              <div><span>Viven a menos de 500 m</span><b style="${rojo(p.pob_500)}">${fmt(p.pob_500)}</b></div>
+              <div><span>Viven a menos de 1 km</span><b style="${rojo(p.pob_1000)}">${fmt(p.pob_1000)}</b></div>
+              <div><span>Viviendas más cercanas</span><b>${p.dist_casas === 0 ? 'Dentro' : 'a ' + fmt(p.dist_casas) + ' m'}</b></div>
+              <div><span>Tonelaje autorizado</span><b>${p.toneladas ? fmtTon(p.toneladas) : '–'}</b></div>
+            </div>
+            ${p.pob_1000 ? `<button class="chip" style="margin-top:16px;border-right:1px solid var(--borde)" onclick="cerrarModal(); destacarRelave(${p.id})">
+              <i class="fa-solid fa-people-group"></i> VER EN EL MAPA LA POBLACIÓN A MENOS DE 1 KM</button>` : ''}
+          </div>
+          <div>
+            <h3 class="subtitulo">Datos del depósito</h3>
+            <table class="datos"><tbody>${filas.map(([n, v]) => `<tr><td>${n}</td><td>${v}</td></tr>`).join('')}</tbody></table>
+          </div>
+        </div>
+        <p class="nota" style="padding:0 26px 22px;margin:0">
+          Fuente: Sernageomin, Catastro de Depósitos de Relaves (estado 2026). Población: Censo 2024, manzanas cuyo centro está a menos
+          de 500 m o 1 km del borde del depósito. En el mapa, la altura es proporcional a la raíz del tonelaje autorizado (no es su altura real).
+        </p>`);
+    }
+
+    // Destaca un relave: en color solo las manzanas a menos de 1 km
+    function destacarRelave(id) {
+      const f = relavePorId(id);
+      if (!f) return;
+      quitarUV(true);
+      relaveDestacado.id = +id;
+      relaveDestacado.ids = (relavesMz && relavesMz.porRelave[id]) || [];
+      map.setPaintProperty('manzanas', 'fill-extrusion-color', exprColorFinal());
+      if (map.getLayer('relave-foco')) map.setFilter('relave-foco', ['==', ['get', 'id'], +id]);
+      pintarRelaves();
+      const p = f.properties;
+      const t = document.getElementById('tarjeta-uv');
+      t.innerHTML = `
+        <div class="tarjeta-uv-cabecera">
+          <span><span class="mono">RELAVE · ${esc((NOMBRE_ESTADO_RELAVE[p.estado] || p.estado).toUpperCase())}</span><b>${esc(nombreCorto(p.nombre))}</b></span>
+          <span class="tarjeta-uv-botones">
+            <button onclick="abrirFichaRelave(${p.id})" title="Ver la ficha del relave">FICHA</button>
+            <button onclick="quitarUV(true)" aria-label="Quitar destacado" title="Quitar destacado"><i class="fa-solid fa-xmark"></i></button>
+          </span>
+        </div>
+        <div class="tarjeta-uv-cifras">
+          <span><b style="color:#ff6b5b">${fmt(p.pob_500)}</b>personas a menos de 500 m</span>
+          <span><b style="color:#ff6b5b">${fmt(p.pob_1000)}</b>a menos de 1 km</span>
+        </div>
+        <small>En color: las manzanas a menos de 1 km del relave</small>`;
+      t.hidden = false;
+      const c = centroGrande(f.geometry);
+      if (c) map.easeTo({ center: c, zoom: Math.max(map.getZoom(), 14), duration: 900 });
+    }
+
+    // Selector de comuna: el mapa muestra solo la comuna elegida (menos peso para el navegador)
+    function cargarTA() {
+      const T = COMUNAS.TA;
+      if (T.geo) return Promise.resolve(true);
+      if (!T.cargando) {
+        const primeraVez = !T.resumen;
+        T.cargando = Promise.all([
+          fetch('inputs/manzanas_3d_ta.geojson').then(r => r.json()),
+          primeraVez ? fetch('inputs/UV_TIERRA_AMARILLA.geojson').then(r => r.json()) : null,
+          primeraVez ? fetch('inputs/resumen_uv_ta.json').then(r => r.json()) : null
+        ]).then(([geo, uvs, resumen]) => {
+          agregarDistRelave(geo);
+          Object.assign(T, { geo, perfiles: geo.metadata.perfiles, estad: estadDe(geo), promedios: promediosDe(geo.metadata.perfiles) });
+          T.promedios.dist = null;                     // sin recorridos de bus
+          if (primeraVez) {
+            T.resumen = resumen;
+            uvsGeo = { ...uvsGeo, features: (uvsGeo ? uvsGeo.features : []).concat(uvs.features) };
+            agregarEtiquetasUV(uvs, null);
+            bordesTA = uvs.features;
+          }
+          T.cargando = null;
+          return true;
+        }).catch(err => { console.error('Tierra Amarilla:', err); T.cargando = null; return false; });
+      }
+      return T.cargando;
+    }
+
+    // Deja en el mapa solo lo de la comuna activa (lo demás no se dibuja ni se recalcula al mover)
+    function mostrarCapasComuna() {
+      const cp = comunaActiva === 'CP';
+      const poner = (m, si) => {
+        if (si && !m.enMapa) { m.addTo(map); m.enMapa = true; }
+        if (!si && m.enMapa !== false) { m.remove(); m.enMapa = false; }
+      };
+      Object.entries(marcadoresUV).forEach(([n, m]) => poner(m, comunaDeUV(n) === comunaActiva));
+      marcadoresCorte.forEach(m => poner(m, m.comuna === comunaActiva));
+      // Recorridos de buses: solo existen en Copiapó (casilla de la leyenda y botón de capas)
+      const chkRutas = document.getElementById('chk-rutas');
+      if (chkRutas) chkRutas.closest('label').style.display = cp ? '' : 'none';
+      const botonRutas = document.querySelector('.capa-mapa[data-capa="rutas"]');
+      if (botonRutas) botonRutas.style.display = cp ? '' : 'none';
+      [['rutas', capasVisibles.rutas], ['rutas-borde', capasVisibles.rutas]]
+        .forEach(([id, ver]) => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', cp && ver ? 'visible' : 'none'));
+      ['relaves-3d', 'relaves-borde'].forEach(id => {
+        if (!map.getLayer(id)) return;
+        map.setFilter(id, ['==', ['get', 'comuna'], comunaActiva]);
+        map.setLayoutProperty(id, 'visibility', capasVisibles.relaves ? 'visible' : 'none');
+      });
+      actualizarLeyendaRelaves();
+      if (map.getLayer('cortes')) {
+        map.setFilter('cortes', ['==', ['get', 'comuna'], comunaActiva]);
+        map.setLayoutProperty('cortes', 'visibility', capasVisibles.cortes ? 'visible' : 'none');
+      }
+      if (map.getSource('uv-bordes')) map.getSource('uv-bordes').setData({ type: 'FeatureCollection', features: cp ? bordesUV : bordesTA });
+    }
+
+    let turnoComuna = 0;
+    async function activarComuna(c) {
+      if (c === comunaActiva || !datos) return true;
+      const turno = ++turnoComuna;
+      const boton = document.querySelector(`.comunas [data-comuna="${c}"]`);
+      boton.classList.add('cargando');
+      const ok = c === 'TA' ? await cargarTA() : true;
+      boton.classList.remove('cargando');
+      if (!ok || turno !== turnoComuna) return false;
+      comunaActiva = c;
+      escribirHash(c);
+      document.querySelectorAll('.comunas button').forEach(b => {
+        const a = b.dataset.comuna === c;
+        b.classList.toggle('activo', a);
+        b.setAttribute('aria-pressed', a);
+      });
+      quitarUV(true);
+      estado.perfil = 'todos';                        // los perfiles cambian de una comuna a otra
+      estado.rango = [0, 100];
+      map.getSource('manzanas').setData(CA().geo);
+      if (c === 'CP') COMUNAS.TA.geo = null;          // libera las manzanas de Tierra Amarilla (se vuelven a pedir si regresa)
+      mostrarCapasComuna();
+      cambiarHistoria();
+      // Texto del selector: "(A–E)" en Copiapó, "(1–4)" en Tierra Amarilla
+      document.querySelectorAll('#sel-color option[value="perfil"], #sel-color-m option[value="perfil"]')
+        .forEach(o => { o.textContent = `Perfil de la manzana (${PA()[0].letra}–${PA()[PA().length - 1].letra})`; });
+      construirFiltros();
+      actualizarMapa();
+      actualizarLeyenda();
+      filtrarPinesComuna();
+      acomodarPines();
+      return true;
+    }
+    function filtrarPinesComuna() {
+      Object.entries(etiquetasUV).forEach(([n, el]) => el.classList.toggle('otra-comuna', comunaDeUV(n) !== comunaActiva));
+    }
+    async function irAComuna(c, alAbrir = false) {
+      await activarComuna(c);
+      if (comunaActiva !== c) return;
+      const movil = esMovil();
+      const vista = c === 'TA'
+        ? (movil ? VISTA_TA_MOVIL : VISTA_TA)
+        : { center: movil ? [-70.318, -27.380] : VISTA_3D.center, zoom: movil ? 12.0 : VISTA_3D.zoom, pitch: movil ? 55 : VISTA_3D.pitch, bearing: VISTA_3D.bearing };
+      if (alAbrir) map.jumpTo({ ...vista, ...(estado.en3D ? {} : VISTA_2D) });
+      else map.flyTo({ ...vista, ...(estado.en3D ? {} : VISTA_2D), duration: 1800, essential: true });
+    }
+
+    // ---------------------------------------------------------------------
+    // Enlaces para compartir: #tierra-amarilla abre Tierra Amarilla; #copiapo o sin etiqueta, Copiapó.
+    // Acepta variantes: #tierra amarilla, #TierraAmarilla, #ta, con o sin tildes.
+    // ---------------------------------------------------------------------
+    const HASH_COMUNA = { CP: 'copiapo', TA: 'tierra-amarilla' };
+    function comunaDeHash() {
+      let h = '';
+      try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) { h = location.hash.slice(1); }
+      h = h.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+      if (h === 'tierraamarilla' || h === 'ta') return 'TA';
+      return 'CP';
+    }
+    function escribirHash(c) {
+      const nuevo = '#' + HASH_COMUNA[c];
+      if (location.hash === nuevo) return;
+      try { history.replaceState(null, '', location.pathname + location.search + nuevo); } catch (e) { /* sin historial */ }
+    }
+    // Si se cambia la etiqueta a mano en la barra del navegador
+    window.addEventListener('hashchange', () => {
+      const c = comunaDeHash();
+      if (c !== comunaActiva && datos) irAComuna(c);
+    });
+    // Si se llega moviendo el mapa, cambia de comuna sola (Tierra Amarilla queda al sur de -27,43)
+    map.on('moveend', () => {
+      if (!datos) return;
+      const c = map.getCenter().lat < -27.43 ? 'TA' : 'CP';
+      if (c !== comunaActiva) activarComuna(c);
+    });
 
     // Celular: vista algo más alejada
     if (esMovil()) map.jumpTo({ ...VISTA_3D, center: [-70.318, -27.380], zoom: 12.0, pitch: 55 });
@@ -3039,6 +3872,18 @@
       const el = document.querySelector('.maplibregl-ctrl-attrib');
       if (el) el.classList.remove('maplibregl-compact-show');
     });
+  </script>
+  <script>
+    // Enlaces sin ".html": GitHub Pages los resuelve, pero el servidor local (Live Server) no.
+    // Solo en local, se agrega ".html" a los enlaces internos para poder probar.
+    if (/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) {
+      document.addEventListener('click', e => {
+        const a = e.target.closest('a[href]');
+        if (!a) return;
+        const h = a.getAttribute('href');
+        if (/^(Atlas_Copiapo_3D|Rutas_Buses|proyectos)$/.test(h)) a.setAttribute('href', h + '.html');
+      }, true);
+    }
   </script>
 </body>
 </html>

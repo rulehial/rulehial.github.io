@@ -607,7 +607,7 @@
                     observer.unobserve(entry.target); // solo anima una vez
                 }
             });
-        }, { threshold: 0.12 });
+        }, { threshold: 0, rootMargin: '0px 0px -8% 0px' });  // basta que asome (en celular hay bloques más altos que la pantalla)
 
         document.querySelectorAll('.reveal, .reveal-left, .reveal-right')
             .forEach(el => observer.observe(el));
@@ -623,5 +623,17 @@
         });
     </script>
 
+  <script>
+    // Enlaces sin ".html": GitHub Pages los resuelve, pero el servidor local (Live Server) no.
+    // Solo en local, se agrega ".html" a los enlaces internos para poder probar.
+    if (/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) {
+      document.addEventListener('click', e => {
+        const a = e.target.closest('a[href]');
+        if (!a) return;
+        const h = a.getAttribute('href');
+        if (/^(Atlas_Copiapo_3D|Rutas_Buses|proyectos)$/.test(h)) a.setAttribute('href', h + '.html');
+      }, true);
+    }
+  </script>
 </body>
 </html>

@@ -12,3 +12,8 @@ inputs/Respaldos/
 
 # Manzanas antiguas (reemplazadas por manzanas_copiapo_V2.geojson, Censo 2024)
 inputs/manzanas_copiapo.geojson
+
+# ---- Atlas Copiapó 3D ----
+# Datos originales de Tierra Amarilla (manzanas INE y UV dibujadas a mano).
+# El Atlas usa los archivos que genera scripts/manzanas_tierra_amarilla.mjs
+inputs/TierraAmarilla/

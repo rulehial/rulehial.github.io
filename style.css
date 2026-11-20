@@ -823,6 +823,9 @@ footer p {
 /* ANIMACIONES DE ENTRADA (SCROLL ANIMATIONS)                           */
 /* -------------------------------------------------------------------- */
 
+/* Lo que entra desde los costados no debe ensanchar la página en celular */
+section { overflow-x: clip; }
+
 /* Estado inicial: elementos invisibles antes de entrar al viewport */
 .reveal {
     opacity: 0;
