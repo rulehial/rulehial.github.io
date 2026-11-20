@@ -1425,7 +1425,7 @@
       perfil: 'todos',      // 'todos' | 0..4 | -1
       rango: [0, 100],      // % del rango de la variable de color
       en3D: true,
-      sync: false          // color y altura con la misma variable
+      sync: true           // color y altura con la misma variable (activado por defecto; el usuario puede apagarlo)
     };
     let datos = null, estad = {}, promedios = {}, resumenUV = null;
     // Comunas: el mapa carga solo la que se está viendo (Tierra Amarilla se descarga al elegirla).
@@ -1672,6 +1672,7 @@
 
       document.getElementById('cargando').remove();
       construirControles();
+      pintarBotonesSync();
       actualizarLeyenda();
       construirFiltros();
       construirHistoria(rutas);
@@ -1952,14 +1953,19 @@
       ids.forEach(id => { document.getElementById(id).value = valor; });
     }
 
-    function alternarSync() {
-      estado.sync = !estado.sync;
+    // Muestra en los botones si la sincronización está activa
+    function pintarBotonesSync() {
       document.querySelectorAll('[data-sync]').forEach(b => {
         b.classList.toggle('activo', estado.sync);
         b.setAttribute('aria-pressed', estado.sync);
         b.querySelector('i').className = 'fa-solid ' + (estado.sync ? 'fa-link' : 'fa-link-slash');
         if (b.dataset.tip) b.dataset.tip = 'Sincronizar color y altura · ' + (estado.sync ? 'activado' : 'apagado');
       });
+    }
+
+    function alternarSync() {
+      estado.sync = !estado.sync;
+      pintarBotonesSync();
       if (estado.sync) {
         // Al activar: usa la variable de color si es un indicador; si no, la de altura
         sincronizar(VARIABLE_COMUN(estado.color) ? 'color' : 'altura');
