@@ -1681,6 +1681,8 @@
       },
       ...VISTA_3D,
       maxPitch: 78,
+      // En pantallas de alta densidad (2× o más) el mapa se dibuja a 1,5×: casi no se nota y alivia mucho el relieve 3D
+      pixelRatio: Math.min(window.devicePixelRatio || 1, 1.5),
       // Textos de los controles del mapa en español (MapLibre los trae en inglés)
       locale: {
         'AttributionControl.ToggleAttribution': 'Ver créditos del mapa',
