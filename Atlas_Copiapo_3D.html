@@ -547,6 +547,15 @@
     .tarjeta-uv-barra { display: flex; height: 8px; margin-bottom: 6px; background: rgba(255, 255, 255, 0.06); }
     .tarjeta-uv-barra i { display: block; height: 100%; }
     .tarjeta-uv small { font-size: 10.5px; color: var(--texto-suave); }
+    .tarjeta-uv-filtro { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--borde); }
+    .tarjeta-uv-filtro .etq { display: block; margin: 6px 0 4px; font: 500 9.5px var(--mono); letter-spacing: 0.12em; color: var(--acento); }
+    .tarjeta-uv-filtro .comparacion { display: flex; gap: 18px; font-size: 11px; color: var(--texto-suave); }
+    .tarjeta-uv-filtro .comparacion b { display: block; font: 500 15px var(--mono); color: var(--texto); }
+    .tarjeta-uv-filtro .cifras-filtro { font-size: 11.5px; color: var(--texto-suave); }
+    .tarjeta-uv-filtro .cifras-filtro b { font: 600 13px var(--mono); color: var(--texto); }
+    .tarjeta-uv-filtro .barra-pct { height: 4px; margin: 6px 0; background: rgba(255, 255, 255, 0.08); }
+    .tarjeta-uv-filtro .barra-pct i { display: block; height: 100%; background: var(--acento); }
+    .tarjeta-uv-filtro .lectura-uv { margin: 2px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--texto); }
 
     .boton-uv-ficha { margin: 4px 0 2px; border-right: 1px solid var(--borde) !important; }
 
@@ -1770,7 +1779,43 @@
     }
 
     // Resumen en tiempo real: personas y manzanas que quedan con el filtro actual
+    // Filtro actual (las mismas reglas que exprFiltro en el mapa)
+    function filtroActual() {
+      const F = { conRango: estado.color !== 'perfil' && (estado.rango[0] > 0 || estado.rango[1] < 100),
+                  conPerfil: estado.perfil !== 'todos', desde: -Infinity, hasta: Infinity };
+      if (F.conRango) {
+        const { min, max } = CA().estad[estado.color];
+        if (estado.rango[0] > 0) F.desde = min + (max - min) * estado.rango[0] / 100;
+        if (estado.rango[1] < 100) F.hasta = min + (max - min) * estado.rango[1] / 100;
+      }
+      F.activo = F.conRango || F.conPerfil;
+      return F;
+    }
+    function cumpleFiltro(p, F) {
+      if (p.sinPoblacion) return false;
+      if (F.conPerfil && p.cluster !== estado.perfil) return false;
+      if (F.conRango) {
+        const v = p[estado.color];
+        if (v == null || v < F.desde || v > F.hasta) return false;
+      }
+      return true;
+    }
+    // Promedio de la variable elegida en un grupo de manzanas (ponderado por población; % sin las de pocas personas)
+    function promedioVariable(fs, clave) {
+      const v = VARIABLES.find(x => x.clave === clave);
+      if (!v) return null;
+      if (clave === 'per') return fs.reduce((s, f) => s + (f.properties.per || 0), 0);
+      let suma = 0, peso = 0;
+      fs.forEach(f => {
+        const p = f.properties, x = p[clave], w = p.per || 0;
+        if (x == null || !w || (v.pct && p.cluster < 0)) return;
+        suma += x * w; peso += w;
+      });
+      return peso ? suma / peso : null;
+    }
+
     function actualizarResumenFiltro() {
+      refrescarTarjetaUV();
       const el = document.getElementById('resumen-filtro');
       if (!el || !CA().geo) return;
       const conRango = estado.color !== 'perfil' && (estado.rango[0] > 0 || estado.rango[1] < 100);
@@ -1869,13 +1914,16 @@
         texto.textContent = f.properties.NOMBRE_UV.replace(' (SECTOR URBANO)', ' ALTO');
         el.append(texto, Object.assign(document.createElement('span'), { className: 'pin-tallo' }),
                   Object.assign(document.createElement('span'), { className: 'pin-punto' }));
-        el.title = 'Destacar ' + f.properties.NOMBRE_UV;
         el.addEventListener('click', ev => {
           ev.stopPropagation();
           const n = f.properties.NOMBRE_UV;
           destacarUV(n, true);
           abrirFichaUV(n);
         });
+        if (!ES_TACTIL) {
+          el.addEventListener('mouseenter', () => programarUV(f.properties.NOMBRE_UV, 200));
+          el.addEventListener('mouseleave', () => programarUV(null));
+        }
         etiquetasUV[f.properties.NOMBRE_UV] = el;
         // anchor 'bottom': el punto queda sobre el terreno y la etiqueta flota encima
         marcadoresUV[f.properties.NOMBRE_UV] = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(c).addTo(map);
@@ -2106,21 +2154,28 @@
     // INTERACCIÓN CON LAS MANZANAS
     // =====================================================================
     function activarInteraccion() {
-      const etiqueta = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
+      // Un solo tooltip (el del sitio): sobre un nombre de UV o una letra de corte no se muestra el de la manzana
+      const etiqueta = { remove: ocultarTip };
+      const sobreMarcador = ev => ev && ev.target && ev.target.closest && ev.target.closest('.maplibregl-marker');
       if (!ES_TACTIL) {
         map.on('mousemove', 'manzanas', e => {
+          if (sobreMarcador(e.originalEvent)) { ocultarTip(); return; }
+          if (map.getLayer('relaves-3d') && map.queryRenderedFeatures(e.point, { layers: ['relaves-3d'] }).length) return;
           const p = e.features[0].properties;
           map.getCanvas().style.cursor = 'pointer';
           programarUV(p.uv);
-          const perfil = p.sinPoblacion ? 'SIN VIVIENDAS' : p.cluster >= 0 ? 'PERFIL ' + PA()[p.cluster].letra : 'SIN PERFIL';
-          const valor = estado.color !== 'perfil' ? ' · ' + fmtVar(estado.color, p[estado.color]) : '';
-          etiqueta.setLngLat(e.lngLat).setHTML(`${esc(p.uv || 'MANZANA')} · ${perfil}${valor}`).addTo(map);
+          const perfil = p.sinPoblacion ? 'Sin viviendas' : p.cluster >= 0 ? 'Perfil ' + PA()[p.cluster].letra : 'Sin perfil';
+          const v = VARIABLES.find(x => x.clave === estado.color);
+          const valor = v ? `<br>${esc(v.nombre)}: ${fmtVar(v.clave, p[v.clave])}` : '';
+          mostrarTip(`${esc(p.uv ? nombreCorto(p.uv) : nombreCorto(p.localidad || 'Manzana'))} · ${perfil}<br>${fmt(p.per)} personas${valor}`, e.originalEvent);
         });
         map.on('mouseleave', 'manzanas', () => {
           map.getCanvas().style.cursor = '';
-          etiqueta.remove();
+          ocultarTip();
           programarUV(null);
         });
+        // Al entrar a un nombre de UV o a una letra de corte, se oculta el tooltip de la manzana de abajo
+        map.getCanvasContainer().addEventListener('mouseover', ev => { if (sobreMarcador(ev)) ocultarTip(); });
       }
       if (map.getLayer('relaves-3d')) {
         if (!ES_TACTIL) {
@@ -2428,12 +2483,17 @@
     function mostrarTip(html, ev) {
       tip.innerHTML = html;
       tip.style.display = 'block';
-      const w = tip.offsetWidth, h = tip.offsetHeight;
-      let x = ev.clientX + 14, y = ev.clientY + 14;
-      if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
-      if (y + h > innerHeight - 8) y = ev.clientY - h - 14;
-      tip.style.left = x + 'px';
-      tip.style.top = y + 'px';
+      const w = tip.offsetWidth, h = tip.offsetHeight, cx = ev.clientX, cy = ev.clientY;
+      const tarjeta = document.getElementById('tarjeta-uv');
+      const evitar = tarjeta && !tarjeta.hidden ? tarjeta.getBoundingClientRect() : null;
+      const cabe = ([x, y]) => x >= 8 && y >= 8 && x + w <= innerWidth - 8 && y + h <= innerHeight - 8;
+      const libre = ([x, y]) => !evitar || x + w < evitar.left - 4 || x > evitar.right + 4 || y + h < evitar.top - 4 || y > evitar.bottom + 4;
+      // Abajo-derecha, abajo-izquierda, arriba-derecha, arriba-izquierda y, si nada sirve, bajo la tarjeta
+      const opciones = [[cx + 14, cy + 14], [cx - w - 14, cy + 14], [cx + 14, cy - h - 14], [cx - w - 14, cy - h - 14]];
+      if (evitar) opciones.push([Math.min(Math.max(8, cx - w / 2), innerWidth - w - 8), evitar.bottom + 8]);
+      const pos = opciones.find(o => cabe(o) && libre(o)) || opciones.find(cabe) || opciones[0];
+      tip.style.left = pos[0] + 'px';
+      tip.style.top = pos[1] + 'px';
     }
     const ocultarTip = () => { tip.style.display = 'none'; };
 
@@ -3353,7 +3413,7 @@
     const etiquetasUV = {};
     let temporizadorUV = null, uvPendiente = null;
 
-    function programarUV(nombre) {
+    function programarUV(nombre, espera) {
       if (uvDestacada.fija || relaveDestacado.id != null) return;
       if (nombre === uvPendiente) return;
       uvPendiente = nombre;
@@ -3361,7 +3421,7 @@
       if (!nombre) { temporizadorUV = setTimeout(() => quitarUV(false), 250); return; }
       if (nombre === uvDestacada.nombre) return;
       // Ya hay una destacada: pasar a la vecina es más rápido
-      temporizadorUV = setTimeout(() => destacarUV(nombre, false), uvDestacada.nombre ? 350 : 1000);
+      temporizadorUV = setTimeout(() => destacarUV(nombre, false), espera ?? (uvDestacada.nombre ? 350 : 1000));
     }
 
     function destacarUV(nombre, fija) {
@@ -3418,11 +3478,110 @@
           ${r ? `<span><b>${fmt(100 * r.menos_200 / r.poblacion)} %</b>a menos de 200 m del bus</span>` : ''}
         </div>
         <div class="tarjeta-uv-barra">${barra}</div>
-        <small>Barra = perfiles de sus manzanas${fija ? '' : ' · toque el nombre en el mapa para fijarla'}</small>`;
+        <small>Barra = perfiles de sus manzanas${fija ? '' : ' · toque el nombre en el mapa para fijarla'}</small>
+        ${htmlTarjetaFiltro(fs, CU)}`;
       t.hidden = false;
     }
 
+    // Lo que se está mirando en el mapa (variable de color y filtros), dentro de la UV
+    function htmlTarjetaFiltro(fs, CU) {
+      if (comunaDeUV(fs[0] ? fs[0].properties.uv : '') !== comunaActiva && fs.length) return '';
+      const v = VARIABLES.find(x => x.clave === estado.color);
+      const F = filtroActual();
+      if (!v && !F.activo) return '';
+      const pobUV = fs.reduce((s, f) => s + (f.properties.per || 0), 0);
+      let html = '<div class="tarjeta-uv-filtro">';
+      if (v && v.clave !== 'per') {
+        const enUV = promedioVariable(fs, v.clave), enComuna = promedioVariable(CU.geo.features, v.clave);
+        html += `<span class="etq">${esc(v.nombre.toUpperCase())}</span>
+          <div class="comparacion"><span><b>${enUV == null ? '–' : fmtVar(v.clave, enUV)}</b>en la UV</span>
+            <span><b>${enComuna == null ? '–' : fmtVar(v.clave, enComuna)}</b>promedio de ${esc(CU.nombre)}</span></div>`;
+      }
+      if (F.activo) {
+        const dentro = fs.filter(f => cumpleFiltro(f.properties, F));
+        const pob = dentro.reduce((s, f) => s + (f.properties.per || 0), 0);
+        const pobComuna = CU.geo.features.filter(f => cumpleFiltro(f.properties, F)).reduce((s, f) => s + (f.properties.per || 0), 0);
+        const pct = pobUV ? 100 * pob / pobUV : 0;
+        html += `<span class="etq">EN EL FILTRO</span>
+          <div class="cifras-filtro"><b>${fmt(pob)}</b> personas · <b>${fmt(pct, 1)} %</b> de la UV · ${fmt(dentro.length)} ${dentro.length === 1 ? 'manzana' : 'manzanas'}</div>
+          <div class="barra-pct"><i style="width:${Math.min(100, pct)}%"></i></div>
+          ${pobComuna ? `<small>Concentra el ${fmt(100 * pob / pobComuna, 1)} % de las ${fmt(pobComuna)} personas que cumplen el filtro en ${esc(CU.nombre)}.</small>` : ''}`;
+      }
+      const lectura = lecturaUV(fs, CU, v, F);
+      if (lectura) html += `<span class="etq">LECTURA</span><p class="lectura-uv">${lectura}</p>`;
+      return html + '</div>';
+    }
+
+    // Lectura en palabras, armada con plantillas que sirven para cualquier variable:
+    // 1) concentración del filtro en la UV frente a su peso en la comuna, 2) la UV frente al promedio
+    // de la comuna, 3) perfil predominante. Palabras neutras: en algunas variables "alto" es bueno.
+    function lecturaUV(fs, CU, v, F) {
+      const frases = [];
+      const nombreUV = esc(nombreCorto(fs[0] ? fs[0].properties.uv : ''));
+      const pobUV = fs.reduce((s, f) => s + (f.properties.per || 0), 0);
+      const todas = CU.geo.features.filter(f => !f.properties.sinPoblacion);
+      const pobComuna = todas.reduce((s, f) => s + (f.properties.per || 0), 0);
+      // 1) Concentración
+      if (F.activo && pobUV) {
+        const pobF = fs.filter(f => cumpleFiltro(f.properties, F)).reduce((s, f) => s + (f.properties.per || 0), 0);
+        const pobFComuna = todas.filter(f => cumpleFiltro(f.properties, F)).reduce((s, f) => s + (f.properties.per || 0), 0);
+        if (pobFComuna) {
+          const c = pobF / pobFComuna, peso = pobUV / pobComuna, indice = c / peso;
+          const k10 = Math.round(c * 10);
+          const proporcion = k10 >= 1
+            ? (k10 % 2 === 0 ? `De cada 5 personas que cumplen el filtro en ${esc(CU.nombre)}, ${k10 / 2} ${k10 === 2 ? 'vive' : 'viven'} en ${nombreUV}`
+              : `De cada 10 personas que cumplen el filtro en ${esc(CU.nombre)}, ${k10} ${k10 === 1 ? 'vive' : 'viven'} en ${nombreUV}`)
+            : `El ${fmt(100 * c, 1)} % de quienes cumplen el filtro en ${esc(CU.nombre)} vive en ${nombreUV}`;
+          const tam = `${fmt(100 * peso, peso < 0.1 ? 1 : 0)} %`;
+          frases.push(pobF === 0 ? `Ninguna manzana de ${nombreUV} cumple el filtro.`
+            : indice >= 1.5 ? `${proporcion}, aunque la UV reúne solo el ${tam} de la población de la comuna: lo filtrado se concentra aquí.`
+            : indice <= 0.67 ? `${proporcion}, menos de lo que le correspondería por su tamaño (${tam} de la comuna).`
+            : `${proporcion}, en proporción a su tamaño (${tam} de la comuna).`);
+        }
+      }
+      // 2) La UV frente a la comuna en la variable que se está mirando
+      if (v && v.clave !== 'per') {
+        const a = promedioVariable(fs, v.clave), b = promedioVariable(CU.geo.features, v.clave);
+        if (a != null && b) {
+          const r = a / b, nom = `«${esc(v.nombre)}»`;
+          frases.push(r >= 1.5 ? `En ${nom} la UV está ${fmt(r, 1)} veces sobre el promedio de ${esc(CU.nombre)}.`
+            : r >= 1.1 ? `En ${nom} la UV está un ${fmt(100 * (r - 1), 0)} % sobre el promedio de ${esc(CU.nombre)}.`
+            : r <= 0.67 ? `En ${nom} la UV está muy bajo el promedio de ${esc(CU.nombre)} (${fmt(100 * r, 0)} % de su valor).`
+            : r <= 0.9 ? `En ${nom} la UV está un ${fmt(100 * (1 - r), 0)} % bajo el promedio de ${esc(CU.nombre)}.`
+            : `En ${nom} la UV está cerca del promedio de ${esc(CU.nombre)}.`);
+        }
+      }
+      // 3) Perfil predominante (solo si reúne a la mayoría)
+      if (frases.length && pobUV) {
+        const porPerfil = {};
+        fs.forEach(f => { if (f.properties.cluster >= 0) porPerfil[f.properties.cluster] = (porPerfil[f.properties.cluster] || 0) + (f.properties.per || 0); });
+        const [k, n] = Object.entries(porPerfil).sort((x, y) => y[1] - x[1])[0] || [];
+        if (k != null && n / pobUV >= 0.5) {
+          const pf = CU.perfiles[k];
+          frases.push(`El ${fmt(100 * n / pobUV, 0)} % de sus habitantes vive en manzanas de perfil ${pf.letra} (${esc(pf.nombre.toLowerCase())}).`);
+        }
+      }
+      return frases.join(' ');
+    }
+    // Si hay una UV destacada, su tarjeta sigue a la variable y al filtro
+    function refrescarTarjetaUV() {
+      if (uvDestacada.nombre && relaveDestacado.id == null) mostrarTarjetaUV(uvDestacada.nombre, uvDestacada.fija);
+    }
+
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && uvDestacada.nombre) quitarUV(true); });
+
+    // Si la tarjeta aparece encima del cursor (p. ej. sobre un nombre de UV alto en la pantalla), no debe cerrarse:
+    // mientras el cursor esté sobre ella se mantiene abierta, y se cierra al salir (si no está fijada).
+    if (!ES_TACTIL) {
+      const tarjetaUV = document.getElementById('tarjeta-uv');
+      tarjetaUV.addEventListener('mouseenter', () => { clearTimeout(temporizadorUV); ocultarTip(); });
+      tarjetaUV.addEventListener('mouseleave', () => {
+        if (uvDestacada.fija || relaveDestacado.id != null) return;
+        clearTimeout(temporizadorUV);
+        uvPendiente = null;
+        temporizadorUV = setTimeout(() => quitarUV(false), 250);
+      });
+    }
 
     // Alfileres de UV: cada uno elige la altura de tallo más baja que no choque
     // con las etiquetas ya ubicadas (se recalcula al mover o hacer zoom)
