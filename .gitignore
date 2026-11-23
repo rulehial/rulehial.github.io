@@ -23,3 +23,6 @@ dash-anonimos/
 
 # Manzanas de Copiapó con todos los campos del Censo (16 MB): solo la leen los scripts
 inputs/manzanas_copiapo_V3.geojson
+
+# Matrícula Mineduc (datos por estudiante): solo se publica el resultado de scripts/colegios.mjs
+inputs/Colegios/*.csv

@@ -147,6 +147,16 @@
     .elemento-relave small { font-size: 10.5px; color: var(--texto-suave); }
     .elemento-relave p { margin: 6px 0 0; font-size: 12.5px; line-height: 1.5; color: #c9cfd7; }
     .aviso-salud { padding: 10px 12px; border: 1px solid var(--borde); background: rgba(255, 255, 255, 0.03); }
+    /* Capa de colegios: barras de la ficha */
+    .barras-colegio .fila { display: grid; grid-template-columns: 170px 1fr 62px; gap: 10px; align-items: center; margin: 7px 0; font-size: 12.5px; }
+    .barras-colegio .pista { height: 8px; background: rgba(255, 255, 255, 0.06); }
+    .barras-colegio .pista i { display: block; height: 100%; }
+    .barras-colegio .fila b { font: 500 12px var(--mono); text-align: right; }
+    @media (max-width: 600px) { .barras-colegio .fila { grid-template-columns: 112px 1fr 52px; gap: 8px; font-size: 12px; } }
+    .aviso-relave-colegio { margin: 16px 0 4px; padding: 10px 12px; border: 1px solid rgba(255, 59, 48, 0.45); background: rgba(255, 59, 48, 0.08); font-size: 12.5px; line-height: 1.5; }
+    .aviso-relave-colegio b { color: #ff6b5b; }
+    .aviso-relave-colegio button { margin-top: 8px; }
+
     /* Capa de relaves mineros */
     .leyenda-relaves { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--borde); }
     .leyenda-relaves .fila-rel { display: flex; align-items: center; gap: 8px; margin: 5px 0; font-size: 12px; }
@@ -999,6 +1009,31 @@
     .barra-apilada { display: flex; height: 13px; }
     .barra-apilada i { display: block; height: 100%; }
     .eje { display: flex; justify-content: space-between; margin: 6px 0 0 160px; font: 400 10px var(--mono); color: var(--texto-suave); }
+    /* 04 · Colegios y liceos */
+    .kpis-grandes.kpis-5 { grid-template-columns: repeat(5, 1fr); margin: 0 0 20px; }
+    .kpis-grandes.kpis-5 b { font-size: clamp(28px, 3.2vw, 48px); }
+    .filas-col .fila { display: grid; grid-template-columns: 210px 1fr 68px; gap: 10px; align-items: center; padding: 4px; font-size: 12.5px; }
+    .filas-col .fila > span:first-child { overflow: hidden; color: #b5bdc8; white-space: nowrap; text-overflow: ellipsis; }
+    .filas-col .fila > b { font: 500 12px var(--mono); text-align: right; }
+    .filas-col .pista { position: relative; height: 12px; background: rgba(255, 255, 255, 0.04); }
+    .filas-col .pista > i { display: block; height: 100%; }
+    .filas-col .pista .prom { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #e6e9ee; opacity: 0.75; }
+    .filas-col.ranking .fila { cursor: pointer; }
+    .filas-col.ranking .fila:hover, .filas-col.ranking .fila:focus-visible { background: rgba(255, 255, 255, 0.04); outline: none; }
+    .filas-col.ranking .fila:hover > span:first-child { color: var(--texto); }
+    .filas-col .barra-apilada { height: 14px; }
+    .lectura-col { margin: 14px 0 0; font-size: 13px; line-height: 1.55; color: #b5bdc8; }
+    .lectura-col b { color: var(--texto); }
+    #dispersion-colegios circle { cursor: pointer; }
+    .ver-todos { margin-top: 12px; border-right: 1px solid var(--borde); }
+    @media (max-width: 900px) {
+      .kpis-grandes.kpis-5 { grid-template-columns: 1fr 1fr; }
+      .kpis-grandes.kpis-5 div { border-right: 1px solid var(--borde); border-bottom: 1px solid var(--borde); }
+      .kpis-grandes.kpis-5 div:nth-child(2n) { border-right: none; }
+      .kpis-grandes.kpis-5 div:last-child { grid-column: span 2; border-right: none; border-bottom: none; }
+      .filas-col .fila { grid-template-columns: 112px 1fr 54px; gap: 8px; font-size: 12px; }
+    }
+
     .leyenda-linea { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 14px; margin: 10px 0 22px; font-size: 11.5px; color: var(--texto-suave); }
     .leyenda-linea i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; }
 
@@ -1015,7 +1050,7 @@
       pointer-events: none;
     }
 
-    /* 04 · Cortes (panel claro, como un plano) */
+    /* 05 · Cortes (panel claro, como un plano) */
     .panel-corte { background: #f3efe6; color: #1f2328; border: 1px solid #d9d2c3; }
 
     .barra-corte {
@@ -1222,9 +1257,10 @@
         <!-- Mostrar / ocultar elementos sobre el mapa -->
         <div class="capas-mapa" role="group" aria-label="Elementos visibles en el mapa">
           <button class="capa-mapa activo" data-capa="rutas" aria-pressed="true" aria-label="Mostrar u ocultar: Recorridos de buses" data-tip="Recorridos de buses"><i class="fa-solid fa-route"></i></button>
-          <button class="capa-mapa activo" data-capa="cortes" aria-pressed="true" aria-label="Mostrar u ocultar: Líneas de corte" data-tip="Líneas de corte"><i class="fa-solid fa-scissors"></i></button>
+          <button class="capa-mapa" data-capa="cortes" aria-pressed="false" aria-label="Mostrar u ocultar: Líneas de corte" data-tip="Líneas de corte"><i class="fa-solid fa-scissors"></i></button>
           <button class="capa-mapa activo" data-capa="uv" aria-pressed="true" aria-label="Mostrar u ocultar: Nombres de UV" data-tip="Nombres de UV"><i class="fa-solid fa-location-dot"></i></button>
           <button class="capa-mapa activo" data-capa="relaves" aria-pressed="true" aria-label="Mostrar u ocultar: Relaves mineros" data-tip="Relaves mineros"><i class="fa-solid fa-triangle-exclamation"></i></button>
+          <button class="capa-mapa activo" data-capa="colegios" aria-pressed="true" aria-label="Mostrar u ocultar: Colegios y liceos" data-tip="Colegios y liceos"><i class="fa-solid fa-school"></i></button>
         </div>
       </div>
     </div>
@@ -1243,6 +1279,7 @@
     </div>
     <div id="contenido-leyenda"></div>
     <div id="leyenda-relaves" class="leyenda-relaves" hidden></div>
+    <div id="leyenda-colegios" class="leyenda-relaves leyenda-colegios" hidden></div>
     <label class="alternar">
       <input type="checkbox" id="chk-rutas" checked onchange="alternarRutas(this.checked)">
       <i class="fa-solid fa-route"></i> Recorridos de buses
@@ -1341,8 +1378,36 @@
       </div>
     </section>
 
+    <section class="bloque aparece" id="sec-colegios" hidden>
+      <div class="eyebrow">04 — Colegios y liceos</div>
+      <h2 id="h-colegios">Dónde estudian los niños de Copiapó</h2>
+      <p class="intro" id="intro-colegios"></p>
+      <div id="kpis-colegios" class="kpis-grandes kpis-5"></div>
+      <div class="grid-2">
+        <div class="marco">
+          <h3 class="titulo-marco">Colegios frente a los relaves · cada punto = un colegio</h3>
+          <div id="dispersion-colegios"></div>
+          <div id="leyenda-dep-col" class="leyenda-linea"></div>
+          <p class="nota">Horizontal: distancia de borde a borde al relave más cercano (Sernageomin). Vertical: matrícula 2026.
+            Franja roja: a menos de 500 m; naranja: entre 500 m y 1 km. Toque un punto para abrir la ficha del colegio.</p>
+        </div>
+        <div class="marco">
+          <h3 class="titulo-marco">Matrícula por nivel y dependencia</h3>
+          <div id="niveles-colegios" class="filas-col"></div>
+          <div id="leyenda-niveles-col" class="leyenda-linea"></div>
+          <p class="lectura-col" id="lectura-niveles-col"></p>
+        </div>
+      </div>
+      <div class="marco" style="margin-top:20px">
+        <h3 class="titulo-marco" id="t-ranking-col">Ranking de colegios</h3>
+        <div class="grupo-chips" id="chips-ranking-col"></div>
+        <div id="ranking-colegios" class="filas-col ranking"></div>
+        <p class="nota" id="nota-ranking-col"></p>
+      </div>
+    </section>
+
     <section class="bloque aparece" id="sec-cortes">
-      <div class="eyebrow">04 — Cortes</div>
+      <div class="eyebrow">05 — Cortes</div>
       <h2 id="h-cortes">Copiapó en corte</h2>
       <p class="intro" id="intro-cortes">
         Perfiles de elevación reales del valle con las manzanas que atraviesan (a menos de 150 m de la línea),
@@ -1414,7 +1479,8 @@
       { clave: 'allegados', nombre: 'Hogares allegados',    unidad: '%',        pct: true,  dec: 1 },
       { clave: 'sincontrato', nombre: 'Arriendo sin contrato', unidad: '%',     pct: true,  dec: 1 },
       { clave: 'dist',    nombre: 'Distancia al bus',       unidad: 'm',        pct: false, dec: 0 },
-      { clave: 'relave',  nombre: 'Distancia a un relave',  unidad: 'm',        pct: false, dec: 0, invertir: true }   // cerca = oscuro
+      { clave: 'relave',  nombre: 'Distancia a un relave',  unidad: 'm',        pct: false, dec: 0, invertir: true },  // cerca = oscuro
+      { clave: 'colegio', nombre: 'Distancia a un colegio', unidad: 'm',        pct: false, dec: 0 }
     ];
     // De claro (valor bajo) a oscuro (valor alto)
     const ESCALA_COLOR = ['#f9f871', '#fbb13c', '#f06b4e', '#c2417a', '#7b3294', '#3b2c84', '#1b1f4b'];
@@ -1508,6 +1574,68 @@
       map.setPaintProperty('relaves-3d', 'fill-extrusion-height', alturaRelave());
       map.setPaintProperty('relaves-3d', 'fill-extrusion-pattern', patronRelave());
     }
+    // Colegios y liceos (Mineduc, matrícula 2026): capa aparte; cada manzana sabe a qué distancia está el más cercano
+    let colegiosGeo = null, colegiosMz = null;
+    const mzDeColegio = new Map();                    // RBD → ids de las manzanas que pisa
+    const DEPENDENCIA = { 1: 'Municipal', 2: 'Particular subvencionado', 3: 'Particular pagado', 4: 'Administración delegada', 5: 'Pública (Servicio Local)' };
+    // Lunares de color sobre blanco: ningún perfil ni escala usa blanco con puntos
+    const COLOR_DEP = { 5: '#2f6fed', 2: '#16a34a', 3: '#a24bd6' };
+    const TIPO_COLEGIO = { regular: 'Colegio o liceo', especial: 'Educación especial o de lenguaje', adultos: 'Educación de adultos' };
+    const colegioPorId = id => colegiosGeo && colegiosGeo.features.find(f => f.properties.id === +id);
+    const lunaresCSS = dep => `radial-gradient(circle, ${COLOR_DEP[dep] || COLOR_DEP[5]} 0 1.5px, transparent 2px) 0 0 / 6px 6px, #f4f6f8`;
+    function agregarDistColegio(geo) {
+      if (!colegiosMz) return;
+      geo.features.forEach(f => {
+        const r = colegiosMz.manzanas[f.properties.id];
+        if (r && !f.properties.sinPoblacion) { f.properties.colegio = r[0]; f.properties.colegio_id = r[1]; }
+      });
+    }
+    function crearPatronesColegios() {
+      Object.entries(COLOR_DEP).forEach(([dep, color]) => {
+        const nombre = 'col-' + dep;
+        if (map.hasImage(nombre)) return;
+        const n = 16, cv = document.createElement('canvas');
+        cv.width = cv.height = n;
+        const x = cv.getContext('2d');
+        x.fillStyle = '#f4f6f8';
+        x.fillRect(0, 0, n, n);
+        x.fillStyle = color;
+        [[4, 4], [12, 12]].forEach(([a, b]) => { x.beginPath(); x.arc(a, b, 2.8, 0, 2 * Math.PI); x.fill(); });
+        map.addImage(nombre, x.getImageData(0, 0, n, n), { pixelRatio: 1.5 });
+      });
+    }
+    // Altura de una manzana con la variable de altura actual (misma regla que exprAltura)
+    function alturaManzanaJS(p) {
+      if (estado.altura === 'plano') return 4;
+      const v = VARIABLES.find(x => x.clave === estado.altura), e = CA().estad[v.clave];
+      if (p.cluster === -1 && v.pct) return 4;
+      return Math.max(4, Math.min(p[v.clave] || 0, e.max * 1.3) * ALTURA_MAX_M / (e.max || 1));
+    }
+    // Cada colegio se apoya sobre el techo de la manzana que pisa (si no, quedaría escondido dentro de ella).
+    // Su propio alto depende de la matrícula.
+    let pintaColegiosPendiente = false;
+    function pintarColegios() {
+      if (pintaColegiosPendiente) return;
+      pintaColegiosPendiente = true;
+      requestAnimationFrame(() => {
+        pintaColegiosPendiente = false;
+        if (!colegiosGeo || !map.getSource('colegios') || !CA().geo) return;
+        const idx = new Map(CA().geo.features.map(f => [f.properties.id, f.properties]));
+        const F = filtroActual();
+        colegiosGeo.features.forEach(f => {
+          const p = f.properties;
+          let base = 0;
+          if (estado.en3D) (mzDeColegio.get(p.id) || []).forEach(id => {
+            const m = idx.get(id);
+            if (m && (!F.activo || cumpleFiltro(m, F))) base = Math.max(base, alturaManzanaJS(m));
+          });
+          p.base = Math.round(base * 10) / 10;
+          p.alto = estado.en3D ? p.base + 10 + 50 * Math.sqrt(p.mat / 2200) : 0;
+        });
+        map.getSource('colegios').setData(colegiosGeo);
+      });
+    }
+
     const marcadoresUV = {}, marcadoresCorte = [];    // se sacan del mapa al cambiar de comuna
 
     const esMovil = () => window.matchMedia('(max-width: 900px)').matches;
@@ -1553,6 +1681,15 @@
       },
       ...VISTA_3D,
       maxPitch: 78,
+      // Textos de los controles del mapa en español (MapLibre los trae en inglés)
+      locale: {
+        'AttributionControl.ToggleAttribution': 'Ver créditos del mapa',
+        'AttributionControl.MapFeedback': 'Comentarios sobre el mapa',
+        'NavigationControl.ZoomIn': 'Acercar',
+        'NavigationControl.ZoomOut': 'Alejar',
+        'NavigationControl.ResetBearing': 'Volver al norte (arrastre para inclinar)',
+        'Map.Title': 'Mapa'
+      },
       attributionControl: { compact: true, customAttribution: 'Censo 2024 (INE) · © OpenStreetMap' }
     });
 
@@ -1603,18 +1740,23 @@
       map.setTerrain({ source: 'relieve', exaggeration: 1.6 });
       if (map.setSky) map.setSky({ 'sky-color': '#0b0f14', 'horizon-color': '#1a2430', 'fog-color': '#0b0f14', 'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.6, 'fog-ground-blend': 0.3 });
 
-      const [manzanas, rutas, uvs, ficticias, cobertura, relaves, relavesPorMz] = await Promise.all([
+      const [manzanas, rutas, uvs, ficticias, cobertura, relaves, relavesPorMz, colegios, colegiosPorMz] = await Promise.all([
         fetch('inputs/manzanas_3d.geojson').then(r => r.json()),
         fetch('inputs/RutaBusesV2.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/UV_COPIAPO.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/UV_FICTICIAS.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/cobertura_uv.json').then(r => r.json()).catch(() => null),
         fetch('inputs/relaves.geojson').then(r => r.json()).catch(() => null),
-        fetch('inputs/relaves_manzanas.json').then(r => r.json()).catch(() => null)
+        fetch('inputs/relaves_manzanas.json').then(r => r.json()).catch(() => null),
+        fetch('inputs/colegios_atlas.geojson').then(r => r.json()).catch(() => null),
+        fetch('inputs/colegios_manzanas.json').then(r => r.json()).catch(() => null)
       ]);
       relavesGeo = relaves;
       relavesMz = relavesPorMz;
+      colegiosGeo = colegios;
+      colegiosMz = colegiosPorMz;
       agregarDistRelave(manzanas);
+      agregarDistColegio(manzanas);
       datos = manzanas;
       resumenUV = cobertura;
       COMUNAS.CP.geo = datos;
@@ -1677,6 +1819,27 @@
         map.addLayer({ id: 'relave-foco', type: 'line', source: 'relaves', filter: ['==', ['get', 'id'], -1],
           paint: { 'line-color': '#ff3b30', 'line-width': 7, 'line-blur': 2, 'line-opacity': 0.95 } });
       }
+      // Colegios y liceos: blancos con lunares según dependencia, sobre el techo de su manzana
+      if (colegiosGeo) {
+        crearPatronesColegios();
+        colegiosGeo.features.forEach(f => {
+          mzDeColegio.set(f.properties.id, JSON.parse(f.properties.sobre_mz || '[]'));
+          Object.assign(f.properties, { base: 0, alto: 0 });
+        });
+        const soloComunaC = ['==', ['get', 'comuna'], comunaActiva];
+        map.addSource('colegios', { type: 'geojson', data: colegiosGeo });
+        map.addLayer({ id: 'colegios-3d', type: 'fill-extrusion', source: 'colegios', filter: soloComunaC,
+          paint: {
+            'fill-extrusion-pattern': ['match', ['get', 'dep'], 5, 'col-5', 2, 'col-2', 3, 'col-3', 'col-5'],
+            'fill-extrusion-base': ['get', 'base'],
+            'fill-extrusion-height': ['get', 'alto'],
+            'fill-extrusion-opacity': 0.96
+          } });
+        map.addLayer({ id: 'colegios-borde', type: 'line', source: 'colegios', filter: soloComunaC,
+          paint: { 'line-color': ['match', ['get', 'dep'], 5, COLOR_DEP[5], 2, COLOR_DEP[2], 3, COLOR_DEP[3], COLOR_DEP[5]],
+                   'line-width': ['interpolate', ['linear'], ['zoom'], 12, 1, 16, 2.5] } });
+        pintarColegios();
+      }
       map.setLight({ anchor: 'map', color: '#fff4e0', intensity: 0.45, position: [1.3, 220, 40] });
 
       document.getElementById('cargando').remove();
@@ -1705,7 +1868,8 @@
         const xs = conPerfil.map(f => f.properties[v.clave]).filter(x => x != null && isFinite(x)).sort((a, b) => a - b);
         const q = p => xs[Math.min(xs.length - 1, Math.floor(p * xs.length))];
         r[v.clave] = xs.length ? { min: q(0.02), max: q(0.98) } : { min: 0, max: 1 };
-        if (v.clave === 'relave') r[v.clave] = { min: 0, max: 2000 };   // escala fija: lo que importa es el primer par de km   // sin datos (p. ej. bus en T. Amarilla)
+        if (v.clave === 'relave') r[v.clave] = { min: 0, max: 2000 };
+        if (v.clave === 'colegio') r[v.clave] = { min: 0, max: 1500 };   // escala fija: lo que importa es el primer par de km   // sin datos (p. ej. bus en T. Amarilla)
       });
       return r;
     }
@@ -1734,7 +1898,8 @@
       irrec: 'Viviendas que el Censo califica como irrecuperables por sus materiales (deben reemplazarse).',
       deficit: 'Déficit cuantitativo del Censo: viviendas que faltan (por hogares allegados, núcleos hacinados o viviendas irrecuperables), por cada 100 hogares.',
       allegados: 'Hogares que comparten la vivienda de otro hogar.',
-      sincontrato: 'Hogares que arriendan sin contrato, sobre el total de hogares según su tenencia.'
+      sincontrato: 'Hogares que arriendan sin contrato, sobre el total de hogares según su tenencia.',
+      colegio: 'Distancia desde el centro de la manzana al borde del colegio o liceo más cercano que imparte básica o media (no cuenta escuelas de lenguaje ni de adultos). Colegios con matrícula 2026 del Mineduc.'
     };
 
     // Escala de color de una variable (algunas van al revés: p. ej. cerca de un relave = oscuro)
@@ -1816,6 +1981,7 @@
 
     function actualizarResumenFiltro() {
       refrescarTarjetaUV();
+      pintarColegios();
       const el = document.getElementById('resumen-filtro');
       if (!el || !CA().geo) return;
       const conRango = estado.color !== 'perfil' && (estado.rango[0] > 0 || estado.rango[1] < 100);
@@ -1877,7 +2043,8 @@
         deficit: r => `donde faltan viviendas para ${r} de sus hogares`,
         allegados: r => `donde ${r} de los hogares vive como allegado en una vivienda de otro hogar`,
         sincontrato: r => `donde ${r} de los hogares arrienda sin contrato`,
-        relave:  r => `que están ${r.replace(/^hasta /, 'a menos de ').replace(/ o más$/, ' o más')} del relave más cercano`
+        relave:  r => `que están ${r.replace(/^hasta /, 'a menos de ').replace(/ o más$/, ' o más')} del relave más cercano`,
+        colegio: r => `que están ${r.replace(/^hasta /, 'a menos de ')} del colegio o liceo más cercano`
       };
       const condicion = conRango && FRASES[v.clave] ? ' ' + FRASES[v.clave](rangoPalabras) : '';
       const perfil = conPerfil
@@ -1895,6 +2062,7 @@
       map.setPaintProperty('manzanas', 'fill-extrusion-color', exprColorFinal());
       map.setPaintProperty('manzanas', 'fill-extrusion-height', exprAltura());
       map.setFilter('manzanas', exprFiltro());
+      pintarColegios();
     }
 
     // Etiquetas de UV (HTML, sin necesidad de fuentes de mapa)
@@ -1950,7 +2118,7 @@
     // =====================================================================
     const GRUPOS_VARIABLES = [
       ['Población', ['per', 'dens', 'ninos', 'mayores', 'inm', 'pueblo', 'disc']],
-      ['Educación y trabajo', ['esc', 'desoc', 'mineria']],
+      ['Educación y trabajo', ['esc', 'colegio', 'desoc', 'mineria']],
       ['Hogares y vivienda', ['hacin', 'irrec', 'deficit', 'allegados', 'sincontrato', 'jefa', 'sinint', 'agua']],
       ['Transporte', ['tp', 'auto', 'dist']],
       ['Relaves mineros', ['relave']]
@@ -2061,7 +2229,7 @@
             <output id="out-hasta">${fmtVar(v.clave, valorRango(estado.rango[1]))}</output></div>
         </div>
         <div id="resumen-filtro" class="resumen-filtro" aria-live="polite"></div>
-        <p class="nota">${v.clave === 'relave' ? 'Escala fija de 0 a 2 km: más cerca de un relave, color más oscuro. Distancia desde el centro de la manzana al borde del relave más cercano.' : `Escala entre el 2 % y el 98 % de las manzanas de ${NOMBRE_COMUNA[comunaActiva]}.`} En gris: sin dato o con menos de 20 personas (porcentajes poco confiables).${v.clave === 'dist' && comunaActiva === 'TA' ? ' Tierra Amarilla no tiene recorridos de bus en el Atlas.' : ''}${v.clave === 'pueblo' ? ' El INE oculta las cifras pequeñas por confidencialidad: esas manzanas quedan sin dato y el total puede estar subestimado.' : ''}${v.clave === 'jefa' || v.clave === 'sinint' ? ' Porcentaje sobre los hogares de la manzana.' : ''}${NOTAS_VARIABLE[v.clave] ? ' ' + NOTAS_VARIABLE[v.clave] : ''}</p>`;
+        <p class="nota">${v.clave === 'relave' ? 'Escala fija de 0 a 2 km: más cerca de un relave, color más oscuro. Distancia desde el centro de la manzana al borde del relave más cercano.' : v.clave === 'colegio' ? 'Escala fija de 0 a 1,5 km: más lejos de un colegio, color más oscuro.' : `Escala entre el 2 % y el 98 % de las manzanas de ${NOMBRE_COMUNA[comunaActiva]}.`} En gris: sin dato o con menos de 20 personas (porcentajes poco confiables).${v.clave === 'dist' && comunaActiva === 'TA' ? ' Tierra Amarilla no tiene recorridos de bus en el Atlas.' : ''}${v.clave === 'pueblo' ? ' El INE oculta las cifras pequeñas por confidencialidad: esas manzanas quedan sin dato y el total puede estar subestimado.' : ''}${v.clave === 'jefa' || v.clave === 'sinint' ? ' Porcentaje sobre los hogares de la manzana.' : ''}${NOTAS_VARIABLE[v.clave] ? ' ' + NOTAS_VARIABLE[v.clave] : ''}</p>`;
 
       const d = document.getElementById('rango-desde'), h = document.getElementById('rango-hasta');
       const mover = () => {
@@ -2113,6 +2281,7 @@
       map.easeTo({ ...(tresD ? { pitch: v3.pitch, bearing: v3.bearing } : VISTA_2D), duration: 900 });
       map.setPaintProperty('manzanas', 'fill-extrusion-height', tresD ? exprAltura() : 0);
       if (map.getLayer('relaves-3d')) map.setPaintProperty('relaves-3d', 'fill-extrusion-height', alturaRelave());
+      pintarColegios();
     }
 
     function alternarRutas(ver) {
@@ -2123,7 +2292,7 @@
     }
 
     // Selector de elementos sobre el mapa (bajo Satélite 2D / Relieve 3D)
-    const capasVisibles = { rutas: true, cortes: true, uv: true, relaves: true };
+    const capasVisibles = { rutas: true, cortes: false, uv: true, relaves: true, colegios: true };   // cortes: apagados al abrir
     function marcarCapaMapa(clave, ver) {
       capasVisibles[clave] = ver;
       const b = document.querySelector(`.capa-mapa[data-capa="${clave}"]`);
@@ -2140,11 +2309,14 @@
         ['relaves-3d', 'relaves-borde', 'relave-foco'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ver ? 'visible' : 'none'));
         if (!ver && relaveDestacado.id != null) quitarUV(true);
       }
+      if (clave === 'colegios') ['colegios-3d', 'colegios-borde'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ver ? 'visible' : 'none'));
       if (clave === 'cortes') acomodarPines();
       marcarCapaMapa(clave, ver);
       if (clave === 'relaves') actualizarLeyendaRelaves();
+      if (clave === 'colegios') actualizarLeyendaColegios();
     }
-    document.querySelectorAll('.capa-mapa').forEach(b => { b.dataset.estado = 'visible'; });
+    document.querySelectorAll('.capa-mapa').forEach(b => { b.dataset.estado = capasVisibles[b.dataset.capa] ? 'visible' : 'oculto'; });
+    document.body.classList.toggle('sin-cortes', !capasVisibles.cortes);
     document.querySelector('.capas-mapa').addEventListener('click', e => {
       const b = e.target.closest('.capa-mapa');
       if (b) alternarCapaMapa(b.dataset.capa);
@@ -2157,43 +2329,71 @@
       // Un solo tooltip (el del sitio): sobre un nombre de UV o una letra de corte no se muestra el de la manzana
       const etiqueta = { remove: ocultarTip };
       const sobreMarcador = ev => ev && ev.target && ev.target.closest && ev.target.closest('.maplibregl-marker');
+      const capasEncima = ['relaves-3d', 'colegios-3d'];
+      const sobreOtraCapa = pt => { const ls = capasEncima.filter(id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none');
+        return ls.length > 0 && map.queryRenderedFeatures(pt, { layers: ls }).length > 0; };
       if (!ES_TACTIL) {
-        map.on('mousemove', 'manzanas', e => {
-          if (sobreMarcador(e.originalEvent)) { ocultarTip(); return; }
-          if (map.getLayer('relaves-3d') && map.queryRenderedFeatures(e.point, { layers: ['relaves-3d'] }).length) return;
-          const p = e.features[0].properties;
-          map.getCanvas().style.cursor = 'pointer';
-          programarUV(p.uv);
-          const perfil = p.sinPoblacion ? 'Sin viviendas' : p.cluster >= 0 ? 'Perfil ' + PA()[p.cluster].letra : 'Sin perfil';
-          const v = VARIABLES.find(x => x.clave === estado.color);
-          const valor = v ? `<br>${esc(v.nombre)}: ${fmtVar(v.clave, p[v.clave])}` : '';
-          mostrarTip(`${esc(p.uv ? nombreCorto(p.uv) : nombreCorto(p.localidad || 'Manzana'))} · ${perfil}<br>${fmt(p.per)} personas${valor}`, e.originalEvent);
-        });
-        map.on('mouseleave', 'manzanas', () => {
+        // Un solo manejador para todo el mapa: como mucho una consulta por cuadro, y el elemento de más arriba manda
+        // (relave > colegio > manzana). Antes cada capa consultaba el mapa 3D por su cuenta en cada movimiento.
+        const CAPAS_HOVER = ['relaves-3d', 'colegios-3d', 'cortes', 'manzanas'];
+        let ultimoMov = null, movPendiente = false, sobreAlgo = false;
+        const salir = () => {
+          if (!sobreAlgo) return;
+          sobreAlgo = false;
           map.getCanvas().style.cursor = '';
           ocultarTip();
           programarUV(null);
+        };
+        const tipRelave = p => `RELAVE · ${esc(p.nombre)}<br>${esc(NOMBRE_ESTADO_RELAVE[p.estado] || p.estado)}${p.toneladas ? ' · ' + fmtTon(p.toneladas) : ''}<br>${p.pob_1000
+          ? `${fmt(p.pob_1000)} personas viven a menos de 1 km` : 'Sin viviendas a menos de 1 km'}${p.peor && p.peor_veces > 1 && ELEMENTOS_RELAVE[p.peor]
+          ? `<br><span style="color:#ff6b5b">${ELEMENTOS_RELAVE[p.peor].nombre}: ${fmtVeces(p.peor_veces)} veces la referencia</span>` : ''}`;
+        const tipColegio = p => `COLEGIO · ${esc(nombreCorto(p.nombre))}<br>${esc(DEPENDENCIA[p.dep] || '')} · ${fmt(p.mat)} estudiantes${p.relave != null && p.relave <= 1000
+          ? `<br><span style="color:#ff6b5b">A ${fmt(p.relave)} m de un relave minero</span>` : ''}`;
+        const tipManzana = p => {
+          const perfil = p.sinPoblacion ? 'Sin viviendas' : p.cluster >= 0 ? 'Perfil ' + PA()[p.cluster].letra : 'Sin perfil';
+          const v = VARIABLES.find(x => x.clave === estado.color);
+          const valor = v ? `<br>${esc(v.nombre)}: ${fmtVar(v.clave, p[v.clave])}` : '';
+          return `${esc(p.uv ? nombreCorto(p.uv) : nombreCorto(p.localidad || 'Manzana'))} · ${perfil}<br>${fmt(p.per)} personas${valor}`;
+        };
+        function revisarMouse() {
+          movPendiente = false;
+          const e = ultimoMov;
+          if (!e) return;
+          if (sobreMarcador(e.originalEvent)) { ocultarTip(); return; }
+          const capas = CAPAS_HOVER.filter(id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none');
+          const fs = capas.length ? map.queryRenderedFeatures(e.point, { layers: capas }) : [];
+          const de = id => fs.find(f => f.layer.id === id);
+          const rel = de('relaves-3d'), col = !rel && de('colegios-3d'), corte = de('cortes'), mz = !rel && !col && de('manzanas');
+          if (!rel && !col && !mz && !corte) return salir();
+          sobreAlgo = true;
+          map.getCanvas().style.cursor = 'pointer';
+          if (rel) return mostrarTip(tipRelave(rel.properties), e.originalEvent);
+          if (col) { programarUV(null); return mostrarTip(tipColegio(col.properties), e.originalEvent); }
+          if (mz) { programarUV(mz.properties.uv); return mostrarTip(tipManzana(mz.properties), e.originalEvent); }
+          ocultarTip();
+        }
+        map.on('mousemove', e => {
+          ultimoMov = e;
+          if (!movPendiente) { movPendiente = true; requestAnimationFrame(revisarMouse); }
         });
+        map.getCanvas().addEventListener('mouseleave', () => { ultimoMov = null; salir(); });
         // Al entrar a un nombre de UV o a una letra de corte, se oculta el tooltip de la manzana de abajo
         map.getCanvasContainer().addEventListener('mouseover', ev => { if (sobreMarcador(ev)) ocultarTip(); });
       }
       if (map.getLayer('relaves-3d')) {
-        if (!ES_TACTIL) {
-          map.on('mousemove', 'relaves-3d', e => {
-            const p = e.features[0].properties;
-            map.getCanvas().style.cursor = 'pointer';
-            etiqueta.remove();
-            mostrarTip(`RELAVE · ${esc(p.nombre)}<br>${esc(NOMBRE_ESTADO_RELAVE[p.estado] || p.estado)}${p.toneladas ? ' · ' + fmtTon(p.toneladas) : ''}<br>${p.pob_1000
-              ? `${fmt(p.pob_1000)} personas viven a menos de 1 km` : 'Sin viviendas a menos de 1 km'}${p.peor && p.peor_veces > 1 && ELEMENTOS_RELAVE[p.peor]
-              ? `<br><span style="color:#ff6b5b">${ELEMENTOS_RELAVE[p.peor].nombre}: ${fmtVeces(p.peor_veces)} veces la referencia</span>` : ''}`, e.originalEvent);
-          });
-          map.on('mouseleave', 'relaves-3d', () => { map.getCanvas().style.cursor = ''; ocultarTip(); });
-        }
         map.on('click', 'relaves-3d', e => { ocultarTip(); abrirFichaRelave(e.features[0].properties.id); });
       }
+      if (map.getLayer('colegios-3d')) {
+        map.on('click', 'colegios-3d', e => {
+          if (map.getLayer('relaves-3d') && map.getLayoutProperty('relaves-3d', 'visibility') !== 'none'
+            && map.queryRenderedFeatures(e.point, { layers: ['relaves-3d'] }).length) return;
+          ocultarTip();
+          abrirFichaColegio(e.features[0].properties.id);
+        });
+      }
       map.on('click', 'manzanas', e => {
-        // Si se tocó un relave, abre el relave (no la manzana de abajo)
-        if (map.getLayer('relaves-3d') && map.queryRenderedFeatures(e.point, { layers: ['relaves-3d'] }).length) return;
+        // Si se tocó un relave o un colegio, abre ese (no la manzana de abajo)
+        if (sobreOtraCapa(e.point)) return;
         etiqueta.remove();
         abrirFichaManzana(e.features[0].properties);
       });
@@ -2289,7 +2489,9 @@
         ['Arriendo sin contrato', p.sincontrato == null ? '–' : fmt(p.sincontrato, 1) + ' %', null],
         ['Distancia al bus', fmtVar('dist', p.dist), fmtVar('dist', pr.dist)],
         ['Relave más cercano', p.relave == null ? '–' : `${fmt(p.relave)} m${p.relave_id != null && relavePorId(p.relave_id)
-          ? ' · ' + esc(nombreCorto(relavePorId(p.relave_id).properties.nombre)) : ''}`, null]
+          ? ' · ' + esc(nombreCorto(relavePorId(p.relave_id).properties.nombre)) : ''}`, null],
+        ['Colegio más cercano', p.colegio == null ? '–' : `${fmt(p.colegio)} m${p.colegio_id != null && colegioPorId(p.colegio_id)
+          ? ' · ' + esc(nombreCorto(colegioPorId(p.colegio_id).properties.nombre)) : ''}`, null]
       ];
       const html = `
         <div class="modal-cabecera">
@@ -2381,6 +2583,7 @@
       // Perfil con más migración y hacinamiento (el más vulnerable) y cuánto depende del bus
       const vul = pf.slice().sort((a, b) => b.inm - a.inm)[0];
       const rel = relavesMz && relavesMz.totales.CP;
+      const colT = colegiosMz && colegiosMz.totales.CP;
       return `
         <div class="modal-cabecera">
           <div class="ruta">INFORME · HALLAZGOS PRINCIPALES</div>
@@ -2395,6 +2598,7 @@
             <div class="hallazgo"><b>${fmt(100 * vul.poblacion / totalPf, 1)} %</b><span>de la población vive en manzanas de perfil ${vul.letra} (${esc(vul.nombre.toLowerCase())}):
               ${fmt(vul.inm, 0)} % de inmigrantes, ${fmt(vul.hacin, 0)} % de viviendas hacinadas y un ${fmt(vul.tp, 0)} % que se traslada en bus.</span></div>
             ${rel ? `<div class="hallazgo"><b>${fmt(rel.menos_1000)}</b><span>personas (${fmt(100 * rel.menos_1000 / rel.poblacion, 0)} %) viven a menos de 1 km de un relave minero.</span></div>` : ''}
+            ${colT ? `<div class="hallazgo"><b>${fmt(colT.mat_rel_500)}</b><span>estudiantes asisten a uno de los ${colT.col_rel_500} colegios o liceos que están a menos de 500 m de un relave minero.</span></div>` : ''}
           </div>
           <div class="texto-informe">
             <h3 class="subtitulo" style="margin-top:24px">Lectura</h3>
@@ -2434,6 +2638,10 @@
             <li><b>Relaves mineros:</b> Sernageomin, Catastro de Depósitos de Relaves (polígonos, estado 2026). Población cercana:
               personas de las manzanas del Censo 2024 cuyo centro está a menos de 500 m o 1 km del borde del depósito
               (<span class="mono" style="font-size:11px">scripts/relaves.mjs</span>).</li>
+            <li><b>Colegios y liceos:</b> Mineduc, Resumen de Matrícula por Establecimiento y Matrícula Oficial por Estudiante 2026
+              (corte 30-04-2026), unidos por RBD a polígonos dibujados en QGIS. Sin jardines infantiles ni establecimientos sin matrícula.
+              Sobreedad: estudiantes de básica y media regular con 2 años o más sobre la edad esperada para su curso. Distancias de borde a borde
+              (<span class="mono" style="font-size:11px">scripts/colegios.mjs</span>).</li>
             <li><b>Tierra Amarilla:</b> manzanas del Censo 2024 (INE) y unidades vecinales dibujadas a mano. Perfiles propios:
               k-means (4 grupos, semilla fija) solo con variables demográficas: niños, mayores, inmigrantes, pueblos originarios,
               hacinamiento, escolaridad, desocupación y densidad (logarítmica). Sin recorridos de bus ni datos de servicios por ahora.</li>
@@ -2599,6 +2807,7 @@
       construirPictograma();
       construirDispersion();
       construirComposicionUV();
+      construirColegios();
       pintarControlesCorte();
       if (corteDibujado) dibujarCorte();
     }
@@ -2969,6 +3178,185 @@
       dibujarBurbujas(filas.filter(f => f[cfg.xv] != null), cfg);
     }
 
+    // ---------------------------------------------------------------------
+    // 04 · Colegios y liceos
+    // ---------------------------------------------------------------------
+    const rankingCol = { clave: 'mat', todos: false };
+    const sumaCol = (cs, k) => cs.reduce((s, p) => s + (p[k] || 0), 0);
+    const RANKING_COL = [
+      { k: 'mat', n: 'MATRÍCULA', val: p => p.mat, txt: v => fmt(v), prom: cs => sumaCol(cs, 'mat') / cs.length,
+        nota: 'Línea blanca: matrícula promedio por colegio de la comuna.' },
+      { k: 'ext', n: 'EXTRANJEROS', val: p => 100 * p.ext / p.mat, txt: v => fmt(v, 1) + ' %', prom: cs => 100 * sumaCol(cs, 'ext') / sumaCol(cs, 'mat'),
+        nota: 'Porcentaje de estudiantes extranjeros (sin contar a los nacionalizados). Línea blanca: promedio de la comuna.' },
+      { k: 'pie', n: 'INTEGRACIÓN (PIE)', val: p => 100 * p.pie / p.mat, txt: v => fmt(v, 1) + ' %', prom: cs => 100 * sumaCol(cs, 'pie') / sumaCol(cs, 'mat'),
+        nota: 'Estudiantes en el Programa de Integración Escolar (necesidades educativas especiales). Línea blanca: promedio de la comuna.' },
+      { k: 'sobre', n: 'SOBREEDAD', val: p => p.sobre_base >= 30 ? 100 * p.sobre / p.sobre_base : null, txt: v => fmt(v, 1) + ' %',
+        prom: cs => { const c = cs.filter(p => p.sobre_base >= 30); return 100 * sumaCol(c, 'sobre') / (sumaCol(c, 'sobre_base') || 1); },
+        nota: 'Estudiantes de básica y media regular con 2 años o más sobre la edad esperada para su curso. Solo colegios con 30 o más estudiantes en esos niveles. Línea blanca: promedio de la comuna.' },
+      { k: 'relave', n: 'DISTANCIA A UN RELAVE', val: p => p.relave, txt: v => fmt(v) + ' m', asc: true, prom: null,
+        nota: 'Del más cercano al más lejano. Distancia de borde a borde al relave más cercano (Sernageomin).' }
+    ];
+    const NIVELES_COL = [
+      ['Parvularia', p => p.par], ['Básica', p => p.bas], ['Media científico-humanista', p => p.mhc],
+      ['Media técnico-profesional', p => p.mtp], ['Educación especial', p => p.esp], ['Adultos', p => p.basA + p.mhcA + p.mtpA]
+    ];
+    const DEPS_COL = [5, 1, 2, 3, 4];
+    const colorDep = d => COLOR_DEP[d] || '#8b95a3';
+    const colegiosHIS = () => colegiosGeo ? colegiosGeo.features.map(f => f.properties).filter(p => p.comuna === HIS.id) : [];
+
+    function construirColegios() {
+      const sec = document.getElementById('sec-colegios');
+      const cs = colegiosHIS();
+      sec.hidden = !cs.length;
+      if (!cs.length) return;
+      const t = colegiosMz && colegiosMz.totales[HIS.id], tCP = colegiosMz && colegiosMz.totales.CP;
+      const mat = sumaCol(cs, 'mat');
+      const publica = sumaCol(cs.filter(p => p.dep === 5 || p.dep === 1), 'mat');
+      const deTA = tCP ? tCP.de_la_otra : null;
+      document.getElementById('h-colegios').textContent = `Dónde estudian los niños de ${HIS.nombre}`;
+      document.getElementById('intro-colegios').innerHTML = `${fmt(cs.length)} colegios y liceos de ${HIS.nombre} con matrícula 2026 del Mineduc
+        (sin jardines infantiles).${t ? ` ${t.col_rel_500 ? `${t.col_rel_500 === 1 ? 'Uno de ellos está' : `${t.col_rel_500} de ellos están`} a menos de
+        500 m de un relave minero, y ` : ''}unos ${fmt(t.ninos_lejos_1000)} niños de 0 a 13 años viven a más de 1 km de un colegio con básica o media.` : ''}
+        Toque un punto para abrir la ficha de un colegio, o una barra del ranking para verlo en el mapa.`;
+      const kpis = [
+        [fmt(cs.length), 'Colegios y liceos'],
+        [fmt(mat), 'Estudiantes · matrícula 2026'],
+        [fmt(100 * publica / mat, 0) + ' %', 'Estudia en la educación pública'],
+        [t ? fmt(t.mat_rel_500) : '–', 'Estudia a menos de 500 m de un relave'],
+        [deTA != null ? fmt(deTA) : '–', HIS.cp ? 'Estudiantes que viven en Tierra Amarilla' : 'Vive aquí y estudia en Copiapó']
+      ];
+      document.getElementById('kpis-colegios').innerHTML = kpis.map(([v, n]) => `<div><b>${v}</b><span>${n}</span></div>`).join('');
+      dibujarDispersionColegios(cs);
+      dibujarNivelesColegios(cs);
+      dibujarRankingColegios(cs);
+
+      if (sec.dataset.listo) return;
+      sec.dataset.listo = '1';
+      const disp = document.getElementById('dispersion-colegios');
+      disp.addEventListener('mousemove', e => {
+        const c = e.target.closest('[data-rbd]');
+        if (!c) return ocultarTip();
+        const f = colegioPorId(c.dataset.rbd);
+        if (!f) return;
+        const p = f.properties, rl = p.relave_id != null ? relavePorId(p.relave_id) : null;
+        mostrarTip(`${esc(nombreCorto(p.nombre))}<br>${esc(DEPENDENCIA[p.dep] || '')} · ${fmt(p.mat)} estudiantes<br>${rl
+          ? `Relave a ${fmt(p.relave)} m · ${esc(nombreCorto(rl.properties.nombre))}` : 'Sin relave cercano'}`, e);
+      });
+      disp.addEventListener('mouseleave', ocultarTip);
+      disp.addEventListener('click', e => { const c = e.target.closest('[data-rbd]'); if (c) { ocultarTip(); abrirFichaColegio(+c.dataset.rbd); } });
+      const rk = document.getElementById('ranking-colegios');
+      rk.addEventListener('click', e => {
+        const b = e.target.closest('[data-todos]');
+        if (b) { rankingCol.todos = !rankingCol.todos; return dibujarRankingColegios(colegiosHIS()); }
+        const fila = e.target.closest('[data-rbd]');
+        if (fila) irAColegioMapa(+fila.dataset.rbd);
+      });
+      rk.addEventListener('keydown', e => {
+        const fila = e.target.closest('[data-rbd]');
+        if (fila && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); irAColegioMapa(+fila.dataset.rbd); }
+      });
+      document.getElementById('chips-ranking-col').addEventListener('click', e => {
+        const b = e.target.closest('[data-rk]');
+        if (!b) return;
+        rankingCol.clave = b.dataset.rk;
+        dibujarRankingColegios(colegiosHIS());
+      });
+    }
+
+    // Puntos: distancia al relave (horizontal) frente a matrícula (vertical), color = dependencia
+    function dibujarDispersionColegios(cs) {
+      const W = 640, ALTO = 420, m = { l: 58, r: 18, t: 14, b: 46 };
+      const pw = W - m.l - m.r, ph = ALTO - m.t - m.b;
+      const conDist = cs.filter(p => p.relave != null);
+      const xmax = Math.min(5000, Math.max(1500, Math.ceil(Math.max(...conDist.map(p => p.relave)) / 500) * 500));
+      const ymax = Math.max(500, Math.ceil(Math.max(...cs.map(p => p.mat)) / 500) * 500);
+      const X = v => m.l + pw * Math.min(v, xmax) / xmax, Y = v => m.t + ph * (1 - v / ymax);
+      const pasoX = xmax > 3000 ? 1000 : 500;
+      let g = `<rect x="${X(0)}" y="${m.t}" width="${X(500) - X(0)}" height="${ph}" fill="#ff3b30" opacity="0.13"/>
+        <rect x="${X(500)}" y="${m.t}" width="${X(1000) - X(500)}" height="${ph}" fill="#fbb13c" opacity="0.08"/>`;
+      for (let v = 0; v <= xmax; v += pasoX) g += `<line x1="${X(v)}" y1="${m.t}" x2="${X(v)}" y2="${m.t + ph}" stroke="rgba(255,255,255,0.06)"/>
+        <text x="${X(v)}" y="${m.t + ph + 18}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="middle">${v === xmax && conDist.some(p => p.relave > xmax) ? '≥ ' : ''}${v >= 1000 ? fmt(v / 1000, v % 1000 ? 1 : 0) + ' km' : v + ' m'}</text>`;
+      for (let v = 0; v <= ymax; v += 500) g += `<line x1="${m.l}" y1="${Y(v)}" x2="${m.l + pw}" y2="${Y(v)}" stroke="rgba(255,255,255,0.06)"/>
+        <text x="${m.l - 10}" y="${Y(v) + 4}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="end">${fmt(v)}</text>`;
+      g += `<text x="${m.l + pw / 2}" y="${ALTO - 6}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">DISTANCIA AL RELAVE MÁS CERCANO</text>
+        <text transform="translate(14 ${m.t + ph / 2}) rotate(-90)" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">ESTUDIANTES</text>
+        <text x="${X(250)}" y="${m.t + 14}" fill="#ff6b5b" font-size="10" font-family="IBM Plex Mono" text-anchor="middle">&lt; 500 M</text>`;
+      g += conDist.slice().sort((a, b) => b.mat - a.mat).map(p => `<circle data-rbd="${p.id}" cx="${X(p.relave).toFixed(1)}" cy="${Y(p.mat).toFixed(1)}"
+        r="${(4 + Math.sqrt(p.mat) / 9).toFixed(1)}" fill="${colorDep(p.dep)}" fill-opacity="0.8" stroke="#0d1218" stroke-width="1"/>`).join('');
+      document.getElementById('dispersion-colegios').innerHTML =
+        `<svg class="svg-grafico" viewBox="0 0 ${W} ${ALTO}" role="img" aria-label="Colegios según su distancia a un relave y su matrícula">${g}</svg>`;
+      const deps = DEPS_COL.filter(d => cs.some(p => p.dep === d));
+      document.getElementById('leyenda-dep-col').innerHTML = deps.map(d => `<span><i style="background:${colorDep(d)}"></i>${DEPENDENCIA[d]}</span>`).join('');
+    }
+
+    // Barras apiladas: qué parte de cada nivel atiende cada dependencia
+    function dibujarNivelesColegios(cs) {
+      const deps = DEPS_COL.filter(d => cs.some(p => p.dep === d));
+      const filas = NIVELES_COL.map(([n, fn]) => {
+        const total = cs.reduce((s, p) => s + fn(p), 0);
+        return { n, total, partes: deps.map(d => [d, cs.filter(p => p.dep === d).reduce((s, p) => s + fn(p), 0)]) };
+      }).filter(f => f.total > 0);
+      document.getElementById('niveles-colegios').innerHTML = filas.map(f => `<div class="fila"><span>${f.n}</span>
+        <div class="barra-apilada">${f.partes.map(([d, v]) => `<i style="width:${100 * v / f.total}%;background:${colorDep(d)}"
+          title="${DEPENDENCIA[d]}: ${fmt(v)} (${fmt(100 * v / f.total, 0)} %)"></i>`).join('')}</div>
+        <b>${fmt(f.total)}</b></div>`).join('');
+      document.getElementById('leyenda-niveles-col').innerHTML = deps.map(d => `<span><i style="background:${colorDep(d)}"></i>${DEPENDENCIA[d]}</span>`).join('');
+      const pub = n => { const f = filas.find(x => x.n === n); if (!f) return null;
+        return 100 * f.partes.filter(([d]) => d === 5 || d === 1).reduce((s, [, v]) => s + v, 0) / f.total; };
+      const frases = [['la básica', pub('Básica')], ['la media científico-humanista', pub('Media científico-humanista')],
+        ['la media técnico-profesional', pub('Media técnico-profesional')]].filter(([, v]) => v != null);
+      const pagado = 100 * sumaCol(cs.filter(p => p.dep === 3), 'mat') / sumaCol(cs, 'mat');
+      document.getElementById('lectura-niveles-col').innerHTML = frases.length ? `La educación pública atiende ${frases
+        .map(([n, v], i) => `${i === frases.length - 1 && i > 0 ? 'y ' : ''}el <b>${fmt(v, 0)} %</b> de ${n}`).join(frases.length > 2 ? ', ' : ' ')}.
+        ${pagado > 0 ? `Los colegios particulares pagados reúnen el <b>${fmt(pagado, 0)} %</b> de la matrícula de ${HIS.nombre}.` : `${HIS.nombre} no tiene colegios particulares pagados.`}` : '';
+    }
+
+    // Ranking: barras por colegio según el indicador elegido; clic = ver el colegio en el mapa
+    function dibujarRankingColegios(cs) {
+      const cfg = RANKING_COL.find(r => r.k === rankingCol.clave) || RANKING_COL[0];
+      document.getElementById('chips-ranking-col').innerHTML = `<span class="etq-chips">ORDENAR POR</span>${RANKING_COL
+        .map(r => `<button class="chip ${r.k === cfg.k ? 'activo' : ''}" data-rk="${r.k}" aria-pressed="${r.k === cfg.k}">${r.n}</button>`).join('')}`;
+      const filas = cs.map(p => ({ p, v: cfg.val(p) })).filter(x => x.v != null && isFinite(x.v))
+        .sort((a, b) => cfg.asc ? a.v - b.v : b.v - a.v);
+      const max = Math.max(...filas.map(x => x.v)) || 1;
+      const prom = cfg.prom ? cfg.prom(cs) : null;
+      const LIMITE = 15;
+      const vis = rankingCol.todos ? filas : filas.slice(0, LIMITE);
+      document.getElementById('ranking-colegios').innerHTML = vis.map(({ p, v }) => `
+        <div class="fila" data-rbd="${p.id}" tabindex="0" role="button" title="Ver ${esc(nombreCorto(p.nombre))} en el mapa">
+          <span>${esc(nombreCorto(p.nombre))}</span>
+          <span class="pista"><i style="width:${Math.max(0.5, 100 * v / max)}%;background:${colorDep(p.dep)}"></i>${prom != null
+            ? `<span class="prom" style="left:${Math.min(100, 100 * prom / max)}%"></span>` : ''}</span>
+          <b style="${cfg.k === 'relave' && v <= 500 ? 'color:#ff6b5b' : ''}">${cfg.txt(v)}</b>
+        </div>`).join('') + (filas.length > LIMITE
+          ? `<button class="chip ver-todos" data-todos>${rankingCol.todos ? 'VER MENOS' : `VER LOS ${filas.length} COLEGIOS`}</button>` : '');
+      document.getElementById('nota-ranking-col').textContent = `${cfg.nota} Color: dependencia. Toque una barra para ver el colegio en el mapa.`;
+    }
+
+    // Sube al mapa y vuela al colegio
+    function irAColegioMapa(rbd) {
+      const f = colegioPorId(rbd);
+      if (!f) return;
+      if (!capasVisibles.colegios) alternarCapaMapa('colegios', true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const c = centroGrande(f.geometry);
+      if (c) setTimeout(() => {
+        map.flyTo({ center: c, zoom: 15.6, pitch: estado.en3D ? 45 : 0, bearing: map.getBearing(), duration: 1600 });
+        map.once('moveend', () => map.once('idle', corregirAlturaCamara));
+      }, 450);
+    }
+    // Tras un vuelo, MapLibre deja fija la altura del terreno del punto de partida. Valle arriba (Los Loros, Amolanas)
+    // el suelo es mucho más alto y la cámara quedaría dentro del cerro: se toma la altura real del terreno en el centro.
+    function corregirAlturaCamara() {
+      const t = map.transform, c = map.getCenter();
+      if (!map.terrain || !estado.en3D) return;
+      const e = map.terrain.getElevationForLngLatZoom(c, t.tileZoom);
+      if (!isFinite(e) || e <= 0 || Math.abs(e - t.elevation) < 30) return;
+      t.elevation = e;
+      map._elevationFreeze = false;
+      map.jumpTo({ center: c });
+    }
+
     let filasBurbujas = [], cfgBurbujas = null;
     function dibujarBurbujas(filas, cfg) {
       filasBurbujas = filas;
@@ -3022,7 +3410,7 @@
     }
 
     // ---------------------------------------------------------------------
-    // 04 · Cortes (perfil de elevación + manzanas + recorridos + UV)
+    // 05 · Cortes (perfil de elevación + manzanas + recorridos + UV)
     // ---------------------------------------------------------------------
     const CORTES_CP = [
       { id: 'A', nombre: 'A–A′', extremos: ['SO · Rosario', 'NE · Sectores altos'],
@@ -3209,8 +3597,6 @@
       map.addLayer({ id: 'cortes', type: 'line', source: 'cortes',
         paint: { 'line-color': '#c6f24e', 'line-width': 2.2, 'line-dasharray': [3, 2] } });
       map.on('click', 'cortes', e => { e.preventDefault(); irACorte(e.features[0].properties.id); });
-      map.on('mouseenter', 'cortes', () => { map.getCanvas().style.cursor = 'pointer'; });
-      map.on('mouseleave', 'cortes', () => { map.getCanvas().style.cursor = ''; });
       TODOS_CORTES.forEach(c => [[c.puntos[0], c.id], [c.puntos[c.puntos.length - 1], c.id + '′']].forEach(([p, t]) => {
         const el = document.createElement('div');
         el.className = 'etiqueta-corte';
@@ -3869,6 +4255,99 @@
         <p class="nota">Altura según el tonelaje autorizado. Toque un relave para ver su ficha. Fuente: Sernageomin.</p>`;
     }
 
+    // =====================================================================
+    // COLEGIOS Y LICEOS
+    // =====================================================================
+    function actualizarLeyendaColegios() {
+      const el = document.getElementById('leyenda-colegios');
+      if (!el) return;
+      if (!colegiosGeo || !capasVisibles.colegios) { el.hidden = true; return; }
+      const t = colegiosMz && colegiosMz.totales[comunaActiva];
+      const deLa = colegiosGeo.features.filter(f => f.properties.comuna === comunaActiva);
+      const filas = [5, 2, 3].map(d => [d, deLa.filter(f => f.properties.dep === d).length]).filter(([, k]) => k);
+      el.hidden = false;
+      el.innerHTML = `
+        <h2 class="titulo-caja">Colegios y liceos · ${NOMBRE_COMUNA[comunaActiva]}</h2>
+        ${filas.map(([d, k]) => `<div class="fila-rel"><i style="background:${lunaresCSS(d)};border-color:${COLOR_DEP[d]}"></i>${DEPENDENCIA[d]} · ${k}</div>`).join('')}
+        ${t && t.col_rel_500 ? `<p class="cifra"><b>${t.col_rel_500}</b> de sus ${t.colegios} colegios, con <b>${fmt(t.mat_rel_500)}</b> estudiantes,
+          ${t.col_rel_500 === 1 ? 'está' : 'están'} a menos de 500 m de un relave minero.</p>` : ''}
+        <p class="nota">Altura según la matrícula 2026; cada colegio se apoya sobre el techo de su manzana. Toque uno para ver su ficha. Fuente: Mineduc.</p>`;
+    }
+
+    // Barras horizontales de la ficha del colegio
+    function barrasColegio(items, total, color) {
+      return `<div class="barras-colegio">${items.map(([n, v, c]) => `<div class="fila"><span>${n}</span>
+        <span class="pista"><i style="width:${Math.max(1, Math.min(100, 100 * v / (total || 1)))}%;background:${c || color}"></i></span>
+        <b>${fmt(v)}</b></div>`).join('')}</div>`;
+    }
+
+    function abrirFichaColegio(id) {
+      const f = colegioPorId(id);
+      if (!f) return;
+      const p = f.properties;
+      const color = COLOR_DEP[p.dep] || COLOR_DEP[5];
+      const pct = (a, b) => b ? fmt(100 * a / b, 1) + ' %' : '–';
+      const niveles = [
+        ['Parvularia', p.par], ['Básica', p.bas], ['Media científico-humanista', p.mhc], ['Media técnico-profesional', p.mtp],
+        ['Educación especial', p.esp], ['Básica de adultos', p.basA], ['Media de adultos', p.mhcA + p.mtpA]
+      ].filter(([, v]) => v > 0);
+      const sectores = p.sectores ? JSON.parse(p.sectores) : [];
+      const residencia = JSON.parse(p.residencia || '[]');
+      const rl = p.relave_id != null ? relavePorId(p.relave_id) : null;
+      const cerca = rl && p.relave <= 1000;
+      const filas = [
+        ['RBD', String(p.rbd)],
+        ['Dependencia', esc(DEPENDENCIA[p.dep] || '–')],
+        ...(p.slep ? [['Servicio Local', esc(nombreCorto(p.slep))]] : []),
+        ['Tipo', esc(TIPO_COLEGIO[p.tipo] || p.tipo)],
+        ['Zona', p.rural ? 'Rural' : 'Urbana'],
+        ['Cursos', fmt(p.cursos)],
+        ['Mujeres / hombres', `${fmt(p.muj)} / ${fmt(p.hom)}`],
+        ['Pueblos originarios', pct(p.etnia, p.mat)],
+        ...(p.sobre_base ? [['Sobreedad (2 años o más)', pct(p.sobre, p.sobre_base)]] : []),
+        ['Niños de 0 a 13 años a menos de 1 km', fmt(p.ninos_1000)],
+        ['Relave más cercano', rl ? `${fmt(p.relave)} m · ${esc(nombreCorto(rl.properties.nombre))}` : '–']
+      ];
+      abrirModal(null, `
+        <div class="modal-cabecera">
+          <div class="ruta">COLEGIO · ${esc((DEPENDENCIA[p.dep] || '').toUpperCase())} · ${esc(NOMBRE_COMUNA[p.comuna].toUpperCase())}</div>
+          <h2 id="titulo-modal">${esc(nombreCorto(p.nombre))}</h2>
+          <p>${esc(TIPO_COLEGIO[p.tipo] || '')}${p.rural ? ' · Rural' : ''} · Matrícula 2026</p>
+          ${botonCerrar}
+        </div>
+        <div class="modal-cuerpo">
+          <div>
+            <div class="kpis">
+              <div><span>Estudiantes</span><b style="color:${color}">${fmt(p.mat)}</b></div>
+              <div><span>Extranjeros</span><b>${pct(p.ext, p.mat)}</b></div>
+              <div><span>Programa de integración</span><b>${pct(p.pie, p.mat)}</b></div>
+              <div><span>Relave más cercano</span><b style="${cerca ? 'color:#ff6b5b' : ''}">${rl ? 'a ' + fmt(p.relave) + ' m' : '–'}</b></div>
+            </div>
+            ${cerca ? `<div class="aviso-relave-colegio">Está a <b>${fmt(p.relave)} m</b> del relave <b>${esc(nombreCorto(rl.properties.nombre))}</b>
+              (${esc((NOMBRE_ESTADO_RELAVE[rl.properties.estado] || rl.properties.estado).toLowerCase())})${rl.properties.peor && rl.properties.peor_veces > 1 && ELEMENTOS_RELAVE[rl.properties.peor]
+                ? `, cuyo material tiene ${ELEMENTOS_RELAVE[rl.properties.peor].nombre.toLowerCase()} ${fmtVeces(rl.properties.peor_veces)} veces sobre la referencia` : ''}.<br>
+              <button class="chip" style="border-right:1px solid var(--borde)" onclick="abrirFichaRelave(${rl.properties.id})"><i class="fa-solid fa-triangle-exclamation"></i> VER FICHA DEL RELAVE</button></div>` : ''}
+            <h3 class="subtitulo">Niveles que imparte</h3>
+            ${barrasColegio(niveles, p.mat, color)}
+            ${sectores.length ? `<h3 class="subtitulo">Especialidades técnico-profesionales</h3>
+              ${barrasColegio(sectores.map(([n, v]) => [n, v, n === 'Minería' ? '#fbb13c' : null]), sectores.reduce((s, [, v]) => s + v, 0), color)}` : ''}
+            ${residencia.length ? `<h3 class="subtitulo">Dónde viven sus estudiantes</h3>
+              ${barrasColegio(residencia.map(([n, v]) => [esc(nombreCorto(n)), v]), p.con_com, color)}
+              <p class="nota">Comuna de residencia declarada en la matrícula (dato voluntario): ${fmt(p.con_com)} de ${fmt(p.mat)} estudiantes la informan.
+                Las comunas lejanas suelen ser direcciones sin actualizar.</p>` : ''}
+          </div>
+          <div>
+            <h3 class="subtitulo">Datos del establecimiento</h3>
+            <table class="datos"><tbody>${filas.map(([n, v]) => `<tr><td>${n}</td><td>${v}</td></tr>`).join('')}</tbody></table>
+          </div>
+        </div>
+        <p class="nota" style="padding:0 26px 22px;margin:0">
+          Fuente: Mineduc, matrícula oficial 2026 (corte 30-04-2026). Integración: estudiantes del Programa de Integración Escolar (PIE).
+          Sobreedad: estudiantes de básica y media regular con 2 años o más sobre la edad esperada para su curso (edad al 30 de junio).
+          Relave: Sernageomin, distancia de borde a borde. En el mapa, la altura del colegio depende de su matrícula (no es su altura real).
+        </p>`);
+    }
+
     // Elementos analizados por Sernageomin: referencia (CCME, suelo residencial, mg/kg) y posibles efectos en la salud
     // por exposición prolongada (ATSDR, OMS, IARC). Redactado como asociación, no como diagnóstico.
     const ELEMENTOS_RELAVE = {
@@ -4006,6 +4485,7 @@
           primeraVez ? fetch('inputs/resumen_uv_ta.json').then(r => r.json()) : null
         ]).then(([geo, uvs, resumen]) => {
           agregarDistRelave(geo);
+          agregarDistColegio(geo);
           Object.assign(T, { geo, perfiles: geo.metadata.perfiles, estad: estadDe(geo), promedios: promediosDe(geo.metadata.perfiles) });
           T.promedios.dist = null;                     // sin recorridos de bus
           if (primeraVez) {
@@ -4043,6 +4523,12 @@
         map.setLayoutProperty(id, 'visibility', capasVisibles.relaves ? 'visible' : 'none');
       });
       actualizarLeyendaRelaves();
+      ['colegios-3d', 'colegios-borde'].forEach(id => {
+        if (!map.getLayer(id)) return;
+        map.setFilter(id, ['==', ['get', 'comuna'], comunaActiva]);
+        map.setLayoutProperty(id, 'visibility', capasVisibles.colegios ? 'visible' : 'none');
+      });
+      actualizarLeyendaColegios();
       if (map.getLayer('cortes')) {
         map.setFilter('cortes', ['==', ['get', 'comuna'], comunaActiva]);
         map.setLayoutProperty('cortes', 'visibility', capasVisibles.cortes ? 'visible' : 'none');
