@@ -691,6 +691,10 @@
     .maplibregl-ctrl.maplibregl-ctrl-attrib a:hover { color: var(--acento) !important; text-decoration: underline; }
     .maplibregl-ctrl-attrib-inner { padding: 3px 8px; }
 
+    /* Los créditos no se ven mientras carga el mapa (MapLibre los abre al inicio):
+       aparecen ya cerrados, solo con la ⓘ, cuando el mapa termina de dibujarse */
+    body:not(.creditos-listos) .maplibregl-ctrl-attrib { visibility: hidden; }
+
     /* Botón "i" que abre/cierra los créditos: visible sobre fondo oscuro */
     .maplibregl-ctrl-attrib-button {
       background-color: var(--acento) !important;
@@ -5001,8 +5005,10 @@
       const el = document.querySelector('.maplibregl-ctrl-attrib');
       if (el) el.classList.remove('maplibregl-compact-show');
     }
+    const mostrarCreditos = () => { cerrarCreditos(); document.body.classList.add('creditos-listos'); };
     map.once('load', cerrarCreditos);
-    map.once('idle', cerrarCreditos);
+    map.once('idle', mostrarCreditos);
+    setTimeout(mostrarCreditos, 10000);   // por si el mapa tarda mucho en quedar quieto
   </script>
   <script>
     // Leyenda en computador: se puede ocultar; el navegador recuerda la elección
