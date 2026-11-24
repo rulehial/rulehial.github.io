@@ -153,7 +153,7 @@
     .barras-colegio .pista i { display: block; height: 100%; }
     .barras-colegio .fila b { font: 500 12px var(--mono); text-align: right; }
     @media (max-width: 600px) { .barras-colegio .fila { grid-template-columns: 112px 1fr 52px; gap: 8px; font-size: 12px; } }
-    .aviso-relave-colegio { margin: 16px 0 4px; padding: 10px 12px; border: 1px solid rgba(255, 59, 48, 0.45); background: rgba(255, 59, 48, 0.08); font-size: 12.5px; line-height: 1.5; }
+    .aviso-relave-colegio { margin: 14px 0 14px; padding: 10px 12px; border: 1px solid rgba(255, 59, 48, 0.45); background: rgba(255, 59, 48, 0.08); font-size: 12.5px; line-height: 1.5; }
     .aviso-relave-colegio b { color: #ff6b5b; }
     .aviso-relave-colegio button { margin-top: 8px; }
 
@@ -769,6 +769,17 @@
     .subtitulo { margin: 20px 0 10px; font: 500 10.5px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--texto-suave); }
     .subtitulo:first-child { margin-top: 0; }
 
+    /* Secciones de la ficha del colegio: cada bloque en su recuadro, con título e ícono */
+    .seccion-ficha { margin-top: 14px; padding: 14px 16px 12px; border: 1px solid var(--borde); border-left: 2px solid var(--acento);
+      background: rgba(255, 255, 255, 0.025); }
+    .seccion-ficha:first-child { margin-top: 0; }
+    .seccion-ficha > .subtitulo { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 11px; color: var(--texto); }
+    .seccion-ficha > .subtitulo i { width: 14px; font-size: 11px; color: var(--acento); text-align: center; }
+    .seccion-ficha > .nota:last-child { margin-bottom: 0; }
+    .seccion-ficha table.datos tbody tr:last-child td { border-bottom: none; }
+    .seccion-ficha .barras-colegio .fila:first-child { margin-top: 0; }
+    @media (max-width: 600px) { .seccion-ficha { padding: 12px 12px 10px; } }
+
     table.datos { width: 100%; border-collapse: collapse; font-size: 13px; }
     table.datos th { padding: 6px 0; font: 500 10px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--texto-suave); text-align: left; border-bottom: 1px solid var(--borde); }
     table.datos td { padding: 7px 0; border-bottom: 1px solid var(--borde); }
@@ -1066,6 +1077,15 @@
     /* 04 · Colegios y liceos */
     .kpis-grandes.kpis-5 { grid-template-columns: repeat(5, 1fr); margin: 0 0 20px; }
     .kpis-grandes.kpis-5 b { font-size: clamp(28px, 3.2vw, 48px); }
+    /* Seis cifras: dos filas de tres */
+    .kpis-grandes.kpis-6 { grid-template-columns: repeat(3, 1fr); margin: 0 0 20px; }
+    .kpis-grandes.kpis-6 b { font-size: clamp(28px, 3.2vw, 48px); }
+    .kpis-grandes.kpis-6 div { border-right: 1px solid var(--borde); border-bottom: 1px solid var(--borde); }
+    .kpis-grandes.kpis-6 div:nth-child(3n) { border-right: none; }
+    .kpis-grandes.kpis-6 div:nth-child(n+4) { border-bottom: none; }
+    .kpis-grandes.kpis-6 small { display: block; margin-top: 6px; font-size: 11.5px; color: var(--texto-suave); }
+    .paes-separador { margin: 12px 0 4px; font: 500 9.5px var(--mono); letter-spacing: 0.12em; color: var(--texto-suave); }
+    #paes-histo rect { cursor: default; }
     .filas-col .fila { display: grid; grid-template-columns: 210px 1fr 68px; gap: 10px; align-items: center; padding: 4px; font-size: 12.5px; }
     .filas-col .fila > span:first-child { overflow: hidden; color: #b5bdc8; white-space: nowrap; text-overflow: ellipsis; }
     .filas-col .fila > b { font: 500 12px var(--mono); text-align: right; }
@@ -1076,6 +1096,12 @@
     .filas-col.ranking .fila:hover, .filas-col.ranking .fila:focus-visible { background: rgba(255, 255, 255, 0.04); outline: none; }
     .filas-col.ranking .fila:hover > span:first-child { color: var(--texto); }
     .filas-col .barra-apilada { height: 14px; }
+    .filas-col.paes .fila > span:first-child { white-space: normal; }
+    .filas-col.paes .fila { grid-template-columns: 150px 1fr 40px 40px; }
+    .filas-col.paes .dif-paes { font: 500 11px var(--mono); color: var(--texto-suave); text-align: right; }
+    .leyenda-paes { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 8px 0 0; font-size: 11px; color: var(--texto-suave); }
+    .leyenda-paes i { display: inline-block; width: 3px; height: 11px; margin-right: 6px; vertical-align: -1px; }
+    @media (max-width: 900px) { .filas-col.paes .fila { grid-template-columns: 96px 1fr 34px 38px; gap: 6px; } }
     .lectura-col { margin: 14px 0 0; font-size: 13px; line-height: 1.55; color: #b5bdc8; }
     .lectura-col b { color: var(--texto); }
     #dispersion-colegios circle { cursor: pointer; }
@@ -1085,6 +1111,11 @@
       .kpis-grandes.kpis-5 div { border-right: 1px solid var(--borde); border-bottom: 1px solid var(--borde); }
       .kpis-grandes.kpis-5 div:nth-child(2n) { border-right: none; }
       .kpis-grandes.kpis-5 div:last-child { grid-column: span 2; border-right: none; border-bottom: none; }
+      .kpis-grandes.kpis-6 { grid-template-columns: 1fr 1fr; }
+      .kpis-grandes.kpis-6 div:nth-child(3n) { border-right: 1px solid var(--borde); }
+      .kpis-grandes.kpis-6 div:nth-child(2n) { border-right: none; }
+      .kpis-grandes.kpis-6 div:nth-child(n+4) { border-bottom: 1px solid var(--borde); }
+      .kpis-grandes.kpis-6 div:nth-child(n+5) { border-bottom: none; }
       .filas-col .fila { grid-template-columns: 112px 1fr 54px; gap: 8px; font-size: 12px; }
     }
 
@@ -1443,7 +1474,7 @@
       <div class="eyebrow">04 — Colegios y liceos</div>
       <h2 id="h-colegios">Dónde estudian los niños de Copiapó</h2>
       <p class="intro" id="intro-colegios"></p>
-      <div id="kpis-colegios" class="kpis-grandes kpis-5"></div>
+      <div id="kpis-colegios" class="kpis-grandes kpis-6"></div>
       <div class="grid-2">
         <div class="marco">
           <h3 class="titulo-marco">Colegios frente a los relaves · cada punto = un colegio</h3>
@@ -1457,6 +1488,19 @@
           <div id="niveles-colegios" class="filas-col"></div>
           <div id="leyenda-niveles-col" class="leyenda-linea"></div>
           <p class="lectura-col" id="lectura-niveles-col"></p>
+        </div>
+      </div>
+      <div class="grid-2" id="paes-seccion" style="margin-top:20px">
+        <div class="marco">
+          <h3 class="titulo-marco">PAES 2026 según tipo de colegio · promedio de obligatorias</h3>
+          <div id="paes-tipos" class="filas-col paes"></div>
+          <p class="nota" id="nota-paes-tipos"></p>
+        </div>
+        <div class="marco">
+          <h3 class="titulo-marco">Cómo se distribuyen los puntajes · promedio de obligatorias</h3>
+          <div id="paes-histo"></div>
+          <div id="leyenda-paes-histo" class="leyenda-linea"></div>
+          <p class="nota" id="nota-paes-histo"></p>
         </div>
       </div>
       <div class="marco" style="margin-top:20px">
@@ -1636,7 +1680,7 @@
       map.setPaintProperty('relaves-3d', 'fill-extrusion-pattern', patronRelave());
     }
     // Colegios y liceos (Mineduc, matrícula 2026): capa aparte; cada manzana sabe a qué distancia está el más cercano
-    let colegiosGeo = null, colegiosMz = null;
+    let colegiosGeo = null, colegiosMz = null, paes2026 = null;   // PAES 2026 por colegio (scripts/paes.mjs)
     const mzDeColegio = new Map();                    // RBD → ids de las manzanas que pisa
     const DEPENDENCIA = { 1: 'Municipal', 2: 'Particular subvencionado', 3: 'Particular pagado', 4: 'Administración delegada', 5: 'Pública (Servicio Local)' };
     // Lunares de color sobre blanco: ningún perfil ni escala usa blanco con puntos
@@ -1803,7 +1847,7 @@
       map.setTerrain({ source: 'relieve', exaggeration: 1.6 });
       if (map.setSky) map.setSky({ 'sky-color': '#0b0f14', 'horizon-color': '#1a2430', 'fog-color': '#0b0f14', 'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.6, 'fog-ground-blend': 0.3 });
 
-      const [manzanas, rutas, uvs, ficticias, cobertura, relaves, relavesPorMz, colegios, colegiosPorMz] = await Promise.all([
+      const [manzanas, rutas, uvs, ficticias, cobertura, relaves, relavesPorMz, colegios, colegiosPorMz, paes] = await Promise.all([
         fetch('inputs/manzanas_3d.geojson').then(r => r.json()),
         fetch('inputs/RutaBusesV2.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/UV_COPIAPO.geojson').then(r => r.json()).catch(() => null),
@@ -1812,8 +1856,10 @@
         fetch('inputs/relaves.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/relaves_manzanas.json').then(r => r.json()).catch(() => null),
         fetch('inputs/colegios_atlas.geojson').then(r => r.json()).catch(() => null),
-        fetch('inputs/colegios_manzanas.json').then(r => r.json()).catch(() => null)
+        fetch('inputs/colegios_manzanas.json').then(r => r.json()).catch(() => null),
+        fetch('inputs/paes_2026.json').then(r => r.json()).catch(() => null)
       ]);
+      paes2026 = paes;
       relavesGeo = relaves;
       relavesMz = relavesPorMz;
       colegiosGeo = colegios;
@@ -2664,31 +2710,29 @@
             ${ta ? '<p class="nota">Tierra Amarilla: perfiles propios, solo con datos demográficos del Censo. Sin recorridos de bus en el Atlas.</p>' : ''}
             ${p.uv ? `<button class="chip boton-uv-ficha" data-uv="${esc(p.uv)}" onclick="cerrarModal(); destacarUV(this.dataset.uv, true)">
               <i class="fa-solid fa-draw-polygon"></i> DESTACAR ${esc(nombreCorto(p.uv).toUpperCase())} EN EL MAPA</button>` : ''}
-            <h3 class="subtitulo">Indicadores</h3>
-            <table class="datos">
+            <div style="height:14px"></div>
+            ${seccionFicha('fa-table-list', 'Indicadores', `<table class="datos">
               <thead><tr><th>Indicador</th><th>Manzana</th><th>${nc}</th></tr></thead>
               <tbody>${filasTabla.map(([n, v, c]) => `<tr><td>${n}</td><td>${v}</td><td>${c || '–'}</td></tr>`).join('')}</tbody>
-            </table>
+            </table>`)}
           </div>
           <div>
-            <h3 class="subtitulo">Cómo se trasladan · Edades</h3>
-            <div class="donas">
+            ${seccionFicha('fa-chart-pie', 'Cómo se trasladan · Edades', `<div class="donas">
               <div class="dona">${dona([
                 { n: 'Bus', v: p.tp, color: '#ff8a3d' }, { n: 'Auto', v: p.auto, color: '#5b8ff9' },
                 { n: 'A pie', v: p.camina, color: '#3ad1c4' }, { n: 'Otros', v: p.otros, color: '#8b95a3' }])}</div>
               <div class="dona">${dona([
                 { n: '0–13', v: p.ninos, color: '#7cc4ff' }, { n: '14–17', v: p.adol, color: '#b39dfb' },
                 { n: '18–59', v: p.adultos, color: '#cfd5dd' }, { n: '60+', v: p.mayores, color: '#f6c544' }])}</div>
-            </div>
-            <h3 class="subtitulo">Comparación con ${nc}</h3>
-            <div class="barras">${barrasComparadas([
+            </div>`)}
+            ${seccionFicha('fa-scale-balanced', `Comparación con ${nc}`, `<div class="barras">${barrasComparadas([
               { n: 'TRANSPORTE PÚB.', v: p.tp, prom: pr.tp, t: fmt(p.tp, 1) + ' %', color: '#ff8a3d' },
               { n: 'AUTO', v: p.auto, prom: pr.auto, t: fmt(p.auto, 1) + ' %', color: '#5b8ff9' },
               { n: 'NIÑOS 0–13', v: p.ninos, prom: pr.ninos, t: fmt(p.ninos, 1) + ' %', color: '#7cc4ff' },
               { n: 'MAYORES 60+', v: p.mayores, prom: pr.mayores, t: fmt(p.mayores, 1) + ' %', color: '#f6c544' },
               { n: 'INMIGRANTES', v: p.inm, prom: pr.inm, t: fmt(p.inm, 1) + ' %', color: '#ff5d73' },
               { n: 'HACINAMIENTO', v: p.hacin, prom: pr.hacin, t: fmt(p.hacin, 1) + ' %', color: '#ff9d4d' }
-            ])}</div>
+            ])}</div>`)}
           </div>
         </div>`;
       abrirModal(null, html);
@@ -2794,6 +2838,11 @@
               (corte 30-04-2026), unidos por RBD a polígonos dibujados en QGIS. Sin jardines infantiles ni establecimientos sin matrícula.
               Sobreedad: estudiantes de básica y media regular con 2 años o más sobre la edad esperada para su curso. Distancias de borde a borde
               (<span class="mono" style="font-size:11px">scripts/colegios.mjs</span>).</li>
+            <li><b>PAES 2026:</b> DEMRE, Archivo C (rinden) de la Admisión 2026, un registro anónimo por estudiante. Promoción del año
+              (alumnos regulares) y rendición regular; obligatorias = promedio de Competencia Lectora y Matemática 1. Referencia: colegios
+              de la misma dependencia y rama en el país. Sin promedios para grupos de menos de 10 estudiantes. El DEMRE recomienda no usar
+              estos resultados para clasificar establecimientos ni hacer rankings; el ranking del Atlas es solo descriptivo
+              (<span class="mono" style="font-size:11px">scripts/paes.mjs</span>).</li>
             <li><b>Tierra Amarilla:</b> manzanas del Censo 2024 (INE) y unidades vecinales dibujadas a mano. Perfiles propios:
               k-means (4 grupos, semilla fija) solo con variables demográficas: niños, mayores, inmigrantes, pueblos originarios,
               hacinamiento, escolaridad, desocupación y densidad (logarítmica). Sin recorridos de bus ni datos de servicios por ahora.</li>
@@ -3345,6 +3394,12 @@
       { k: 'sobre', n: 'SOBREEDAD', val: p => p.sobre_base >= 30 ? 100 * p.sobre / p.sobre_base : null, txt: v => fmt(v, 1) + ' %',
         prom: cs => { const c = cs.filter(p => p.sobre_base >= 30); return 100 * sumaCol(c, 'sobre') / (sumaCol(c, 'sobre_base') || 1); },
         nota: 'Estudiantes de básica y media regular con 2 años o más sobre la edad esperada para su curso. Solo colegios con 30 o más estudiantes en esos niveles. Línea blanca: promedio de la comuna.' },
+      { k: 'paes', n: 'PAES (OBLIGATORIAS)', val: p => paesDe(p.rbd, 'oblig'), txt: v => fmt(v, 0),
+        prom: () => paesComuna('oblig'),
+        nota: 'Promedio de obligatorias (Lectora y Matemática 1) de la PAES 2026, promoción del año; solo colegios con 10 o más estudiantes que rindieron. Línea blanca: promedio de la comuna.' },
+      { k: 'rinden', n: 'RINDIERON PAES', val: p => { const c = paes2026 && paes2026.colegios[p.rbd]; return c && c.total.inscritos >= 10 ? 100 * c.total.n_oblig / c.total.inscritos : null; },
+        txt: v => fmt(v, 0) + ' %', prom: () => { const c = paes2026 && paes2026.comunas[HIS.id]; return c && c.inscritos ? 100 * c.n_oblig / c.inscritos : null; },
+        nota: 'Porcentaje de los inscritos de la promoción del año que rindió las dos pruebas obligatorias de la PAES 2026. Línea blanca: total de la comuna.' },
       { k: 'relave', n: 'DISTANCIA A UN RELAVE', val: p => p.relave, txt: v => fmt(v) + ' m', asc: true, prom: null,
         nota: 'Del más cercano al más lejano. Distancia de borde a borde al relave más cercano (Sernageomin).' }
     ];
@@ -3353,6 +3408,69 @@
       ['Media técnico-profesional', p => p.mtp], ['Educación especial', p => p.esp], ['Adultos', p => p.basA + p.mhcA + p.mtpA]
     ];
     const DEPS_COL = [5, 1, 2, 3, 4];
+    // PAES por colegio y por comuna (inputs/paes_2026.json)
+    const paesDe = (rbd, k) => { const c = paes2026 && paes2026.colegios[rbd]; return c ? c.total[k] : null; };
+    const paesComuna = k => { const c = paes2026 && paes2026.comunas && paes2026.comunas[HIS.id]; return c ? c[k] : null; };
+    // Dependencias según el DEMRE (1 pagado, 2 subvencionado, 3 municipal, 4 Servicio Local), con los colores de la capa
+    const DEP_PAES = { 1: ['Particular pagado', '#a24bd6'], 2: ['Particular subvencionado', '#16a34a'], 3: ['Municipal', '#5b8ff9'], 4: ['Pública (Servicio Local)', '#2f6fed'] };
+    const RAMA_PAES = { HC: ['Científico-humanista', '#e6e9ee'], TP: ['Técnico-profesional', '#fbb13c'], AD: ['Adultos y otras', '#8b95a3'] };
+
+    // PAES de la comuna según tipo de colegio y rama, y distribución de puntajes
+    function dibujarPaesSeccion() {
+      const sec = document.getElementById('paes-seccion');
+      const pc = paes2026 && paes2026.comunas && paes2026.comunas[HIS.id];
+      sec.hidden = !pc || pc.oblig == null;
+      if (sec.hidden) return;
+      const ancho = v => Math.max(1, Math.min(100, 100 * (v - 100) / 900));
+      const fila = (n, g, color) => g && g.oblig != null ? `<div class="fila"><span>${n} <small style="color:var(--texto-suave)">(${fmt(g.n_oblig)})</small></span>
+        <span class="pista"><i style="width:${ancho(g.oblig)}%;background:${color}"></i><span class="prom" style="left:${ancho(pc.oblig)}%;background:#fbb13c;opacity:1"></span></span>
+        <b>${fmt(g.oblig, 0)}</b><small class="dif-paes" title="Rindió el ${fmt(100 * g.n_oblig / g.inscritos, 0)} % de la promoción">${fmt(100 * g.n_oblig / g.inscritos, 0)} %</small></div>` : '';
+      const deps = Object.keys(DEP_PAES).filter(d => pc.por_dep[d]);
+      const ramas = Object.keys(RAMA_PAES).filter(r => pc.por_rama[r]);
+      document.getElementById('paes-tipos').innerHTML =
+        `<div class="paes-separador">SEGÚN DEPENDENCIA</div>${deps.map(d => fila(DEP_PAES[d][0], pc.por_dep[d], DEP_PAES[d][1])).join('')}
+         <div class="paes-separador">SEGÚN RAMA</div>${ramas.map(r => fila(RAMA_PAES[r][0], pc.por_rama[r], RAMA_PAES[r][1])).join('')}`;
+      const pag = pc.por_dep[1], pub = pc.por_dep[4] || pc.por_dep[3];
+      document.getElementById('nota-paes-tipos').innerHTML = `Barra: promedio de obligatorias (Lectora y Matemática 1); entre paréntesis, cuántos rindieron;
+        a la derecha, qué parte de la promoción rindió. Línea ámbar: promedio de ${esc(HIS.nombre)} (${fmt(pc.oblig, 0)}).${pag && pub && pag.oblig != null && pub.oblig != null
+        ? ` Entre los colegios particulares pagados y los públicos hay <b>${fmt(pag.oblig - pub.oblig, 0)} puntos</b> de diferencia.` : ''}
+        ${deps.length === 1 ? ` En ${esc(HIS.nombre)} rindió la PAES un solo colegio.` : ''}`;
+
+      // Histograma: estudiantes por tramo de 50 puntos, apilados por dependencia
+      const W = 640, ALTO = 300, m = { l: 46, r: 12, t: 12, b: 40 };
+      const pw = W - m.l - m.r, ph = ALTO - m.t - m.b;
+      const tramos = Array.from({ length: 18 }, (_, i) => deps.map(d => (pc.por_dep[d].tramos || [])[i] || 0));
+      const totales = tramos.map(t => t.reduce((a, b) => a + b, 0));
+      let i0 = totales.findIndex(x => x > 0), i1 = 17 - [...totales].reverse().findIndex(x => x > 0);
+      if (i0 < 0) { i0 = 0; i1 = 17; }
+      const nb = i1 - i0 + 1, bw = pw / nb;
+      // Eje vertical con números redondos (paso de 5, 10, 20, 25, 50, 100… según el máximo)
+      const paso = [5, 10, 20, 25, 50, 100, 200, 250, 500].find(p => Math.max(...totales) / p <= 5) || 1000;
+      const ymax = Math.max(paso, Math.ceil(Math.max(...totales) / paso) * paso);
+      const Y = v => m.t + ph * (1 - v / ymax);
+      let g = '';
+      for (let v = 0; v <= ymax; v += paso) g += `<line x1="${m.l}" y1="${Y(v)}" x2="${m.l + pw}" y2="${Y(v)}" stroke="rgba(255,255,255,0.06)"/>
+        <text x="${m.l - 8}" y="${Y(v) + 4}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="end">${fmt(v)}</text>`;
+      for (let i = i0; i <= i1; i++) {
+        const x = m.l + (i - i0) * bw;
+        let acum = 0;
+        deps.forEach((d, k) => {
+          const v = tramos[i][k];
+          if (!v) return;
+          g += `<rect x="${(x + 1).toFixed(1)}" y="${Y(acum + v).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${(Y(acum) - Y(acum + v)).toFixed(1)}"
+            fill="${DEP_PAES[d][1]}" fill-opacity="0.85"><title>${100 + 50 * i}–${100 + 50 * i + 49} puntos · ${DEP_PAES[d][0]}: ${fmt(v)} estudiantes</title></rect>`;
+          acum += v;
+        });
+        if ((i - i0) % 2 === 0) g += `<text x="${x}" y="${m.t + ph + 16}" fill="#8b95a3" font-size="10.5" font-family="IBM Plex Mono" text-anchor="middle">${100 + 50 * i}</text>`;
+      }
+      const xMedia = m.l + ((pc.oblig - 100) / 50 - i0) * bw;
+      g += `<line x1="${xMedia}" y1="${m.t}" x2="${xMedia}" y2="${m.t + ph}" stroke="#fbb13c" stroke-dasharray="4 4"/>
+        <text x="${xMedia + 4}" y="${m.t + 12}" fill="#fbb13c" font-size="10.5" font-family="IBM Plex Mono">PROMEDIO ${fmt(pc.oblig, 0)}</text>
+        <text x="${m.l + pw / 2}" y="${ALTO - 4}" fill="#8b95a3" font-size="11" font-family="IBM Plex Mono" text-anchor="middle">PUNTAJE (PROMEDIO DE OBLIGATORIAS)</text>`;
+      document.getElementById('paes-histo').innerHTML = `<svg class="svg-grafico" viewBox="0 0 ${W} ${ALTO}" role="img" aria-label="Distribución de puntajes PAES por dependencia">${g}</svg>`;
+      document.getElementById('leyenda-paes-histo').innerHTML = deps.map(d => `<span><i style="background:${DEP_PAES[d][1]}"></i>${DEP_PAES[d][0]}</span>`).join('');
+      document.getElementById('nota-paes-histo').textContent = `Cada barra suma los estudiantes de ${HIS.nombre} cuyo promedio de obligatorias cae en ese tramo de 50 puntos; el color indica el tipo de colegio. Promoción del año, rendición regular. Fuente: DEMRE, Admisión 2026.`;
+    }
     const colorDep = d => COLOR_DEP[d] || '#8b95a3';
     const colegiosHIS = () => colegiosGeo ? colegiosGeo.features.map(f => f.properties).filter(p => p.comuna === HIS.id) : [];
 
@@ -3377,9 +3495,13 @@
         [t ? fmt(t.mat_rel_500) : '–', 'Estudia a menos de 500 m de un relave'],
         [deTA != null ? fmt(deTA) : '–', HIS.cp ? 'Estudiantes que viven en Tierra Amarilla' : 'Vive aquí y estudia en Copiapó']
       ];
-      document.getElementById('kpis-colegios').innerHTML = kpis.map(([v, n]) => `<div><b>${v}</b><span>${n}</span></div>`).join('');
+      const pc = paes2026 && paes2026.comunas && paes2026.comunas[HIS.id];
+      if (pc && pc.oblig != null) kpis.push([fmt(pc.oblig, 0), 'PAES 2026 · promedio de obligatorias',
+        `Rindió el ${fmt(100 * pc.n_oblig / pc.inscritos, 0)} % de la promoción (${fmt(pc.n_oblig)} de ${fmt(pc.inscritos)})`]);
+      document.getElementById('kpis-colegios').innerHTML = kpis.map(([v, n, sub]) => `<div><b>${v}</b><span>${n}</span>${sub ? `<small>${sub}</small>` : ''}</div>`).join('');
       dibujarDispersionColegios(cs);
       dibujarNivelesColegios(cs);
+      dibujarPaesSeccion();
       dibujarRankingColegios(cs);
 
       if (sec.dataset.listo) return;
@@ -4351,39 +4473,30 @@
               <div><span>Usuarios de bus lejos</span><b style="color:${r.tp_lejos_200 > 300 ? '#ff8a3d' : 'inherit'}">${fmt(r.tp_lejos_200)}</b></div>`}
             </div>
 
-            <h3 class="subtitulo">Perfiles de sus manzanas</h3>
-            <div class="barra-perfiles-uv">${barraPerfiles}</div>
-            ${perfilesHtml}
-
-            <h3 class="subtitulo">Indicadores</h3>
-            <table class="datos">
+            <div style="height:14px"></div>
+            ${seccionFicha('fa-layer-group', 'Perfiles de sus manzanas', `<div class="barra-perfiles-uv">${barraPerfiles}</div>
+            ${perfilesHtml}`)}
+            ${seccionFicha('fa-table-list', 'Indicadores', `<table class="datos">
               <thead><tr><th>Indicador</th><th>UV</th><th>${nc}</th></tr></thead>
               <tbody>${filas.map(([n, v, p, f]) => `<tr><td>${n}</td><td>${v}${f}</td><td>${p}</td></tr>`).join('')}</tbody>
-            </table>
+            </table>`)}
           </div>
           <div>
-            <h3 class="subtitulo">Cómo se trasladan · Edades</h3>
-            <div class="donas">
+            ${seccionFicha('fa-chart-pie', 'Cómo se trasladan · Edades', `<div class="donas">
               <div class="dona">${dona([
                 { n: 'Bus', v: 100 * u.tp, color: '#ff8a3d' }, { n: 'Auto', v: 100 * u.auto, color: '#5b8ff9' },
                 { n: 'A pie', v: 100 * u.camina, color: '#3ad1c4' }, { n: 'Otros', v: 100 * u.otros, color: '#8b95a3' }])}</div>
               <div class="dona">${dona([
                 { n: '0–13', v: 100 * u.ninos, color: '#7cc4ff' }, { n: '14–17', v: 100 * u.adol, color: '#b39dfb' },
                 { n: '18–59', v: 100 * u.adultos, color: '#cfd5dd' }, { n: '60+', v: 100 * u.mayores, color: '#f6c544' }])}</div>
-            </div>
-
-            ${ta ? '' : `<h3 class="subtitulo">Distancia de la población a un recorrido</h3>
-            <div class="barra-perfiles-uv">${bandas.map(([k, , col]) => `<i style="width:${100 * r[k] / r.poblacion}%;background:${col}"></i>`).join('')}</div>
-            ${bandas.map(([k, n, col]) => `<div class="fila-perfil-uv"><i style="background:${col}"></i><span>${n}</span><b>${fmt(100 * r[k] / r.poblacion, 1)} %</b></div>`).join('')}`}
-
-            <h3 class="subtitulo">Servicios</h3>
-            ${serviciosHtml}
-
-            ${ta ? `<h3 class="subtitulo">Buses</h3>
-            <p class="nota">Los recorridos del Atlas son solo de Copiapó: aún no hay datos de buses para Tierra Amarilla.</p>` : `<h3 class="subtitulo">Líneas de bus que la recorren · ${lineas.length}</h3>
-            <div class="lineas-uv">${lineas.length
+            </div>`)}
+            ${ta ? '' : seccionFicha('fa-route', 'Distancia de la población a un recorrido', `<div class="barra-perfiles-uv">${bandas.map(([k, , col]) => `<i style="width:${100 * r[k] / r.poblacion}%;background:${col}"></i>`).join('')}</div>
+            ${bandas.map(([k, n, col]) => `<div class="fila-perfil-uv"><i style="background:${col}"></i><span>${n}</span><b>${fmt(100 * r[k] / r.poblacion, 1)} %</b></div>`).join('')}`)}
+            ${seccionFicha('fa-building', 'Servicios', serviciosHtml)}
+            ${ta ? seccionFicha('fa-bus', 'Buses', `<p class="nota">Los recorridos del Atlas son solo de Copiapó: aún no hay datos de buses para Tierra Amarilla.</p>`)
+              : seccionFicha('fa-bus', `Líneas de bus que la recorren · ${lineas.length}`, `<div class="lineas-uv">${lineas.length
               ? lineas.map(([l, f]) => `<span><i class="fa-solid fa-bus"></i>${esc(l)}${f ? `<small>${esc(f)}</small>` : ''}</span>`).join('')
-              : '<p class="nota">Ninguna línea pasa por esta UV.</p>'}</div>`}
+              : '<p class="nota">Ninguna línea pasa por esta UV.</p>'}</div>`)}
 
             <button class="chip" style="margin-top:18px;border-right:1px solid var(--borde)" onclick="cerrarModal()">
               <i class="fa-solid fa-map"></i> VER EN EL MAPA</button>
@@ -4442,6 +4555,71 @@
         <b>${fmt(v)}</b></div>`).join('')}</div>`;
     }
 
+    const seccionFicha = (icono, titulo, html) =>
+      `<section class="seccion-ficha"><h3 class="subtitulo"><i class="fa-solid ${icono}" aria-hidden="true"></i>${titulo}</h3>${html}</section>`;
+
+    // PAES 2026 de un colegio: participación, promedios y dos referencias:
+    // colegios similares del país (línea blanca) y promedio de su comuna, de todos los colegios (línea ámbar)
+    const COLOR_COMUNA_PAES = '#fbb13c';
+    function htmlPaesColegio(rbd) {
+      const c = paes2026 && paes2026.colegios[rbd];
+      if (!c || !c.total.inscritos) return '';
+      const t = c.total, sim = paes2026.similares;
+      const com = paes2026.comunas && paes2026.comunas[c.comuna];
+      // Si es el único colegio de la comuna que rindió, el promedio comunal es el suyo: no se compara
+      const unico = !com || com.n_oblig === t.n_oblig;
+      const nomComuna = NOMBRE_COMUNA[c.comuna];
+      // Referencia: promedio nacional de colegios de la misma dependencia y rama, ponderado por las ramas del colegio
+      const referencia = k => {
+        let suma = 0, peso = 0;
+        c.ramas.forEach(r => { const s = sim[c.dep + '|' + r.rama]; const v = s && s.nacional[k]; if (v != null && r.n_oblig) { suma += v * r.n_oblig; peso += r.n_oblig; } });
+        return peso ? suma / peso : null;
+      };
+      const ancho = v => Math.max(1, Math.min(100, 100 * (v - 100) / 900));
+      const dif = (a, b) => { const d = Math.round(a - b); return d === 0 ? '±0' : (d > 0 ? '+' : '−') + fmt(Math.abs(d)); };
+      const filas = [['Obligatorias', 'oblig'], ['Lectora', 'clec'], ['Matemática 1', 'm1'],
+        ['Matemática 2', 'm2'], ['Historia', 'hist'], ['Ciencias', 'cien']]
+        .filter(([, k]) => t[k] != null)
+        .map(([n, k]) => {
+          const ref = ['oblig', 'clec', 'm1'].includes(k) ? referencia(k) : null;
+          const vc = !unico && com[k] != null ? com[k] : null;
+          return `<div class="fila"><span>${n} <small style="color:var(--texto-suave)">(${fmt(t['n_' + k])})</small></span>
+            <span class="pista"><i style="width:${ancho(t[k])}%;background:var(--acento)"></i>${ref != null
+              ? `<span class="prom" style="left:${ancho(ref)}%" title="Colegios similares del país: ${fmt(ref, 0)}"></span>` : ''}${vc != null
+              ? `<span class="prom" style="left:${ancho(vc)}%;background:${COLOR_COMUNA_PAES};opacity:1" title="Promedio de ${nomComuna}: ${fmt(vc, 0)}"></span>` : ''}</span>
+            <b>${fmt(t[k], 0)}</b>
+            <small class="dif-paes" title="${vc != null ? `Diferencia con el promedio de ${nomComuna} (${fmt(vc, 0)})` : ''}">${vc != null ? dif(t[k], vc) : ''}</small></div>`;
+        }).join('');
+      const pct = t.inscritos ? 100 * t.n_oblig / t.inscritos : 0;
+      const ramas = c.ramas.filter(r => r.inscritos);
+      // Lectura en palabras (promedio de obligatorias)
+      let lectura = '';
+      if (t.oblig != null) {
+        const ref = referencia('oblig'), partes = [];
+        const frase = (v, quien) => { const d = Math.round(t.oblig - v);
+          return Math.abs(d) < 5 ? `similar al promedio de ${quien} (${fmt(v, 0)})` : `${fmt(Math.abs(d))} puntos ${d > 0 ? 'sobre' : 'bajo'} el promedio de ${quien} (${fmt(v, 0)})`; };
+        if (!unico && com.oblig != null) partes.push(frase(com.oblig, nomComuna));
+        if (ref != null) partes.push(frase(ref, 'colegios similares del país'));
+        lectura = partes.length ? `<p class="lectura-col lectura-paes" style="margin:12px 0 0">En el promedio de obligatorias obtiene <b>${fmt(t.oblig, 0)}</b>: ${partes.join(', y ')}.</p>` : '';
+      }
+      const totPct = com && com.inscritos ? 100 * com.n_oblig / com.inscritos : null;
+      return seccionFicha('fa-graduation-cap', 'PAES 2026 · promoción del año', `
+        <p class="lectura-col" style="margin:0 0 10px">De <b>${fmt(t.inscritos)}</b> estudiantes inscritos de su promoción, <b>${fmt(t.n_oblig)}</b>
+          (${fmt(pct, 0)} %) rindieron las dos pruebas obligatorias${!unico && totPct != null ? ` (en ${nomComuna}, el ${fmt(totPct, 0)} %)` : ''}.</p>
+        ${filas ? `<div class="filas-col paes">${filas}</div>
+          <div class="leyenda-paes"><span><i style="background:#e6e9ee"></i>Colegios similares del país</span>${unico ? ''
+            : `<span><i style="background:${COLOR_COMUNA_PAES}"></i>Promedio de ${nomComuna} · diferencia en puntos a la derecha</span>`}</div>`
+          : `<p class="nota">Menos de ${paes2026.metadata.min_n} estudiantes rindieron: no se muestran promedios.</p>`}
+        ${lectura}
+        ${unico ? `<p class="nota">Es el único colegio de ${nomComuna} con estudiantes que rindieron la PAES 2026: no hay promedio comunal con qué compararlo.</p>` : ''}
+        ${ramas.length > 1 ? `<table class="datos" style="margin-top:12px"><thead><tr><th>Rama</th><th>Rindieron</th><th>Prom. oblig.</th></tr></thead><tbody>
+          ${ramas.map(r => `<tr><td>${esc(r.nombre)}</td><td>${fmt(r.n_oblig)} de ${fmt(r.inscritos)}</td><td>${r.oblig != null ? fmt(r.oblig, 0) : '–'}</td></tr>`).join('')}
+          </tbody></table>` : ''}
+        <p class="nota">Puntajes de 100 a 1.000; obligatorias = promedio de Lectora y Matemática 1; entre paréntesis, cuántos rindieron cada prueba.
+          Similares: misma dependencia y rama. Promedio comunal: todos los estudiantes de la comuna que rindieron. Sin promedio si rindieron menos de
+          ${paes2026.metadata.min_n}.</p>`);
+    }
+
     function abrirFichaColegio(id) {
       const f = colegioPorId(id);
       if (!f) return;
@@ -4488,24 +4666,25 @@
               (${esc((NOMBRE_ESTADO_RELAVE[rl.properties.estado] || rl.properties.estado).toLowerCase())})${rl.properties.peor && rl.properties.peor_veces > 1 && ELEMENTOS_RELAVE[rl.properties.peor]
                 ? `, cuyo material tiene ${ELEMENTOS_RELAVE[rl.properties.peor].nombre.toLowerCase()} ${fmtVeces(rl.properties.peor_veces)} veces sobre la referencia` : ''}.<br>
               <button class="chip" style="border-right:1px solid var(--borde)" onclick="abrirFichaRelave(${rl.properties.id})"><i class="fa-solid fa-triangle-exclamation"></i> VER FICHA DEL RELAVE</button></div>` : ''}
-            <h3 class="subtitulo">Niveles que imparte</h3>
-            ${barrasColegio(niveles, p.mat, color)}
-            ${sectores.length ? `<h3 class="subtitulo">Especialidades técnico-profesionales</h3>
-              ${barrasColegio(sectores.map(([n, v]) => [n, v, n === 'Minería' ? '#fbb13c' : null]), sectores.reduce((s, [, v]) => s + v, 0), color)}` : ''}
-            ${residencia.length ? `<h3 class="subtitulo">Dónde viven sus estudiantes</h3>
-              ${barrasColegio(residencia.map(([n, v]) => [esc(nombreCorto(n)), v]), p.con_com, color)}
+            ${seccionFicha('fa-layer-group', 'Niveles que imparte', barrasColegio(niveles, p.mat, color))}
+            ${sectores.length ? seccionFicha('fa-screwdriver-wrench', 'Especialidades técnico-profesionales',
+              barrasColegio(sectores.map(([n, v]) => [n, v, n === 'Minería' ? '#fbb13c' : null]), sectores.reduce((s, [, v]) => s + v, 0), color)) : ''}
+            ${residencia.length ? seccionFicha('fa-house-chimney', 'Dónde viven sus estudiantes',
+              `${barrasColegio(residencia.map(([n, v]) => [esc(nombreCorto(n)), v]), p.con_com, color)}
               <p class="nota">Comuna de residencia declarada en la matrícula (dato voluntario): ${fmt(p.con_com)} de ${fmt(p.mat)} estudiantes la informan.
-                Las comunas lejanas suelen ser direcciones sin actualizar.</p>` : ''}
+                Las comunas lejanas suelen ser direcciones sin actualizar.</p>`) : ''}
           </div>
           <div>
-            <h3 class="subtitulo">Datos del establecimiento</h3>
-            <table class="datos"><tbody>${filas.map(([n, v]) => `<tr><td>${n}</td><td>${v}</td></tr>`).join('')}</tbody></table>
+            ${seccionFicha('fa-circle-info', 'Datos del establecimiento',
+              `<table class="datos"><tbody>${filas.map(([n, v]) => `<tr><td>${n}</td><td>${v}</td></tr>`).join('')}</tbody></table>`)}
+            ${htmlPaesColegio(p.rbd)}
           </div>
         </div>
         <p class="nota" style="padding:0 26px 22px;margin:0">
           Fuente: Mineduc, matrícula oficial 2026 (corte 30-04-2026). Integración: estudiantes del Programa de Integración Escolar (PIE).
           Sobreedad: estudiantes de básica y media regular con 2 años o más sobre la edad esperada para su curso (edad al 30 de junio).
           Relave: Sernageomin, distancia de borde a borde. En el mapa, la altura del colegio depende de su matrícula (no es su altura real).
+          ${paes2026 && paes2026.colegios[p.rbd] ? 'PAES: DEMRE, Admisión 2026 (promoción del año, rendición regular); el DEMRE indica que estos resultados no deben usarse para clasificar establecimientos ni hacer rankings.' : ''}
         </p>`);
     }
 
@@ -4528,15 +4707,14 @@
 
     // Sección "Qué contiene" de la ficha de un relave
     function htmlQuimicaRelave(p) {
-      if (!p.quimica) return `<h3 class="subtitulo">Qué contiene</h3>
-        <p class="nota">Sernageomin no tiene análisis químico de este depósito.</p>`;
+      if (!p.quimica) return seccionFicha('fa-flask', 'Qué contiene', `<p class="nota">Sernageomin no tiene análisis químico de este depósito.</p>`);
       const q = typeof p.quimica === 'string' ? JSON.parse(p.quimica) : p.quimica;
       const filas = Object.entries(q.el).filter(([e]) => ELEMENTOS_RELAVE[e]);
       const sobre = filas.filter(([, x]) => x.veces > 1).sort((a, b) => b[1].veces - a[1].veces);
       const bajo = filas.filter(([, x]) => x.veces <= 1 && !x.bajo).map(([e]) => ELEMENTOS_RELAVE[e].nombre.toLowerCase());
       const noDet = filas.filter(([, x]) => x.bajo).map(([e]) => ELEMENTOS_RELAVE[e].nombre.toLowerCase());
       const lista = arr => arr.length > 1 ? arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1] : arr[0];
-      return `<h3 class="subtitulo">Qué contiene · ${q.n} ${q.n === 1 ? 'muestra' : 'muestras'}</h3>
+      return seccionFicha('fa-flask', `Qué contiene · ${q.n} ${q.n === 1 ? 'muestra' : 'muestras'}`, `
         ${sobre.length ? sobre.map(([e, x]) => {
           const el = ELEMENTOS_RELAVE[e];
           const ancho = Math.min(100, 12 + 22 * Math.log10(x.veces));
@@ -4551,7 +4729,7 @@
         ${noDet.length ? `<p class="nota">No detectados (bajo el límite del laboratorio): ${lista(noDet)}.</p>` : ''}
         <p class="nota aviso-salud"><i class="fa-solid fa-circle-info"></i> Son concentraciones del material del relave, no del aire, el agua
           ni el suelo de las casas. El riesgo real depende de cuánto llega a las personas (polvo que levanta el viento, contacto directo,
-          agua o alimentos) y por cuánto tiempo. Los efectos descritos son los asociados a exposiciones prolongadas, no un diagnóstico.</p>`;
+          agua o alimentos) y por cuánto tiempo. Los efectos descritos son los asociados a exposiciones prolongadas, no un diagnóstico.</p>`);
     }
 
     function abrirFichaRelave(id) {
@@ -4589,11 +4767,11 @@
             </div>
             ${p.pob_1000 ? `<button class="chip" style="margin-top:16px;border-right:1px solid var(--borde)" onclick="cerrarModal(); destacarRelave(${p.id})">
               <i class="fa-solid fa-people-group"></i> VER EN EL MAPA LA POBLACIÓN A MENOS DE 1 KM</button>` : ''}
+            <div style="height:14px"></div>
             ${htmlQuimicaRelave(p)}
           </div>
           <div>
-            <h3 class="subtitulo">Datos del depósito</h3>
-            <table class="datos"><tbody>${filas.map(([n, v]) => `<tr><td>${n}</td><td>${v}</td></tr>`).join('')}</tbody></table>
+            ${seccionFicha('fa-circle-info', 'Datos del depósito', `<table class="datos"><tbody>${filas.map(([n, v]) => `<tr><td>${n}</td><td>${v}</td></tr>`).join('')}</tbody></table>`)}
           </div>
         </div>
         <p class="nota" style="padding:0 26px 22px;margin:0">

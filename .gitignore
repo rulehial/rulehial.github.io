@@ -29,3 +29,6 @@ inputs/Colegios/*.csv
 
 # Imágenes locales que el sitio no usa
 images/White RH Analytics Monogram.png
+
+# Reportes PAES del DEMRE (PDF): solo se publica la tabla limpia que genera scripts/paes.mjs
+inputs/Colegios/PAES/
