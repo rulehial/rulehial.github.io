@@ -4661,7 +4661,10 @@
       if (comuna === 'TA' && total && propio / total >= 0.8) return { datos: simce2025.comunas.CP[g], nombre: 'Copiapó', vecina: true };
       return { datos: simce2025.comunas[comuna][g], nombre: NOMBRE_COMUNA[comuna], vecina: false };
     }
-    const barraEstandares = (x, refIns) => x.ins == null ? '<span class="barra-estandares"></span>'
+    // Sin estándares (Historia): barra gris con el puntaje (escala 150–400) y marca del promedio de referencia
+    const anchoSimce = v => Math.max(1, Math.min(100, 100 * (v - 150) / 250));
+    const barraEstandares = (x, refIns, refProm) => x.ins == null
+      ? `<span class="barra-estandares" title="Puntaje ${x.prom}${refProm != null ? ` · referencia ${refProm}` : ''}. La Agencia no publica estándares de aprendizaje para esta asignatura."><i style="width:${anchoSimce(x.prom)}%;background:#8b95a3"></i>${refProm != null ? `<span class="prom" style="left:${anchoSimce(refProm)}%"></span>` : ''}</span>`
       : `<span class="barra-estandares" title="Insuficiente ${fmt(x.ins, 0)} % · Elemental ${fmt(x.ele, 0)} % · Adecuado ${fmt(x.ade, 0)} %">${['ins', 'ele', 'ade']
         .map(k => `<i style="width:${x[k] || 0}%;background:${COLOR_ESTANDAR[k]}"></i>`).join('')}${refIns != null ? `<span class="prom" style="left:${refIns}%"></span>` : ''}</span>`;
     const leyendaEstandares = extra => `<span><i style="background:${COLOR_ESTANDAR.ins}"></i>Insuficiente</span><span><i style="background:${COLOR_ESTANDAR.ele}"></i>Elemental</span>
@@ -4697,7 +4700,7 @@
           <div class="filas-col paes">${Object.entries(c.grados[g]).filter(([, x]) => x.prom != null).map(([a, x]) => {
             const r = ref.datos && ref.datos[a];
             const d = r && r.prom != null ? x.prom - r.prom : null;
-            return `<div class="fila"><span>${NOMBRE_ASIG[a]}</span>${barraEstandares(x, r && r.ins)}
+            return `<div class="fila"><span>${NOMBRE_ASIG[a]}</span>${barraEstandares(x, r && r.ins, r && r.prom)}
               <b>${fmt(x.prom)}</b><small class="dif-paes" title="${d != null ? `Diferencia con el promedio de ${ref.nombre} (${r.prom})` : ''}">${d != null ? (d > 0 ? '+' : d < 0 ? '−' : '±') + fmt(Math.abs(d)) : ''}</small></div>`;
           }).join('')}</div>`;
       }).join('');
@@ -4706,7 +4709,8 @@
         ${frases.length ? `<ul class="frases-simce">${frases.map(f => `<li>${f}</li>`).join('')}</ul>` : ''}
         ${grados}
         <div class="ley-estandares">${leyendaEstandares(`<span><i style="background:#e6e9ee;width:3px"></i>% insuficiente en ${vecina ? 'la comuna (Copiapó donde el colegio es casi toda su comuna)' : 'la comuna'}</span>`)}</div>
-        <p class="nota">Barra: estándares de aprendizaje. A la derecha, puntaje SIMCE y diferencia con el promedio ${vecina
+        <p class="nota">Barra: estándares de aprendizaje${Object.values(c.grados).some(as => as.hist && as.hist.prom != null)
+          ? '; en Historia, barra gris con el puntaje, porque la Agencia no define estándares de aprendizaje para esa asignatura (la línea blanca marca el puntaje promedio de referencia)' : ''}. A la derecha, puntaje SIMCE y diferencia con el promedio ${vecina
           ? 'de la comuna (Copiapó, la comuna vecina, en los grados donde este colegio reúne casi a todos los estudiantes de Tierra Amarilla)' : 'de la comuna'}.
           "Nivel socioeconómico": comparación con colegios del país del mismo grupo socioeconómico, solo cuando la diferencia es estadísticamente significativa.
           Fuente: Agencia de Calidad de la Educación, SIMCE 2025 (entrega preliminar).</p>`);
