@@ -1084,6 +1084,27 @@
     .kpis-grandes.kpis-6 div:nth-child(3n) { border-right: none; }
     .kpis-grandes.kpis-6 div:nth-child(n+4) { border-bottom: none; }
     .kpis-grandes.kpis-6 small { display: block; margin-top: 6px; font-size: 11.5px; color: var(--texto-suave); }
+    /* SIMCE: barra de estándares de aprendizaje (insuficiente · elemental · adecuado) */
+    .barra-estandares { position: relative; display: flex; height: 12px; background: rgba(255, 255, 255, 0.05); }
+    .barra-estandares i { display: block; height: 100%; }
+    .barra-estandares .prom { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #e6e9ee; }
+    .grado-simce { margin: 12px 0 2px; font: 500 10px var(--mono); letter-spacing: 0.12em; color: var(--texto-suave); }
+    .grado-simce:first-of-type { margin-top: 4px; }
+    .frases-simce { margin: 0 0 10px; padding: 0; list-style: none; }
+    .frases-simce li { position: relative; margin: 6px 0; padding-left: 16px; font-size: 13px; line-height: 1.5; color: #c9cfd7; }
+    .frases-simce li::before { content: ""; position: absolute; left: 2px; top: 8px; width: 6px; height: 6px; background: var(--acento); }
+    .frases-simce b { color: var(--texto); }
+    /* Recuadro de hallazgos de la sección de colegios */
+    .hallazgos-edu { margin: 0 0 20px; padding: 18px 22px; border: 1px solid rgba(198, 242, 78, 0.35); border-left: 3px solid var(--acento); background: rgba(198, 242, 78, 0.04); }
+    .hallazgos-edu h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font: 500 11px var(--mono); letter-spacing: 0.14em; color: var(--acento); }
+    .hallazgos-edu ul { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: 34px; }
+    .hallazgos-edu li { break-inside: avoid; position: relative; margin: 0 0 12px; padding-left: 18px; font-size: 14px; line-height: 1.55; color: #c9cfd7; }
+    .hallazgos-edu li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 7px; height: 7px; background: var(--acento); }
+    .hallazgos-edu li b { color: var(--texto); }
+    .hallazgos-edu .nota { margin-top: 2px; }
+    @media (max-width: 900px) { .hallazgos-edu { padding: 14px 14px; } .hallazgos-edu ul { columns: 1; } .hallazgos-edu li { font-size: 13.5px; } }
+    .ley-estandares { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 10px 0 0; font-size: 11px; color: var(--texto-suave); }
+    .ley-estandares i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
     .paes-separador { margin: 12px 0 4px; font: 500 9.5px var(--mono); letter-spacing: 0.12em; color: var(--texto-suave); }
     #paes-histo rect { cursor: default; }
     .filas-col .fila { display: grid; grid-template-columns: 210px 1fr 68px; gap: 10px; align-items: center; padding: 4px; font-size: 12.5px; }
@@ -1343,6 +1364,7 @@
         </div>
         <!-- Mostrar / ocultar elementos sobre el mapa -->
         <div class="capas-mapa" role="group" aria-label="Elementos visibles en el mapa">
+          <button class="capa-mapa activo" data-capa="manzanas" aria-pressed="true" aria-label="Mostrar u ocultar: Manzanas del Censo" data-tip="Manzanas del Censo"><i class="fa-solid fa-cubes"></i></button>
           <button class="capa-mapa activo" data-capa="rutas" aria-pressed="true" aria-label="Mostrar u ocultar: Recorridos de buses" data-tip="Recorridos de buses"><i class="fa-solid fa-route"></i></button>
           <button class="capa-mapa" data-capa="cortes" aria-pressed="false" aria-label="Mostrar u ocultar: Líneas de corte" data-tip="Líneas de corte"><i class="fa-solid fa-scissors"></i></button>
           <button class="capa-mapa activo" data-capa="uv" aria-pressed="true" aria-label="Mostrar u ocultar: Nombres de UV" data-tip="Nombres de UV"><i class="fa-solid fa-location-dot"></i></button>
@@ -1475,6 +1497,7 @@
       <h2 id="h-colegios">Dónde estudian los niños de Copiapó</h2>
       <p class="intro" id="intro-colegios"></p>
       <div id="kpis-colegios" class="kpis-grandes kpis-6"></div>
+      <div id="hallazgos-edu" class="hallazgos-edu" hidden></div>
       <div class="grid-2">
         <div class="marco">
           <h3 class="titulo-marco">Colegios frente a los relaves · cada punto = un colegio</h3>
@@ -1501,6 +1524,20 @@
           <div id="paes-histo"></div>
           <div id="leyenda-paes-histo" class="leyenda-linea"></div>
           <p class="nota" id="nota-paes-histo"></p>
+        </div>
+      </div>
+      <div class="grid-2" id="simce-seccion" style="margin-top:20px">
+        <div class="marco">
+          <h3 class="titulo-marco">SIMCE 2025 · niveles de aprendizaje por grado</h3>
+          <div id="simce-niveles" class="filas-col paes simce"></div>
+          <div class="ley-estandares" id="ley-simce-niveles"></div>
+          <p class="nota" id="nota-simce-niveles"></p>
+        </div>
+        <div class="marco">
+          <h3 class="titulo-marco">SIMCE 2025 según nivel socioeconómico del colegio</h3>
+          <div class="grupo-chips chips-picto" id="chips-simce-gse"></div>
+          <div id="simce-gse" class="filas-col paes"></div>
+          <p class="nota" id="nota-simce-gse"></p>
         </div>
       </div>
       <div class="marco" style="margin-top:20px">
@@ -1680,7 +1717,7 @@
       map.setPaintProperty('relaves-3d', 'fill-extrusion-pattern', patronRelave());
     }
     // Colegios y liceos (Mineduc, matrícula 2026): capa aparte; cada manzana sabe a qué distancia está el más cercano
-    let colegiosGeo = null, colegiosMz = null, paes2026 = null;   // PAES 2026 por colegio (scripts/paes.mjs)
+    let colegiosGeo = null, colegiosMz = null, paes2026 = null, simce2025 = null;   // SIMCE 2025 (scripts/simce.mjs)   // PAES 2026 por colegio (scripts/paes.mjs)
     const mzDeColegio = new Map();                    // RBD → ids de las manzanas que pisa
     const DEPENDENCIA = { 1: 'Municipal', 2: 'Particular subvencionado', 3: 'Particular pagado', 4: 'Administración delegada', 5: 'Pública (Servicio Local)' };
     // Lunares de color sobre blanco: ningún perfil ni escala usa blanco con puntos
@@ -1730,7 +1767,7 @@
         colegiosGeo.features.forEach(f => {
           const p = f.properties;
           let base = 0;
-          if (estado.en3D) (mzDeColegio.get(p.id) || []).forEach(id => {
+          if (estado.en3D && capasVisibles.manzanas) (mzDeColegio.get(p.id) || []).forEach(id => {
             const m = idx.get(id);
             if (m && (!F.activo || cumpleFiltro(m, F))) base = Math.max(base, alturaManzanaJS(m));
           });
@@ -1847,7 +1884,7 @@
       map.setTerrain({ source: 'relieve', exaggeration: 1.6 });
       if (map.setSky) map.setSky({ 'sky-color': '#0b0f14', 'horizon-color': '#1a2430', 'fog-color': '#0b0f14', 'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.6, 'fog-ground-blend': 0.3 });
 
-      const [manzanas, rutas, uvs, ficticias, cobertura, relaves, relavesPorMz, colegios, colegiosPorMz, paes] = await Promise.all([
+      const [manzanas, rutas, uvs, ficticias, cobertura, relaves, relavesPorMz, colegios, colegiosPorMz, paes, simce] = await Promise.all([
         fetch('inputs/manzanas_3d.geojson').then(r => r.json()),
         fetch('inputs/RutaBusesV2.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/UV_COPIAPO.geojson').then(r => r.json()).catch(() => null),
@@ -1857,9 +1894,11 @@
         fetch('inputs/relaves_manzanas.json').then(r => r.json()).catch(() => null),
         fetch('inputs/colegios_atlas.geojson').then(r => r.json()).catch(() => null),
         fetch('inputs/colegios_manzanas.json').then(r => r.json()).catch(() => null),
-        fetch('inputs/paes_2026.json').then(r => r.json()).catch(() => null)
+        fetch('inputs/paes_2026.json').then(r => r.json()).catch(() => null),
+        fetch('inputs/simce_2025.json').then(r => r.json()).catch(() => null)
       ]);
       paes2026 = paes;
+      simce2025 = simce;
       relavesGeo = relaves;
       relavesMz = relavesPorMz;
       colegiosGeo = colegios;
@@ -2469,7 +2508,7 @@
     }
 
     // Selector de elementos sobre el mapa (bajo Satélite 2D / Relieve 3D)
-    const capasVisibles = { rutas: true, cortes: false, uv: true, relaves: true, colegios: true };   // cortes: apagados al abrir
+    const capasVisibles = { manzanas: true, rutas: true, cortes: false, uv: true, relaves: true, colegios: true };   // cortes: apagados al abrir
     function marcarCapaMapa(clave, ver) {
       capasVisibles[clave] = ver;
       const b = document.querySelector(`.capa-mapa[data-capa="${clave}"]`);
@@ -2477,6 +2516,13 @@
     }
     function alternarCapaMapa(clave, ver = !capasVisibles[clave]) {
       if (clave === 'rutas') return alternarRutas(ver);
+      // Manzanas del Censo: se pueden ocultar para ver solo colegios, relaves u otras capas
+      if (clave === 'manzanas') {
+        if (map.getLayer('manzanas')) map.setLayoutProperty('manzanas', 'visibility', ver ? 'visible' : 'none');
+        if (!ver) { programarUV(null); ocultarTip(); }
+        capasVisibles.manzanas = ver;
+        pintarColegios();                         // sin manzanas, los colegios bajan al suelo
+      }
       if (clave === 'cortes') {
         if (map.getLayer('cortes')) map.setLayoutProperty('cortes', 'visibility', ver ? 'visible' : 'none');
         document.body.classList.toggle('sin-cortes', !ver);
@@ -2843,6 +2889,10 @@
               de la misma dependencia y rama en el país. Sin promedios para grupos de menos de 10 estudiantes. El DEMRE recomienda no usar
               estos resultados para clasificar establecimientos ni hacer rankings; el ranking del Atlas es solo descriptivo
               (<span class="mono" style="font-size:11px">scripts/paes.mjs</span>).</li>
+            <li><b>SIMCE 2025:</b> Agencia de Calidad de la Educación, bases por establecimiento, comuna y región de 4º básico, 8º básico y
+              2º medio (entrega preliminar). Puntajes, estándares de aprendizaje (insuficiente, elemental, adecuado), grupo socioeconómico (GSE) y
+              diferencias con colegios del mismo GSE y con la evaluación anterior, con su significancia estadística. Promedio nacional por GSE
+              ponderado por estudiantes (<span class="mono" style="font-size:11px">scripts/simce.mjs</span>).</li>
             <li><b>Tierra Amarilla:</b> manzanas del Censo 2024 (INE) y unidades vecinales dibujadas a mano. Perfiles propios:
               k-means (4 grupos, semilla fija) solo con variables demográficas: niños, mayores, inmigrantes, pueblos originarios,
               hacinamiento, escolaridad, desocupación y densidad (logarítmica). Sin recorridos de bus ni datos de servicios por ahora.</li>
@@ -3400,6 +3450,11 @@
       { k: 'rinden', n: 'RINDIERON PAES', val: p => { const c = paes2026 && paes2026.colegios[p.rbd]; return c && c.total.inscritos >= 10 ? 100 * c.total.n_oblig / c.total.inscritos : null; },
         txt: v => fmt(v, 0) + ' %', prom: () => { const c = paes2026 && paes2026.comunas[HIS.id]; return c && c.inscritos ? 100 * c.n_oblig / c.inscritos : null; },
         nota: 'Porcentaje de los inscritos de la promoción del año que rindió las dos pruebas obligatorias de la PAES 2026. Línea blanca: total de la comuna.' },
+      { k: 'simcegse', n: 'SIMCE VS. MISMO GSE', divergente: true, val: p => simceVsGse(p.rbd), txt: v => (v > 0 ? '+' : v < 0 ? '−' : '') + fmt(Math.abs(v), 0),
+        prom: null, nota: 'Diferencia promedio (en puntos SIMCE 2025) con colegios del país del mismo grupo socioeconómico, en todas las pruebas que rindió el colegio. A la derecha del centro, rinde más de lo esperable para su nivel socioeconómico; a la izquierda, menos. Es la comparación más justa entre colegios.' },
+      { k: 'simceins', n: 'SIMCE: % INSUFICIENTE', val: p => simceInsuficiente(p.rbd), txt: v => fmt(v, 0) + ' %',
+        prom: () => simceInsuficienteComuna(),
+        nota: 'Porcentaje de estudiantes que no alcanzan el nivel mínimo (estándar insuficiente) en Lectura y Matemática, promediando los grados que rindió el colegio en el SIMCE 2025. Línea blanca: promedio de la comuna.' },
       { k: 'relave', n: 'DISTANCIA A UN RELAVE', val: p => p.relave, txt: v => fmt(v) + ' m', asc: true, prom: null,
         nota: 'Del más cercano al más lejano. Distancia de borde a borde al relave más cercano (Sernageomin).' }
     ];
@@ -3422,8 +3477,12 @@
       sec.hidden = !pc || pc.oblig == null;
       if (sec.hidden) return;
       const ancho = v => Math.max(1, Math.min(100, 100 * (v - 100) / 900));
+      // Con un solo colegio (Tierra Amarilla), la línea ámbar es el promedio de Copiapó
+      const deps0 = Object.keys(pc.por_dep);
+      const refS = deps0.length === 1 && HIS.id === 'TA' && paes2026.comunas.CP ? paes2026.comunas.CP : pc;
+      const nomRefS = refS === pc ? HIS.nombre : 'Copiapó';
       const fila = (n, g, color) => g && g.oblig != null ? `<div class="fila"><span>${n} <small style="color:var(--texto-suave)">(${fmt(g.n_oblig)})</small></span>
-        <span class="pista"><i style="width:${ancho(g.oblig)}%;background:${color}"></i><span class="prom" style="left:${ancho(pc.oblig)}%;background:#fbb13c;opacity:1"></span></span>
+        <span class="pista"><i style="width:${ancho(g.oblig)}%;background:${color}"></i><span class="prom" style="left:${ancho(refS.oblig)}%;background:#fbb13c;opacity:1" title="Promedio de ${nomRefS}: ${fmt(refS.oblig, 0)}"></span></span>
         <b>${fmt(g.oblig, 0)}</b><small class="dif-paes" title="Rindió el ${fmt(100 * g.n_oblig / g.inscritos, 0)} % de la promoción">${fmt(100 * g.n_oblig / g.inscritos, 0)} %</small></div>` : '';
       const deps = Object.keys(DEP_PAES).filter(d => pc.por_dep[d]);
       const ramas = Object.keys(RAMA_PAES).filter(r => pc.por_rama[r]);
@@ -3432,9 +3491,9 @@
          <div class="paes-separador">SEGÚN RAMA</div>${ramas.map(r => fila(RAMA_PAES[r][0], pc.por_rama[r], RAMA_PAES[r][1])).join('')}`;
       const pag = pc.por_dep[1], pub = pc.por_dep[4] || pc.por_dep[3];
       document.getElementById('nota-paes-tipos').innerHTML = `Barra: promedio de obligatorias (Lectora y Matemática 1); entre paréntesis, cuántos rindieron;
-        a la derecha, qué parte de la promoción rindió. Línea ámbar: promedio de ${esc(HIS.nombre)} (${fmt(pc.oblig, 0)}).${pag && pub && pag.oblig != null && pub.oblig != null
+        a la derecha, qué parte de la promoción rindió. Línea ámbar: promedio de ${esc(nomRefS)} (${fmt(refS.oblig, 0)}).${pag && pub && pag.oblig != null && pub.oblig != null
         ? ` Entre los colegios particulares pagados y los públicos hay <b>${fmt(pag.oblig - pub.oblig, 0)} puntos</b> de diferencia.` : ''}
-        ${deps.length === 1 ? ` En ${esc(HIS.nombre)} rindió la PAES un solo colegio.` : ''}`;
+        ${deps.length === 1 ? ` En ${esc(HIS.nombre)} rindió la PAES un solo colegio${refS !== pc ? `, así que se compara con Copiapó, la comuna vecina: queda ${fmt(Math.abs(pc.oblig - refS.oblig), 0)} puntos ${pc.oblig < refS.oblig ? 'bajo' : 'sobre'} su promedio` : ''}.` : ''}`;
 
       // Histograma: estudiantes por tramo de 50 puntos, apilados por dependencia
       const W = 640, ALTO = 300, m = { l: 46, r: 12, t: 12, b: 40 };
@@ -3502,6 +3561,8 @@
       dibujarDispersionColegios(cs);
       dibujarNivelesColegios(cs);
       dibujarPaesSeccion();
+      dibujarSimceSeccion();
+      dibujarHallazgosEducacion(cs);
       dibujarRankingColegios(cs);
 
       if (sec.dataset.listo) return;
@@ -3592,14 +3653,16 @@
         .map(r => `<button class="chip ${r.k === cfg.k ? 'activo' : ''}" data-rk="${r.k}" aria-pressed="${r.k === cfg.k}">${r.n}</button>`).join('')}`;
       const filas = cs.map(p => ({ p, v: cfg.val(p) })).filter(x => x.v != null && isFinite(x.v))
         .sort((a, b) => cfg.asc ? a.v - b.v : b.v - a.v);
-      const max = Math.max(...filas.map(x => x.v)) || 1;
+      const max = cfg.divergente ? Math.max(...filas.map(x => Math.abs(x.v))) || 1 : Math.max(...filas.map(x => x.v)) || 1;
       const prom = cfg.prom ? cfg.prom(cs) : null;
       const LIMITE = 15;
       const vis = rankingCol.todos ? filas : filas.slice(0, LIMITE);
       document.getElementById('ranking-colegios').innerHTML = vis.map(({ p, v }) => `
         <div class="fila" data-rbd="${p.id}" tabindex="0" role="button" title="Ver ${esc(nombreCorto(p.nombre))} en el mapa">
           <span>${esc(nombreCorto(p.nombre))}</span>
-          <span class="pista"><i style="width:${Math.max(0.5, 100 * v / max)}%;background:${colorDep(p.dep)}"></i>${prom != null
+          <span class="pista">${cfg.divergente
+            ? `<i style="margin-left:${v < 0 ? 50 - 50 * Math.abs(v) / max : 50}%;width:${Math.max(0.5, 50 * Math.abs(v) / max)}%;background:${colorDep(p.dep)}"></i><span class="prom" style="left:50%"></span>`
+            : `<i style="width:${Math.max(0.5, 100 * v / max)}%;background:${colorDep(p.dep)}"></i>`}${!cfg.divergente && prom != null
             ? `<span class="prom" style="left:${Math.min(100, 100 * prom / max)}%"></span>` : ''}</span>
           <b style="${cfg.k === 'relave' && v <= 500 ? 'color:#ff6b5b' : ''}">${cfg.txt(v)}</b>
         </div>`).join('') + (filas.length > LIMITE
@@ -4558,6 +4621,207 @@
     const seccionFicha = (icono, titulo, html) =>
       `<section class="seccion-ficha"><h3 class="subtitulo"><i class="fa-solid ${icono}" aria-hidden="true"></i>${titulo}</h3>${html}</section>`;
 
+    // =====================================================================
+    // SIMCE 2025
+    // =====================================================================
+    const NOMBRE_GRADO = { '4b': '4º básico', '8b': '8º básico', '2m': '2º medio' };
+    const NOMBRE_ASIG = { lect: 'Lectura', mate: 'Matemática', hist: 'Historia' };
+    const NOMBRE_GSE = { 1: 'bajo', 2: 'medio bajo', 3: 'medio', 4: 'medio alto', 5: 'alto' };
+    const COLOR_ESTANDAR = { ins: '#ff6b5b', ele: '#fbb13c', ade: '#3ad1c4' };
+    // "X de cada 10" (o porcentaje si es bajo)
+    const deCada10 = pct => pct >= 15 ? `${Math.round(pct / 10)} de cada 10` : `el ${fmt(pct, 0)} %`;
+    const listaY = arr => arr.length > 1 ? arr.slice(0, -1).join(', ') + ' y ' + arr[arr.length - 1] : (arr[0] || '');
+    // Pruebas (grado + asignatura) con resultado de un colegio
+    const pruebasSimce = c => Object.entries(c.grados).flatMap(([g, as]) => Object.entries(as).filter(([, x]) => x.prom != null).map(([a, x]) => ({ g, a, ...x })));
+    function simceVsGse(rbd) {
+      const c = simce2025 && simce2025.colegios[rbd];
+      if (!c) return null;
+      const xs = pruebasSimce(c).filter(x => x.difgru != null);
+      return xs.length ? xs.reduce((s, x) => s + x.difgru, 0) / xs.length : null;
+    }
+    function simceInsuficiente(rbd) {
+      const c = simce2025 && simce2025.colegios[rbd];
+      if (!c) return null;
+      const xs = pruebasSimce(c).filter(x => x.ins != null && x.n);
+      const n = xs.reduce((s, x) => s + x.n, 0);
+      return n ? xs.reduce((s, x) => s + x.ins * x.n, 0) / n : null;
+    }
+    function simceInsuficienteComuna() {
+      const cm = simce2025 && simce2025.comunas[HIS.id];
+      if (!cm) return null;
+      const xs = Object.values(cm).flatMap(as => Object.values(as)).filter(x => x.ins != null);
+      return xs.length ? xs.reduce((s, x) => s + x.ins, 0) / xs.length : null;
+    }
+    // Referencia comunal de un grado: si el colegio reúne el 80 % o más de los estudiantes de Tierra Amarilla en ese grado,
+    // el promedio comunal es prácticamente el suyo, así que se compara con Copiapó (comuna vecina)
+    const nGrado = (c, g) => Math.max(0, ...Object.values(c.grados[g] || {}).filter(x => x.prom != null).map(x => x.n || 0));
+    function referenciaSimce(comuna, g, rbd) {
+      const total = Object.values(simce2025.colegios).filter(c => c.comuna === comuna && c.grados[g]).reduce((s, c) => s + nGrado(c, g), 0);
+      const propio = rbd != null && simce2025.colegios[rbd] ? nGrado(simce2025.colegios[rbd], g) : 0;
+      if (comuna === 'TA' && total && propio / total >= 0.8) return { datos: simce2025.comunas.CP[g], nombre: 'Copiapó', vecina: true };
+      return { datos: simce2025.comunas[comuna][g], nombre: NOMBRE_COMUNA[comuna], vecina: false };
+    }
+    const barraEstandares = (x, refIns) => x.ins == null ? '<span class="barra-estandares"></span>'
+      : `<span class="barra-estandares" title="Insuficiente ${fmt(x.ins, 0)} % · Elemental ${fmt(x.ele, 0)} % · Adecuado ${fmt(x.ade, 0)} %">${['ins', 'ele', 'ade']
+        .map(k => `<i style="width:${x[k] || 0}%;background:${COLOR_ESTANDAR[k]}"></i>`).join('')}${refIns != null ? `<span class="prom" style="left:${refIns}%"></span>` : ''}</span>`;
+    const leyendaEstandares = extra => `<span><i style="background:${COLOR_ESTANDAR.ins}"></i>Insuficiente</span><span><i style="background:${COLOR_ESTANDAR.ele}"></i>Elemental</span>
+      <span><i style="background:${COLOR_ESTANDAR.ade}"></i>Adecuado</span>${extra || ''}`;
+
+    // Frases automáticas de un colegio
+    function frasesSimceColegio(c) {
+      const xs = pruebasSimce(c), frases = [];
+      const peor = xs.filter(x => x.ins != null).sort((a, b) => b.ins - a.ins)[0];
+      if (peor && peor.ins >= 30) frases.push(`En ${NOMBRE_GRADO[peor.g]}, <b>${deCada10(peor.ins)}</b> estudiantes no alcanzan el nivel mínimo en ${NOMBRE_ASIG[peor.a]}.`);
+      const sobre = xs.filter(x => x.siggru === 1), bajo = xs.filter(x => x.siggru === -1);
+      const nom = arr => listaY(arr.map(x => `${NOMBRE_ASIG[x.a]} de ${NOMBRE_GRADO[x.g]} (${x.difgru > 0 ? '+' : '−'}${Math.abs(x.difgru)})`));
+      if (sobre.length) frases.push(`Rinde <b>sobre lo esperable</b> para colegios de su nivel socioeconómico en ${nom(sobre)}.`);
+      if (bajo.length) frases.push(`Rinde <b>bajo lo esperable</b> para colegios de su nivel socioeconómico en ${nom(bajo)}.`);
+      if (!sobre.length && !bajo.length && xs.some(x => x.siggru != null)) frases.push('Sus resultados están <b>dentro de lo esperable</b> para colegios de su nivel socioeconómico.');
+      const sube = xs.filter(x => x.sigdif === 1), baja = xs.filter(x => x.sigdif === -1);
+      if (sube.length) frases.push(`<b>Mejoró</b> respecto de la evaluación anterior en ${listaY(sube.map(x => `${NOMBRE_ASIG[x.a]} de ${NOMBRE_GRADO[x.g]} (+${x.dif})`))}.`);
+      if (baja.length) frases.push(`<b>Bajó</b> respecto de la evaluación anterior en ${listaY(baja.map(x => `${NOMBRE_ASIG[x.a]} de ${NOMBRE_GRADO[x.g]} (−${Math.abs(x.dif)})`))}.`);
+      return frases;
+    }
+
+    // Recuadro SIMCE de la ficha del colegio
+    function htmlSimceColegio(rbd) {
+      const c = simce2025 && simce2025.colegios[rbd];
+      if (!c) return '';
+      const frases = frasesSimceColegio(c);
+      let vecina = false;
+      const grados = ['4b', '8b', '2m'].filter(g => c.grados[g]).map(g => {
+        const ref = referenciaSimce(c.comuna, g, rbd);
+        if (ref.vecina) vecina = true;
+        const n = Math.max(...Object.values(c.grados[g]).map(x => x.n || 0));
+        return `<div class="grado-simce">${NOMBRE_GRADO[g].toUpperCase()} · ${fmt(n)} ESTUDIANTES</div>
+          <div class="filas-col paes">${Object.entries(c.grados[g]).filter(([, x]) => x.prom != null).map(([a, x]) => {
+            const r = ref.datos && ref.datos[a];
+            const d = r && r.prom != null ? x.prom - r.prom : null;
+            return `<div class="fila"><span>${NOMBRE_ASIG[a]}</span>${barraEstandares(x, r && r.ins)}
+              <b>${fmt(x.prom)}</b><small class="dif-paes" title="${d != null ? `Diferencia con el promedio de ${ref.nombre} (${r.prom})` : ''}">${d != null ? (d > 0 ? '+' : d < 0 ? '−' : '±') + fmt(Math.abs(d)) : ''}</small></div>`;
+          }).join('')}</div>`;
+      }).join('');
+      return seccionFicha('fa-pen-to-square', 'SIMCE 2025', `
+        <p class="lectura-col" style="margin:0 0 8px">Grupo socioeconómico del colegio: <b>${c.gse ? NOMBRE_GSE[c.gse] : 'sin clasificar'}</b>.</p>
+        ${frases.length ? `<ul class="frases-simce">${frases.map(f => `<li>${f}</li>`).join('')}</ul>` : ''}
+        ${grados}
+        <div class="ley-estandares">${leyendaEstandares(`<span><i style="background:#e6e9ee;width:3px"></i>% insuficiente en ${vecina ? 'la comuna (Copiapó donde el colegio es casi toda su comuna)' : 'la comuna'}</span>`)}</div>
+        <p class="nota">Barra: estándares de aprendizaje. A la derecha, puntaje SIMCE y diferencia con el promedio ${vecina
+          ? 'de la comuna (Copiapó, la comuna vecina, en los grados donde este colegio reúne casi a todos los estudiantes de Tierra Amarilla)' : 'de la comuna'}.
+          "Nivel socioeconómico": comparación con colegios del país del mismo grupo socioeconómico, solo cuando la diferencia es estadísticamente significativa.
+          Fuente: Agencia de Calidad de la Educación, SIMCE 2025 (entrega preliminar).</p>`);
+    }
+
+    // Sección 04: niveles de aprendizaje por grado y resultados por GSE
+    const simceGseSel = { g: '4b', a: 'lect' };
+    function dibujarSimceSeccion() {
+      const sec = document.getElementById('simce-seccion');
+      const cm = simce2025 && simce2025.comunas[HIS.id];
+      sec.hidden = !cm || !Object.keys(cm).length;
+      if (sec.hidden) return;
+      // Referencia de comparación: Tierra Amarilla → Copiapó; Copiapó → Región de Atacama
+      const ref = HIS.id === 'TA' ? { datos: simce2025.comunas.CP, nombre: 'Copiapó' } : { datos: simce2025.region, nombre: 'la Región de Atacama' };
+      const filas = ['4b', '8b', '2m'].flatMap(g => ['lect', 'mate'].filter(a => cm[g] && cm[g][a] && cm[g][a].ins != null).map(a => {
+        const x = cm[g][a], r = ref.datos[g] && ref.datos[g][a];
+        return `<div class="fila"><span>${NOMBRE_GRADO[g]} · ${NOMBRE_ASIG[a]}</span>${barraEstandares(x, r && r.ins)}
+          <b style="color:${COLOR_ESTANDAR.ins}">${fmt(x.ins, 0)} %</b><small class="dif-paes">${fmt(x.prom)} pts</small></div>`;
+      }));
+      document.getElementById('simce-niveles').innerHTML = filas.join('');
+      document.getElementById('ley-simce-niveles').innerHTML = leyendaEstandares(`<span><i style="background:#e6e9ee;width:3px"></i>% insuficiente en ${ref.nombre}</span>`);
+      document.getElementById('nota-simce-niveles').textContent = `A la derecha, en rojo, el porcentaje de estudiantes que no alcanza el nivel mínimo, y el puntaje promedio de ${HIS.nombre}. Fuente: Agencia de Calidad de la Educación, SIMCE 2025 (entrega preliminar).`;
+
+      // Resultados según GSE (colegios de la comuna, ponderado por estudiantes) frente al promedio nacional del mismo GSE
+      const chips = document.getElementById('chips-simce-gse');
+      const combos = ['4b', '8b', '2m'].flatMap(g => ['lect', 'mate'].map(a => [g, a])).filter(([g, a]) => cm[g] && cm[g][a]);
+      if (!combos.some(([g, a]) => g === simceGseSel.g && a === simceGseSel.a)) [simceGseSel.g, simceGseSel.a] = combos[0];
+      chips.innerHTML = combos.map(([g, a]) => `<button class="chip ${g === simceGseSel.g && a === simceGseSel.a ? 'activo' : ''}" data-g="${g}" data-a="${a}">${NOMBRE_GRADO[g].replace(' básico', 'º B').replace('º Bº', 'º B').replace(' medio', 'º M').replace('ºº', 'º')} · ${NOMBRE_ASIG[a].slice(0, 4).toUpperCase()}</button>`).join('');
+      if (!chips.dataset.listo) {
+        chips.dataset.listo = '1';
+        chips.addEventListener('click', e => { const b = e.target.closest('[data-g]'); if (!b) return; simceGseSel.g = b.dataset.g; simceGseSel.a = b.dataset.a; dibujarSimceSeccion(); });
+      }
+      const { g, a } = simceGseSel;
+      const grupos = {};
+      Object.values(simce2025.colegios).filter(c => c.comuna === HIS.id && c.gse && c.grados[g] && c.grados[g][a] && c.grados[g][a].prom != null)
+        .forEach(c => { const x = c.grados[g][a], k = grupos[c.gse] ||= { suma: 0, n: 0, col: 0 }; k.suma += x.prom * x.n; k.n += x.n; k.col++; });
+      const ancho = v => Math.max(1, Math.min(100, 100 * (v - 150) / 250));
+      const nac = simce2025.nacional_gse[g] || {};
+      document.getElementById('simce-gse').innerHTML = [1, 2, 3, 4, 5].filter(k => grupos[k]).map(k => {
+        const v = grupos[k].suma / grupos[k].n, rn = nac[k] && nac[k][a] ? nac[k][a].prom : null;
+        const d = rn != null ? Math.round(v - rn) : null;
+        return `<div class="fila"><span>GSE ${NOMBRE_GSE[k]} <small style="color:var(--texto-suave)">(${grupos[k].col} ${grupos[k].col === 1 ? 'colegio' : 'colegios'})</small></span>
+          <span class="pista"><i style="width:${ancho(v)}%;background:${['', '#ff6b5b', '#fb8f3c', '#fbb13c', '#8fd16b', '#3ad1c4'][k]}"></i>${rn != null ? `<span class="prom" style="left:${ancho(rn)}%" title="Promedio nacional GSE ${NOMBRE_GSE[k]}: ${rn}"></span>` : ''}</span>
+          <b>${fmt(v, 0)}</b><small class="dif-paes" title="Diferencia con el promedio nacional del mismo GSE">${d != null ? (d > 0 ? '+' : d < 0 ? '−' : '±') + fmt(Math.abs(d)) : ''}</small></div>`;
+      }).join('');
+      document.getElementById('nota-simce-gse').textContent = `Puntaje promedio de los colegios de ${HIS.nombre} en ${NOMBRE_ASIG[a]} de ${NOMBRE_GRADO[g]}, agrupados por el grupo socioeconómico (GSE) que les asigna la Agencia; entre paréntesis, cuántos colegios. Línea blanca y número de la derecha: comparación con el promedio nacional de colegios del mismo GSE.`;
+    }
+
+    // "Lo que muestran los datos": frases automáticas de la comuna activa
+    function dibujarHallazgosEducacion(cs) {
+      const el = document.getElementById('hallazgos-edu');
+      const cm = simce2025 && simce2025.comunas[HIS.id];
+      const pc = paes2026 && paes2026.comunas && paes2026.comunas[HIS.id];
+      const t = colegiosMz && colegiosMz.totales[HIS.id];
+      const h = [], nc = HIS.nombre;
+      const todas = cm ? Object.entries(cm).flatMap(([g, as]) => Object.entries(as).filter(([, x]) => x.ins != null).map(([a, x]) => ({ g, a, ...x }))) : [];
+      // 1. El peor resultado de la comuna, en palabras
+      const peor = todas.slice().sort((a, b) => b.ins - a.ins)[0];
+      if (peor) h.push(`En ${nc}, <b>${deCada10(peor.ins)} estudiantes de ${NOMBRE_GRADO[peor.g]}</b> no alcanzan el nivel mínimo en ${NOMBRE_ASIG[peor.a]} (SIMCE 2025).`);
+      // 2. La brecha crece con los años
+      const lect = ['4b', '8b', '2m'].map(g => cm && cm[g] && cm[g].lect && cm[g].lect.ins).filter(v => v != null);
+      if (lect.length === 3 && lect[2] > lect[0] + 5)
+        h.push(`La proporción que no alcanza el nivel mínimo en Lectura <b>crece con los años</b>: ${fmt(lect[0], 0)} % en 4º básico, ${fmt(lect[1], 0)} % en 8º básico y ${fmt(lect[2], 0)} % en 2º medio.`);
+      // 3. Comparación con la comuna vecina o la región
+      if (HIS.id === 'TA' && simce2025) {
+        const cp = simce2025.comunas.CP, peores = todas.filter(x => cp[x.g] && cp[x.g][x.a] && x.ins > cp[x.g][x.a].ins);
+        const mayor = peores.sort((a, b) => (b.ins - cp[b.g][b.a].ins) - (a.ins - cp[a.g][a.a].ins))[0];
+        if (mayor) h.push(`En ${peores.length === todas.length ? '<b>todos los grados y asignaturas</b>' : `${peores.length} de ${todas.length} pruebas`}, Tierra Amarilla tiene más estudiantes bajo el nivel mínimo que Copiapó. La mayor brecha está en ${NOMBRE_ASIG[mayor.a]} de ${NOMBRE_GRADO[mayor.g]}: <b>${fmt(mayor.ins, 0)} % frente a ${fmt(cp[mayor.g][mayor.a].ins, 0)} %</b>.`);
+      } else if (simce2025 && cm) {
+        const reg = simce2025.region, xs = todas.filter(x => reg[x.g] && reg[x.g][x.a] && reg[x.g][x.a].prom != null);
+        const dif = xs.map(x => x.prom - reg[x.g][x.a].prom), prom = dif.length ? dif.reduce((s, x) => s + x, 0) / dif.length : 0;
+        if (dif.length) h.push(Math.abs(prom) < 3 ? `Los puntajes SIMCE de ${nc} son <b>casi idénticos al promedio de la Región de Atacama</b> en todos los grados: la capital regional no se despega del resto de la región.`
+          : `En promedio, ${nc} obtiene ${fmt(Math.abs(prom), 0)} puntos SIMCE ${prom > 0 ? 'más' : 'menos'} que la Región de Atacama.`);
+      }
+      // 4. Brecha socioeconómica (4º básico Lectura): GSE más alto frente al más bajo
+      if (simce2025) {
+        const grupos = {};
+        Object.values(simce2025.colegios).filter(c => c.comuna === HIS.id && c.gse && c.grados['4b'] && c.grados['4b'].lect && c.grados['4b'].lect.prom != null)
+          .forEach(c => { const x = c.grados['4b'].lect, k = grupos[c.gse] ||= { s: 0, n: 0 }; k.s += x.prom * x.n; k.n += x.n; });
+        const ks = Object.keys(grupos).map(Number).sort((a, b) => a - b);
+        if (ks.length >= 2) {
+          const bajo = grupos[ks[0]].s / grupos[ks[0]].n, alto = grupos[ks[ks.length - 1]].s / grupos[ks[ks.length - 1]].n;
+          h.push(alto - bajo >= 10
+            ? `En 4º básico, los colegios de nivel socioeconómico ${NOMBRE_GSE[ks[ks.length - 1]]} obtienen <b>${fmt(alto - bajo, 0)} puntos más en Lectura</b> que los de nivel ${NOMBRE_GSE[ks[0]]}: la brecha educativa empieza temprano.`
+            : `En 4º básico, los colegios de nivel socioeconómico ${NOMBRE_GSE[ks[0]]} y ${NOMBRE_GSE[ks[ks.length - 1]]} obtienen <b>resultados parecidos en Lectura</b> (${fmt(bajo, 0)} y ${fmt(alto, 0)} puntos): aquí la diferencia no la marca el nivel socioeconómico de cada colegio.`);
+        }
+      }
+      // 5. Colegios que rinden más o menos de lo esperable para su nivel socioeconómico
+      if (simce2025) {
+        const cols = Object.entries(simce2025.colegios).filter(([, c]) => c.comuna === HIS.id);
+        const sobre = cols.filter(([, c]) => pruebasSimce(c).some(x => x.siggru === 1)), bajo = cols.filter(([, c]) => pruebasSimce(c).some(x => x.siggru === -1));
+        // El colegio con la mayor diferencia positiva y significativa en una prueba
+        const mejor = cols.flatMap(([, c]) => pruebasSimce(c).filter(x => x.siggru === 1).map(x => [c, x])).sort((a, b) => b[1].difgru - a[1].difgru)[0];
+        if (sobre.length || bajo.length) h.push(`<b>${sobre.length} ${sobre.length === 1 ? 'colegio rinde' : 'colegios rinden'} sobre lo esperable</b> para su nivel socioeconómico en al menos una prueba, y <b>${bajo.length} bajo lo esperable</b>${mejor
+          ? `. Destaca ${esc(nombreCorto(mejor[0].nombre))}, con <b>${fmt(mejor[1].difgru, 0)} puntos sobre</b> colegios de su mismo nivel en ${NOMBRE_ASIG[mejor[1].a]} de ${NOMBRE_GRADO[mejor[1].g]}` : ''}. El contexto pesa, pero no lo explica todo.`);
+      }
+      // 6. PAES: brecha entre tipos de colegio y participación
+      if (pc && pc.por_dep) {
+        const pag = pc.por_dep[1], pub = pc.por_dep[4] || pc.por_dep[3];
+        if (pag && pub && pag.oblig != null && pub.oblig != null)
+          h.push(`En la PAES 2026, los colegios particulares pagados superan a los públicos por <b>${fmt(pag.oblig - pub.oblig, 0)} puntos</b>, y mientras el ${fmt(100 * pag.n_oblig / pag.inscritos, 0)} % de su promoción rindió las pruebas, en los públicos lo hizo solo el <b>${fmt(100 * pub.n_oblig / pub.inscritos, 0)} %</b>.`);
+        else if (HIS.id === 'TA' && pc.oblig != null && paes2026.comunas.CP)
+          h.push(`Solo <b>${fmt(100 * pc.n_oblig / pc.inscritos, 0)} %</b> de la promoción de Tierra Amarilla rindió las pruebas obligatorias de la PAES 2026 (en Copiapó, el ${fmt(100 * paes2026.comunas.CP.n_oblig / paes2026.comunas.CP.inscritos, 0)} %), y su promedio quedó <b>${fmt(paes2026.comunas.CP.oblig - pc.oblig, 0)} puntos bajo el de Copiapó</b>.`);
+      }
+      // 7. Cambio en el tiempo
+      const cambios = todas.concat(cm ? Object.entries(cm).flatMap(([g, as]) => Object.entries(as).filter(([, x]) => x.ins == null).map(([a, x]) => ({ g, a, ...x }))) : []).filter(x => x.sigdif === 1 || x.sigdif === -1);
+      if (cm) h.push(cambios.length ? `Cambio significativo respecto de la evaluación anterior: ${listaY(cambios.map(x => `${NOMBRE_ASIG[x.a]} de ${NOMBRE_GRADO[x.g]} (<b>${x.dif > 0 ? '+' : '−'}${Math.abs(x.dif)}</b>)`))}; en el resto, los resultados se mantienen.`
+        : `Ningún resultado comunal del SIMCE cambió de forma significativa respecto de la evaluación anterior: los problemas no son de un año, son persistentes.`);
+      // 8. Relaves
+      if (t && t.col_rel_500) h.push(`<b>${fmt(t.mat_rel_500)} estudiantes</b> asisten a ${t.col_rel_500 === 1 ? 'un colegio' : `uno de los ${t.col_rel_500} colegios`} a menos de 500 m de un relave minero.`);
+      el.hidden = !h.length;
+      el.innerHTML = `<h3><i class="fa-solid fa-lightbulb"></i> LO QUE MUESTRAN LOS DATOS · ${esc(nc.toUpperCase())}</h3><ul>${h.map(x => `<li>${x}</li>`).join('')}</ul>
+        <p class="nota">Frases calculadas automáticamente con el SIMCE 2025 (Agencia de Calidad de la Educación, entrega preliminar), la PAES 2026 (DEMRE) y la matrícula 2026 (Mineduc).</p>`;
+    }
+
     // PAES 2026 de un colegio: participación, promedios y dos referencias:
     // colegios similares del país (línea blanca) y promedio de su comuna, de todos los colegios (línea ámbar)
     const COLOR_COMUNA_PAES = '#fbb13c';
@@ -4569,6 +4833,9 @@
       // Si es el único colegio de la comuna que rindió, el promedio comunal es el suyo: no se compara
       const unico = !com || com.n_oblig === t.n_oblig;
       const nomComuna = NOMBRE_COMUNA[c.comuna];
+      // Referencia local: la propia comuna; si es el único colegio de Tierra Amarilla, se compara con Copiapó (comuna vecina)
+      const refC = !unico ? com : (c.comuna === 'TA' && paes2026.comunas.CP) || null;
+      const nomRef = !unico ? nomComuna : 'Copiapó';
       // Referencia: promedio nacional de colegios de la misma dependencia y rama, ponderado por las ramas del colegio
       const referencia = k => {
         let suma = 0, peso = 0;
@@ -4582,36 +4849,72 @@
         .filter(([, k]) => t[k] != null)
         .map(([n, k]) => {
           const ref = ['oblig', 'clec', 'm1'].includes(k) ? referencia(k) : null;
-          const vc = !unico && com[k] != null ? com[k] : null;
+          const vc = refC && refC[k] != null ? refC[k] : null;
           return `<div class="fila"><span>${n} <small style="color:var(--texto-suave)">(${fmt(t['n_' + k])})</small></span>
             <span class="pista"><i style="width:${ancho(t[k])}%;background:var(--acento)"></i>${ref != null
               ? `<span class="prom" style="left:${ancho(ref)}%" title="Colegios similares del país: ${fmt(ref, 0)}"></span>` : ''}${vc != null
-              ? `<span class="prom" style="left:${ancho(vc)}%;background:${COLOR_COMUNA_PAES};opacity:1" title="Promedio de ${nomComuna}: ${fmt(vc, 0)}"></span>` : ''}</span>
+              ? `<span class="prom" style="left:${ancho(vc)}%;background:${COLOR_COMUNA_PAES};opacity:1" title="Promedio de ${nomRef}: ${fmt(vc, 0)}"></span>` : ''}</span>
             <b>${fmt(t[k], 0)}</b>
-            <small class="dif-paes" title="${vc != null ? `Diferencia con el promedio de ${nomComuna} (${fmt(vc, 0)})` : ''}">${vc != null ? dif(t[k], vc) : ''}</small></div>`;
+            <small class="dif-paes" title="${vc != null ? `Diferencia con el promedio de ${nomRef} (${fmt(vc, 0)})` : ''}">${vc != null ? dif(t[k], vc) : ''}</small></div>`;
         }).join('');
       const pct = t.inscritos ? 100 * t.n_oblig / t.inscritos : 0;
       const ramas = c.ramas.filter(r => r.inscritos);
-      // Lectura en palabras (promedio de obligatorias)
-      let lectura = '';
+      // Frases automáticas: lo que muestran los datos del colegio
+      const frases = [];
+      const pctDe = g => g && g.inscritos ? 100 * g.n_oblig / g.inscritos : null;
+      const pctRef = pctDe(refC);
+      // 1. Participación
+      if (pctRef != null && pct < pctRef - 10)
+        frases.push(`Solo <b>${deCada10(pct)}</b> estudiantes de su promoción rindieron las dos pruebas obligatorias; en ${nomRef}, ${deCada10(pctRef)}.`);
+      else if (pct >= 95) frases.push(`Casi toda su promoción rindió la PAES (<b>${fmt(pct, 0)} %</b>).`);
+      // 2. Comparación del promedio de obligatorias
       if (t.oblig != null) {
         const ref = referencia('oblig'), partes = [];
         const frase = (v, quien) => { const d = Math.round(t.oblig - v);
-          return Math.abs(d) < 5 ? `similar al promedio de ${quien} (${fmt(v, 0)})` : `${fmt(Math.abs(d))} puntos ${d > 0 ? 'sobre' : 'bajo'} el promedio de ${quien} (${fmt(v, 0)})`; };
-        if (!unico && com.oblig != null) partes.push(frase(com.oblig, nomComuna));
+          return Math.abs(d) < 5 ? `similar al promedio de ${quien} (${fmt(v, 0)})` : `<b>${fmt(Math.abs(d))} puntos ${d > 0 ? 'sobre' : 'bajo'}</b> el promedio de ${quien} (${fmt(v, 0)})`; };
+        if (refC && refC.oblig != null) partes.push(frase(refC.oblig, nomRef));
         if (ref != null) partes.push(frase(ref, 'colegios similares del país'));
-        lectura = partes.length ? `<p class="lectura-col lectura-paes" style="margin:12px 0 0">En el promedio de obligatorias obtiene <b>${fmt(t.oblig, 0)}</b>: ${partes.join(', y ')}.</p>` : '';
+        if (partes.length) frases.push(`En el promedio de obligatorias obtiene <b>${fmt(t.oblig, 0)}</b>: ${partes.join(', y ')}.`);
       }
-      const totPct = com && com.inscritos ? 100 * com.n_oblig / com.inscritos : null;
+      // 3. Distribución: sobre 700 y bajo 500 (tramos de 50 desde 100: el índice 12 empieza en 700, el 8 en 500)
+      const porcentajeTramos = (g, desde, hasta) => { if (!g || !g.tramos) return null; const tot = g.tramos.reduce((a, b) => a + b, 0);
+        return tot ? 100 * g.tramos.slice(desde, hasta).reduce((a, b) => a + b, 0) / tot : null; };
+      const sobre700 = porcentajeTramos(t, 12, 18), sobre700Ref = porcentajeTramos(refC, 12, 18);
+      const bajo500 = porcentajeTramos(t, 0, 8), bajo500Ref = porcentajeTramos(refC, 0, 8);
+      if (bajo500 != null && bajo500 >= 30)
+        frases.push(`<b>${deCada10(bajo500)}</b> de sus estudiantes quedaron bajo 500 puntos en el promedio de obligatorias${bajo500Ref != null ? ` (en ${nomRef}, ${deCada10(bajo500Ref)})` : ''}.`);
+      if (sobre700 != null && (sobre700 >= 20 || (sobre700Ref != null && sobre700 < sobre700Ref / 2)))
+        frases.push(sobre700 >= 20
+          ? `<b>${fmt(sobre700, 0)} %</b> de sus estudiantes superó los 700 puntos${sobre700Ref != null ? ` (en ${nomRef}, ${fmt(sobre700Ref, 0)} %)` : ''}.`
+          : Math.round(sobre700) === 0 ? `<b>Ninguno</b> de sus estudiantes superó los 700 puntos (en ${nomRef}, el ${fmt(sobre700Ref, 0)} %).`
+          : `Solo <b>${fmt(sobre700, 0)} %</b> de sus estudiantes superó los 700 puntos, frente al ${fmt(sobre700Ref, 0)} % de ${nomRef}.`);
+      // 4. Matemática 2: la prueba de las carreras científicas e ingenierías
+      if (t.n_oblig >= 10) {
+        const pm2 = 100 * (t.n_m2 || 0) / t.n_oblig, pm2Ref = refC && refC.n_oblig ? 100 * (refC.n_m2 || 0) / refC.n_oblig : null;
+        if (pm2 < 40) frases.push(`Solo <b>${deCada10(pm2)}</b> rindieron Matemática 2, la prueba que exigen las carreras científicas y las ingenierías${pm2Ref != null ? ` (en ${nomRef}, ${deCada10(pm2Ref)})` : ''}.`);
+      }
+      // 5. Diferencia entre ramas
+      const ramasCon = c.ramas.filter(r => r.oblig != null).sort((a, b) => b.oblig - a.oblig);
+      if (ramasCon.length >= 2 && ramasCon[0].oblig - ramasCon[ramasCon.length - 1].oblig >= 20) {
+        const a = ramasCon[0], b = ramasCon[ramasCon.length - 1];
+        frases.push(`Entre sus ramas, ${esc(a.nombre.toLowerCase())} obtiene ${fmt(a.oblig, 0)} y ${esc(b.nombre.toLowerCase())} ${fmt(b.oblig, 0)}: <b>${fmt(a.oblig - b.oblig, 0)} puntos</b> de diferencia.`);
+      }
+      // 6. Lectora frente a Matemática 1
+      if (t.clec != null && t.m1 != null && Math.abs(t.clec - t.m1) >= 15)
+        frases.push(`Le va mejor en <b>${t.m1 > t.clec ? 'Matemática 1' : 'Competencia Lectora'}</b> que en ${t.m1 > t.clec ? 'Lectora' : 'Matemática 1'} (${fmt(Math.abs(t.m1 - t.clec), 0)} puntos de diferencia).`);
+      const lectura = frases.length ? `<ul class="frases-simce" style="margin-top:12px">${frases.map(f => `<li>${f}</li>`).join('')}</ul>` : '';
+      const totPct = refC && refC.inscritos ? 100 * refC.n_oblig / refC.inscritos : null;
       return seccionFicha('fa-graduation-cap', 'PAES 2026 · promoción del año', `
         <p class="lectura-col" style="margin:0 0 10px">De <b>${fmt(t.inscritos)}</b> estudiantes inscritos de su promoción, <b>${fmt(t.n_oblig)}</b>
-          (${fmt(pct, 0)} %) rindieron las dos pruebas obligatorias${!unico && totPct != null ? ` (en ${nomComuna}, el ${fmt(totPct, 0)} %)` : ''}.</p>
+          (${fmt(pct, 0)} %) rindieron las dos pruebas obligatorias${totPct != null ? ` (en ${nomRef}, el ${fmt(totPct, 0)} %)` : ''}.</p>
         ${filas ? `<div class="filas-col paes">${filas}</div>
-          <div class="leyenda-paes"><span><i style="background:#e6e9ee"></i>Colegios similares del país</span>${unico ? ''
-            : `<span><i style="background:${COLOR_COMUNA_PAES}"></i>Promedio de ${nomComuna} · diferencia en puntos a la derecha</span>`}</div>`
+          <div class="leyenda-paes"><span><i style="background:#e6e9ee"></i>Colegios similares del país</span>${!refC ? ''
+            : `<span><i style="background:${COLOR_COMUNA_PAES}"></i>Promedio de ${nomRef}${unico ? ' (comuna vecina)' : ''} · diferencia en puntos a la derecha</span>`}</div>`
           : `<p class="nota">Menos de ${paes2026.metadata.min_n} estudiantes rindieron: no se muestran promedios.</p>`}
         ${lectura}
-        ${unico ? `<p class="nota">Es el único colegio de ${nomComuna} con estudiantes que rindieron la PAES 2026: no hay promedio comunal con qué compararlo.</p>` : ''}
+        ${unico ? `<p class="nota">Es el único colegio de ${nomComuna} con estudiantes que rindieron la PAES 2026${refC
+          ? `, así que se compara con el promedio de ${nomRef}, la comuna vecina, donde estudian muchos jóvenes de ${nomComuna}.`
+          : ': no hay promedio comunal con qué compararlo.'}</p>` : ''}
         ${ramas.length > 1 ? `<table class="datos" style="margin-top:12px"><thead><tr><th>Rama</th><th>Rindieron</th><th>Prom. oblig.</th></tr></thead><tbody>
           ${ramas.map(r => `<tr><td>${esc(r.nombre)}</td><td>${fmt(r.n_oblig)} de ${fmt(r.inscritos)}</td><td>${r.oblig != null ? fmt(r.oblig, 0) : '–'}</td></tr>`).join('')}
           </tbody></table>` : ''}
@@ -4673,6 +4976,7 @@
               `${barrasColegio(residencia.map(([n, v]) => [esc(nombreCorto(n)), v]), p.con_com, color)}
               <p class="nota">Comuna de residencia declarada en la matrícula (dato voluntario): ${fmt(p.con_com)} de ${fmt(p.mat)} estudiantes la informan.
                 Las comunas lejanas suelen ser direcciones sin actualizar.</p>`) : ''}
+            ${htmlSimceColegio(p.rbd)}
           </div>
           <div>
             ${seccionFicha('fa-circle-info', 'Datos del establecimiento',
