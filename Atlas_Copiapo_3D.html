@@ -297,14 +297,20 @@
 
     .marca { white-space: nowrap; }
 
+    /* Computador (cualquier ancho): leyenda, su pestaña y la tarjeta de UV parten bajo la barra superior,
+       cuya altura real mide el script (--alto-barra): cambia si el menú cabe en una fila o pasa a dos */
+    @media (min-width: 901px) {
+      body .leyenda { top: calc(var(--alto-barra, 104px) + 6px); max-height: calc(100% - var(--alto-barra, 104px) - 90px); }
+      body .tarjeta-uv { top: calc(var(--alto-barra, 104px) + 6px); }
+      body .abrir-leyenda { top: calc(var(--alto-barra, 104px) + 6px); }
+    }
+
     /* Pantallas medianas: el menú pasa a una segunda fila para no apretar los controles
        (en una sola fila se necesitan ~1920 px: marca + menú + selectores + modos) */
     @media (min-width: 901px) and (max-width: 1920px) {
       .barra { flex-wrap: wrap; row-gap: 8px; }
       .nav { order: 3; width: 100%; margin-left: -10px; }
       .control select { min-width: 150px; }
-      body .leyenda { top: calc(var(--alto-barra, 104px) + 6px); max-height: calc(100% - var(--alto-barra, 104px) - 90px); }
-      body .tarjeta-uv { top: calc(var(--alto-barra, 104px) + 6px); }
       .boton-modo { white-space: nowrap; }
     }
 
@@ -399,6 +405,29 @@
       overflow-y: auto;
       padding: 14px;
     }
+
+    /* Computador: la leyenda se puede ocultar (queda una pestaña "LEYENDA" para volver a abrirla) */
+    .cabecera-leyenda {
+      display: flex; align-items: center; justify-content: space-between; margin: -2px 0 14px; padding-bottom: 9px;
+      border-bottom: 1px solid var(--borde); font: 500 9.5px var(--mono); letter-spacing: 0.14em; color: var(--texto-suave);
+    }
+    .ocultar-leyenda {
+      display: inline-flex; align-items: center; gap: 6px; padding: 2px 0 2px 8px;
+      border: none; background: none; font: 500 9.5px var(--mono); letter-spacing: 0.12em; color: var(--texto-suave); cursor: pointer;
+    }
+    .ocultar-leyenda:hover, .ocultar-leyenda:focus-visible { color: var(--acento); }
+    .abrir-leyenda {
+      position: absolute; top: 76px; left: 18px; z-index: 15; display: none; align-items: center; gap: 8px; height: 32px; padding: 0 12px;
+      border: 1px solid var(--borde-fuerte); background: var(--panel); backdrop-filter: blur(8px);
+      font: 600 10px var(--mono); letter-spacing: 0.12em; color: var(--texto); cursor: pointer;
+    }
+    .abrir-leyenda i { color: var(--acento); }
+    .abrir-leyenda:hover, .abrir-leyenda:focus-visible { border-color: var(--acento); color: var(--acento); }
+    @media (min-width: 901px) {
+      body.leyenda-oculta .leyenda { display: none; }
+      body.leyenda-oculta .abrir-leyenda { display: inline-flex; }
+    }
+    @media (max-width: 900px) { .cabecera-leyenda, .abrir-leyenda { display: none !important; } }
 
     .leyenda::-webkit-scrollbar { width: 5px; }
     .leyenda::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
@@ -853,7 +882,7 @@
     /* =====================================================================
        HISTORIA (análisis bajo el mapa)
        ===================================================================== */
-    /* Botón para bajar al análisis: verde lima, con rebote y un halo que late */
+    /* Botón para bajar al análisis: verde lima, fijo (sin animación) */
     .bajar {
       position: absolute;
       left: 50%;
@@ -861,32 +890,23 @@
       z-index: 16;
       display: inline-flex;
       align-items: center;
-      gap: 9px;
-      height: 40px;
-      padding: 0 16px 0 18px;
+      gap: 6px;
+      height: 28px;
+      padding: 0 10px 0 12px;
       border: none;
       background: var(--acento);
       color: var(--acento-texto);
-      font: 600 11.5px var(--mono);
-      letter-spacing: 0.14em;
+      font: 600 9.5px var(--mono);
+      letter-spacing: 0.12em;
       white-space: nowrap;
       cursor: pointer;
       transform: translateX(-50%);
-      animation: rebote 2.2s ease-in-out infinite, halo-bajar 2.2s ease-out infinite;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
     }
-    .bajar i { font-size: 13px; }
+    .bajar i { font-size: 10px; }
     .bajar:hover { background: #d6ff63; }
     .bajar:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
-    @keyframes halo-bajar {
-      0% { box-shadow: 0 0 0 0 rgba(198, 242, 78, 0.6), 0 6px 18px rgba(0, 0, 0, 0.45); }
-      70%, 100% { box-shadow: 0 0 0 14px rgba(198, 242, 78, 0), 0 6px 18px rgba(0, 0, 0, 0.45); }
-    }
-
-    @keyframes rebote {
-      0%, 100% { transform: translate(-50%, 0); }
-      50% { transform: translate(-50%, 7px); }
-    }
 
     .subir {
       position: fixed;
@@ -1225,7 +1245,9 @@
       /* Créditos y zoom sobre los filtros de abajo, no encima */
       .maplibregl-ctrl-bottom-right { bottom: calc(66px + env(safe-area-inset-bottom, 0px)); }
       .maplibregl-ctrl-bottom-right .maplibregl-ctrl-group { display: none; }  /* se hace zoom con los dedos */
-      .bajar { bottom: calc(70px + env(safe-area-inset-bottom, 0px)); left: 50%; }  /* centrada, con su rebote */
+      .bajar { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); left: 50%; height: 24px; padding: 0 8px 0 10px; gap: 5px;
+        font-size: 8.5px; letter-spacing: 0.1em; }  /* centrada; más chica en celular */
+      .bajar i { font-size: 9px; }
 
       /* Alfileres de UV: se ocultan al estar lejos (se encimarían) */
       .etiqueta-uv.choca { display: none; }  /* no cabe sin encimarse: se muestra al acercarse */
@@ -1298,7 +1320,10 @@
   </header>
 
   <!-- Leyenda -->
+  <button class="abrir-leyenda" onclick="ocultarLeyenda(false)" aria-label="Mostrar la leyenda"><i class="fa-solid fa-angles-right"></i> LEYENDA</button>
   <aside id="leyenda" class="leyenda caja" aria-label="Leyenda">
+    <div class="cabecera-leyenda"><span>LEYENDA</span>
+      <button class="ocultar-leyenda" onclick="ocultarLeyenda(true)" aria-label="Ocultar la leyenda">OCULTAR <i class="fa-solid fa-angles-left"></i></button></div>
     <div class="controles-movil">
       <label for="sel-color-m">COLOREAR POR</label>
       <select id="sel-color-m"></select>
@@ -4164,6 +4189,9 @@
       document.documentElement.style.setProperty('--alto-barra', document.querySelector('.barra').offsetHeight + 'px');
     }
     window.addEventListener('resize', medirBarra);
+    // Al pasar la ventana de una pantalla a otra (otra densidad, otro ancho) la barra puede cambiar de alto sin aviso:
+    // se vuelve a medir cada vez que cambia su tamaño, sea cual sea la causa
+    if ('ResizeObserver' in window) new ResizeObserver(medirBarra).observe(document.querySelector('.barra'));
     medirBarra();
     // Volver a medir cuando cargan las fuentes y los selectores (cambian el ancho)
     if (document.fonts) document.fonts.ready.then(medirBarra);
@@ -4966,11 +4994,25 @@
     window.addEventListener('resize', pinesSegunZoom);
     pinesSegunZoom();
 
-    // Celular: créditos del mapa cerrados al inicio (se abren con la ⓘ)
-    if (esMovil()) map.once('load', () => {
+    // Créditos del mapa cerrados al inicio, en celular y computador (se abren con la ⓘ).
+    // MapLibre los abre al cargar y puede volver a abrirlos cuando llegan las fuentes de datos,
+    // así que se cierran al cargar y otra vez cuando el mapa termina de dibujarse por primera vez.
+    function cerrarCreditos() {
       const el = document.querySelector('.maplibregl-ctrl-attrib');
       if (el) el.classList.remove('maplibregl-compact-show');
-    });
+    }
+    map.once('load', cerrarCreditos);
+    map.once('idle', cerrarCreditos);
+  </script>
+  <script>
+    // Leyenda en computador: se puede ocultar; el navegador recuerda la elección
+    function ocultarLeyenda(ocultar) {
+      document.body.classList.toggle('leyenda-oculta', ocultar);
+      try { localStorage.setItem('atlas-leyenda-oculta', ocultar ? '1' : ''); } catch (e) { /* sin almacenamiento */ }
+      const foco = document.querySelector(ocultar ? '.abrir-leyenda' : '.ocultar-leyenda');
+      if (foco) foco.focus({ preventScroll: true });
+    }
+    try { if (localStorage.getItem('atlas-leyenda-oculta') === '1') document.body.classList.add('leyenda-oculta'); } catch (e) { /* sin almacenamiento */ }
   </script>
   <script>
     // Guardar datos y relieve en el navegador (atlas-sw.js): la segunda visita carga al instante.
