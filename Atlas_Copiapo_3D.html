@@ -769,6 +769,13 @@
     .subtitulo { margin: 20px 0 10px; font: 500 10.5px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--texto-suave); }
     .subtitulo:first-child { margin-top: 0; }
 
+    /* Fichas: nada puede ser más ancho que la pantalla (botones largos y textos de tablas bajan de línea) */
+    .modal-cuerpo > div { min-width: 0; }
+    .modal .chip { white-space: normal; text-align: left; line-height: 1.4; max-width: 100%; }
+    .modal table.datos td { overflow-wrap: anywhere; }
+    .elemento-relave .cabeza { flex-wrap: wrap; }
+    .elemento-relave small.mono { display: block; overflow-wrap: anywhere; }
+
     /* Secciones de la ficha del colegio: cada bloque en su recuadro, con título e ícono */
     .seccion-ficha { margin-top: 14px; padding: 14px 16px 12px; border: 1px solid var(--borde); border-left: 2px solid var(--acento);
       background: rgba(255, 255, 255, 0.025); }
