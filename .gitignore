@@ -26,3 +26,6 @@ inputs/manzanas_copiapo_V3.geojson
 
 # Matrícula Mineduc (datos por estudiante): solo se publica el resultado de scripts/colegios.mjs
 inputs/Colegios/*.csv
+
+# Imágenes locales que el sitio no usa
+images/White RH Analytics Monogram.png

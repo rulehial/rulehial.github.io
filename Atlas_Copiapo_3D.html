@@ -853,20 +853,34 @@
     /* =====================================================================
        HISTORIA (análisis bajo el mapa)
        ===================================================================== */
+    /* Botón para bajar al análisis: verde lima, con rebote y un halo que late */
     .bajar {
       position: absolute;
       left: 50%;
-      bottom: 22px;
+      bottom: 76px;
       z-index: 16;
-      width: 52px;
-      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      height: 40px;
+      padding: 0 16px 0 18px;
       border: none;
-      background: none;
-      color: var(--acento);
-      font-size: 24px;
+      background: var(--acento);
+      color: var(--acento-texto);
+      font: 600 11.5px var(--mono);
+      letter-spacing: 0.14em;
+      white-space: nowrap;
       cursor: pointer;
       transform: translateX(-50%);
-      animation: rebote 2.2s ease-in-out infinite;
+      animation: rebote 2.2s ease-in-out infinite, halo-bajar 2.2s ease-out infinite;
+    }
+    .bajar i { font-size: 13px; }
+    .bajar:hover { background: #d6ff63; }
+    .bajar:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+    @keyframes halo-bajar {
+      0% { box-shadow: 0 0 0 0 rgba(198, 242, 78, 0.6), 0 6px 18px rgba(0, 0, 0, 0.45); }
+      70%, 100% { box-shadow: 0 0 0 14px rgba(198, 242, 78, 0), 0 6px 18px rgba(0, 0, 0, 0.45); }
     }
 
     @keyframes rebote {
@@ -1319,8 +1333,8 @@
   </div>
 
   <!-- Flecha para bajar al análisis y botón para volver al mapa -->
-  <button id="bajar" class="bajar" onclick="irAHistoria()" aria-label="Ver el análisis bajo el mapa" title="Ver análisis">
-    <i class="fa-solid fa-chevron-down"></i>
+  <button id="bajar" class="bajar" onclick="irAHistoria()" aria-label="Ver el análisis bajo el mapa">
+    VER ANÁLISIS <i class="fa-solid fa-chevron-down"></i>
   </button>
   <button class="subir" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" aria-label="Volver al mapa" title="Volver al mapa">
     <i class="fa-solid fa-arrow-up"></i>
@@ -3956,7 +3970,8 @@
       fs.forEach(f => { porPerfil[f.properties.cluster] = (porPerfil[f.properties.cluster] || 0) + (f.properties.per || 0); });
       const barra = [0, 1, 2, 3, 4, -1].map(k => porPerfil[k]
         ? `<i style="width:${100 * porPerfil[k] / pob}%;background:${k >= 0 ? PF[k].color : COLOR_SIN_PERFIL}" title="${k >= 0 ? 'Perfil ' + PF[k].letra : 'Sin perfil'}: ${fmt(100 * porPerfil[k] / pob)} %"></i>` : '').join('');
-      const r = resumenUV && resumenUV.uv[nombre];
+      // Cifras demográficas (como los perfiles); lo de transporte aparece abajo si se colorea por una variable de bus
+      const ninos = promedioVariable(fs, 'ninos'), mayores = promedioVariable(fs, 'mayores');
       const t = document.getElementById('tarjeta-uv');
       t.innerHTML = `
         <div class="tarjeta-uv-cabecera">
@@ -3968,11 +3983,11 @@
         </div>
         <div class="tarjeta-uv-cifras">
           <span><b>${fmt(pob)}</b>personas</span>
-          <span><b>${fmt(fs.length)}</b>manzanas</span>
-          ${r ? `<span><b>${fmt(100 * r.menos_200 / r.poblacion)} %</b>a menos de 200 m del bus</span>` : ''}
+          <span><b>${ninos == null ? '–' : fmt(ninos, 0) + ' %'}</b>niños 0–13</span>
+          <span><b>${mayores == null ? '–' : fmt(mayores, 0) + ' %'}</b>mayores 60+</span>
         </div>
         <div class="tarjeta-uv-barra">${barra}</div>
-        <small>Barra = perfiles de sus manzanas${fija ? '' : ' · toque el nombre en el mapa para fijarla'}</small>
+        <small>${fmt(fs.length)} manzanas · barra = sus perfiles${fija ? '' : ' · toque el nombre en el mapa para fijarla'}</small>
         ${htmlTarjetaFiltro(fs, CU)}`;
       t.hidden = false;
     }
@@ -4036,7 +4051,15 @@
       // 2) La UV frente a la comuna en la variable que se está mirando
       if (v && v.clave !== 'per') {
         const a = promedioVariable(fs, v.clave), b = promedioVariable(CU.geo.features, v.clave);
-        if (a != null && b) {
+        // Distancias (relave, bus, colegio): se leen como "más cerca / más lejos" en vez de "bajo / sobre el promedio"
+        const DESTINO = { relave: 'un relave', dist: 'un recorrido de bus', colegio: 'un colegio' };
+        if (a != null && b && DESTINO[v.clave]) {
+          const cerca = a < b, factor = cerca ? b / Math.max(a, 1) : a / b, prom = `el promedio de ${esc(CU.nombre)} (${fmtDist(b)})`;
+          frases.push(`En promedio, sus habitantes viven a ${fmtDist(a)} de ${DESTINO[v.clave]}: ${factor >= 1.5
+            ? `${fmt(factor, factor >= 10 ? 0 : 1)} veces más ${cerca ? 'cerca' : 'lejos'} que ${prom}`
+            : factor >= 1.1 ? `un ${fmt(100 * (cerca ? 1 - a / b : a / b - 1), 0)} % más ${cerca ? 'cerca' : 'lejos'} que ${prom}`
+            : `parecido al ${prom.replace(/^el /, '')}`}.`);
+        } else if (a != null && b) {
           const r = a / b, nom = `«${esc(v.nombre)}»`;
           frases.push(r >= 1.5 ? `En ${nom} la UV está ${fmt(r, 1)} veces sobre el promedio de ${esc(CU.nombre)}.`
             : r >= 1.1 ? `En ${nom} la UV está un ${fmt(100 * (r - 1), 0)} % sobre el promedio de ${esc(CU.nombre)}.`
