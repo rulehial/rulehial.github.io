@@ -552,6 +552,22 @@
     .tarjeta-uv-cabecera b { display: block; margin-top: 2px; font-size: 18px; font-weight: 600; }
     .tarjeta-uv-cabecera button { padding: 4px 8px; border: 1px solid var(--borde-fuerte); background: none; cursor: pointer; }
     .tarjeta-uv-cabecera button:hover { border-color: var(--acento); color: var(--acento); }
+    /* Dónde estoy */
+    .capa-mapa.boton-yo.buscando i { animation: girar-yo 1s linear infinite; }
+    @keyframes girar-yo { to { transform: rotate(360deg); } }
+    .yo-lista { margin: 10px 0 6px; padding: 0; list-style: none; font-size: 12.5px; line-height: 1.45; }
+    .yo-lista li { display: grid; grid-template-columns: 18px 1fr; gap: 6px; margin: 5px 0; }
+    .yo-lista li i { margin-top: 3px; font-size: 11px; color: var(--acento); text-align: center; }
+    .yo-lista li b { font-weight: 600; }
+    .yo-nota { display: block; margin-top: 6px; font-size: 10.5px; line-height: 1.4; color: var(--texto-suave); }
+    .yo-nota.pc { color: #fbb13c; }
+    .aviso-yo {
+      position: fixed; z-index: 30; left: 50%; top: calc(var(--alto-barra, 90px) + 14px); transform: translateX(-50%);
+      max-width: min(440px, calc(100vw - 32px)); padding: 12px 16px; border: 1px solid var(--borde-fuerte); border-left: 3px solid #fbb13c;
+      background: var(--panel-solido); font-size: 13px; line-height: 1.45; color: var(--texto); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    }
+    .aviso-yo[hidden] { display: none; }
+
     .tarjeta-uv-cifras { display: flex; gap: 18px; margin: 10px 0 8px; font-size: 11px; color: var(--texto-suave); }
     .tarjeta-uv-cifras b { display: block; font: 500 15px var(--mono); color: var(--texto); }
     .tarjeta-uv-barra { display: flex; height: 8px; margin-bottom: 6px; background: rgba(255, 255, 255, 0.06); }
@@ -1261,6 +1277,7 @@
           <button class="capa-mapa activo" data-capa="uv" aria-pressed="true" aria-label="Mostrar u ocultar: Nombres de UV" data-tip="Nombres de UV"><i class="fa-solid fa-location-dot"></i></button>
           <button class="capa-mapa activo" data-capa="relaves" aria-pressed="true" aria-label="Mostrar u ocultar: Relaves mineros" data-tip="Relaves mineros"><i class="fa-solid fa-triangle-exclamation"></i></button>
           <button class="capa-mapa activo" data-capa="colegios" aria-pressed="true" aria-label="Mostrar u ocultar: Colegios y liceos" data-tip="Colegios y liceos"><i class="fa-solid fa-school"></i></button>
+          <button class="capa-mapa boton-yo" data-yo aria-pressed="false" aria-label="Mostrar dónde estoy en el mapa" data-tip="Dónde estoy" data-estado="apagado"><i class="fa-solid fa-location-crosshairs"></i></button>
         </div>
       </div>
     </div>
@@ -1309,6 +1326,7 @@
     <i class="fa-solid fa-arrow-up"></i>
   </button>
   <div id="tip" class="tip" role="tooltip"></div>
+  <div id="aviso-yo" class="aviso-yo" role="status" hidden></div>
 
   <!-- ===================== ANÁLISIS ===================== -->
   <main id="historia" class="historia">
@@ -1636,7 +1654,7 @@
       });
     }
 
-    const marcadoresUV = {}, marcadoresCorte = [];    // se sacan del mapa al cambiar de comuna
+    const marcadoresCorte = [];                       // se sacan del mapa al cambiar de comuna
 
     const esMovil = () => window.matchMedia('(max-width: 900px)').matches;
     const ES_TACTIL = window.matchMedia('(hover: none)').matches;
@@ -1789,6 +1807,8 @@
           paint: { 'line-color': '#ff8a3d', 'line-width': 1.8 } });
       }
 
+      // Los nombres de UV se dibujan con IBM Plex Mono: esperar a que esté cargada (máximo 1,5 s)
+      try { await Promise.race([document.fonts.load('600 10px "IBM Plex Mono"'), new Promise(r => setTimeout(r, 1500))]); } catch (e) { /* letra de respaldo */ }
       if (uvs) {
         uvsGeo = uvs;
         ficticiasGeo = ficticias;
@@ -1850,6 +1870,7 @@
       actualizarLeyenda();
       construirFiltros();
       construirHistoria(rutas);
+      nombresUVArriba();
       activarInteraccion();
       filtrarPinesComuna();
       if (comunaDeHash() === 'TA') irAComuna('TA', true);
@@ -2067,37 +2088,102 @@
       pintarColegios();
     }
 
-    // Etiquetas de UV (HTML, sin necesidad de fuentes de mapa)
+    // Nombres de UV dibujados por el mapa (no como elementos HTML): cada nombre es una imagen pequeña
+    // (recuadro, texto y borde verde) sobre un tallo punteado. El navegador ya no reubica ~40 elementos
+    // en cada cuadro al girar o mover el mapa.
+    const ALTURAS_TALLO = esMovil() ? [16, 30, 44, 58] : [26, 44, 62, 80, 98, 116];
+    const nombresUV = { type: 'FeatureCollection', features: [] };
+    const dimNombre = {};                     // id de imagen → tamaño en px de pantalla
+    let nombreHover = null;
+    const ESCALA_IMG = 2;                     // se dibujan al doble para que se vean nítidos
+    function fuenteMono() { return getComputedStyle(document.documentElement).getPropertyValue('--mono').trim() || 'monospace'; }
+    function crearImagenNombre(id, texto) {
+      const movil = esMovil(), S = ESCALA_IMG;
+      const tam = movil ? 8.5 : 9.5, esp = movil ? 0.08 : 0.12;
+      const [pt, pr, pb, pl] = movil ? [2, 5, 2, 5] : [3, 7, 3, 6];
+      const cv = document.createElement('canvas'), x = cv.getContext('2d', { willReadFrequently: true });
+      const fuente = `600 ${tam * S}px ${fuenteMono()}`;
+      x.font = fuente;
+      if ('letterSpacing' in x) x.letterSpacing = `${esp * tam * S}px`;
+      const anchoTexto = x.measureText(texto).width / S;
+      const w = Math.ceil(anchoTexto + pl + pr + 3), h = Math.ceil(tam * 1.3 + pt + pb + 2);
+      dimNombre[id] = { w, h };
+      [['', 'rgba(11, 15, 20, 0.82)', '#ffffff', 'rgba(255, 255, 255, 0.22)'],
+       ['-a', '#c6f24e', '#0b0f14', '#c6f24e']].forEach(([suf, fondo, color, borde]) => {
+        cv.width = w * S; cv.height = h * S;
+        x.font = fuente;
+        if ('letterSpacing' in x) x.letterSpacing = `${esp * tam * S}px`;
+        x.fillStyle = fondo; x.fillRect(0, 0, w * S, h * S);
+        x.strokeStyle = borde; x.lineWidth = S; x.strokeRect(S / 2, S / 2, w * S - S, h * S - S);
+        x.fillStyle = '#c6f24e'; x.fillRect(0, 0, 2 * S, h * S);                // borde izquierdo verde
+        x.fillStyle = color; x.textBaseline = 'middle';
+        x.fillText(texto, (pl + 1) * S, (h * S) / 2 + 0.5 * S);
+        const img = x.getImageData(0, 0, w * S, h * S);
+        if (map.hasImage(id + suf)) map.removeImage(id + suf);
+        map.addImage(id + suf, img, { pixelRatio: S });
+      });
+    }
+    // Tallos punteados con su punto en la base (uno por altura, normal y destacado)
+    function crearImagenesTallo() {
+      const S = ESCALA_IMG;
+      ALTURAS_TALLO.forEach(alto => [['', 'rgba(198, 242, 78, 0.75)', '#ffffff', 'rgba(198, 242, 78, 0.3)'],
+        ['-a', '#c6f24e', '#c6f24e', 'rgba(198, 242, 78, 0.35)']].forEach(([suf, linea, punto, aro]) => {
+        const id = `uvt-${alto}${suf}`;
+        if (map.hasImage(id)) return;
+        const w = 16, h = alto + 12, cv = document.createElement('canvas'), x = cv.getContext('2d', { willReadFrequently: true });
+        cv.width = w * S; cv.height = h * S;
+        x.strokeStyle = linea; x.lineWidth = 1.5 * S; x.setLineDash([3 * S, 2.5 * S]);
+        x.beginPath(); x.moveTo(w / 2 * S, 0); x.lineTo(w / 2 * S, (h - 9) * S); x.stroke();
+        x.setLineDash([]);
+        x.fillStyle = aro; x.beginPath(); x.arc(w / 2 * S, (h - 6) * S, 6 * S, 0, 2 * Math.PI); x.fill();
+        x.fillStyle = punto; x.beginPath(); x.arc(w / 2 * S, (h - 6) * S, 3.5 * S, 0, 2 * Math.PI); x.fill();
+        map.addImage(id, x.getImageData(0, 0, w * S, h * S), { pixelRatio: S });
+      }));
+    }
+    function crearCapaNombresUV() {
+      if (map.getSource('uv-nombres')) return;
+      crearImagenesTallo();
+      map.addSource('uv-nombres', { type: 'geojson', data: nombresUV });
+      const filtro = filtroNombresUV();
+      map.addLayer({ id: 'uv-tallos', type: 'symbol', source: 'uv-nombres', filter: filtro,
+        layout: { 'icon-image': ['concat', 'uvt-', ['to-string', ['get', 'alto']], ['case', ['get', 'act'], '-a', '']],
+                  'icon-anchor': 'bottom', 'icon-offset': [0, 6], 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
+      map.addLayer({ id: 'uv-nombres', type: 'symbol', source: 'uv-nombres', filter: filtro,
+        layout: { 'icon-image': ['concat', ['get', 'img'], ['case', ['get', 'act'], '-a', '']],
+                  'icon-anchor': 'bottom', 'icon-offset': ['get', 'desplaza'],
+                  'icon-allow-overlap': true, 'icon-ignore-placement': true,
+                  'symbol-sort-key': ['case', ['get', 'act'], 1, 0], 'symbol-z-order': 'source' } });
+    }
+    const filtroNombresUV = () => ['all', ['==', ['get', 'comuna'], comunaActiva], ['!', ['get', 'oculto']]];
+    // Los nombres van sobre todo lo demás (manzanas, relaves, colegios, cortes)
+    function nombresUVArriba() { ['uv-tallos', 'uv-nombres'].forEach(id => map.getLayer(id) && map.moveLayer(id)); }
+    // Destacado: la UV activa y la que está bajo el mouse
+    function pintarNombresUV() {
+      if (!map.getSource('uv-nombres')) return;
+      let cambio = false;
+      nombresUV.features.forEach(f => {
+        const act = f.properties.n === uvDestacada.nombre || f.properties.n === nombreHover;
+        if (f.properties.act !== act) { f.properties.act = act; cambio = true; }
+      });
+      if (cambio) map.getSource('uv-nombres').setData(nombresUV);
+    }
+
     function agregarEtiquetasUV(uvs, ficticias) {
       const feats = uvs.features.filter(f => f.properties.urbano === 1)
         .concat((ficticias ? ficticias.features : []).filter(f => f.properties.ficticia));
-      let indiceUV = 0;
       feats.sort((a, b) => (centroGrande(a.geometry) || [0])[0] - (centroGrande(b.geometry) || [0])[0]);
+      crearCapaNombresUV();
       feats.forEach(f => {
         const c = centroGrande(f.geometry);
         if (!c) return;
-        centrosUV[f.properties.NOMBRE_UV] = c;
-        const el = document.createElement('div');
-        el.className = 'etiqueta-uv alto-' + (1 + (indiceUV++ % 3));
-        const texto = document.createElement('span');
-        texto.className = 'pin-texto';
-        texto.textContent = f.properties.NOMBRE_UV.replace(' (SECTOR URBANO)', ' ALTO');
-        el.append(texto, Object.assign(document.createElement('span'), { className: 'pin-tallo' }),
-                  Object.assign(document.createElement('span'), { className: 'pin-punto' }));
-        el.addEventListener('click', ev => {
-          ev.stopPropagation();
-          const n = f.properties.NOMBRE_UV;
-          destacarUV(n, true);
-          abrirFichaUV(n);
-        });
-        if (!ES_TACTIL) {
-          el.addEventListener('mouseenter', () => programarUV(f.properties.NOMBRE_UV, 200));
-          el.addEventListener('mouseleave', () => programarUV(null));
-        }
-        etiquetasUV[f.properties.NOMBRE_UV] = el;
-        // anchor 'bottom': el punto queda sobre el terreno y la etiqueta flota encima
-        marcadoresUV[f.properties.NOMBRE_UV] = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat(c).addTo(map);
+        const n = f.properties.NOMBRE_UV;
+        centrosUV[n] = c;
+        const img = 'uvn-' + nombresUV.features.length;
+        crearImagenNombre(img, n.replace(' (SECTOR URBANO)', ' ALTO'));
+        nombresUV.features.push({ type: 'Feature', geometry: { type: 'Point', coordinates: c },
+          properties: { n, comuna: comunaDeUV(n), img, alto: ALTURAS_TALLO[0], desplaza: [0, -ALTURAS_TALLO[0] - 6], oculto: false, act: false } });
       });
+      acomodarPines();
     }
 
     function centroGrande(g) {
@@ -2306,7 +2392,10 @@
         if (map.getLayer('cortes')) map.setLayoutProperty('cortes', 'visibility', ver ? 'visible' : 'none');
         document.body.classList.toggle('sin-cortes', !ver);
       }
-      if (clave === 'uv') document.body.classList.toggle('sin-nombres-uv', !ver);
+      if (clave === 'uv') {
+        document.body.classList.toggle('sin-nombres-uv', !ver);
+        ['uv-tallos', 'uv-nombres'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ver ? 'visible' : 'none'));
+      }
       if (clave === 'relaves') {
         ['relaves-3d', 'relaves-borde', 'relave-foco'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', ver ? 'visible' : 'none'));
         if (!ver && relaveDestacado.id != null) quitarUV(true);
@@ -2317,11 +2406,12 @@
       if (clave === 'relaves') actualizarLeyendaRelaves();
       if (clave === 'colegios') actualizarLeyendaColegios();
     }
-    document.querySelectorAll('.capa-mapa').forEach(b => { b.dataset.estado = capasVisibles[b.dataset.capa] ? 'visible' : 'oculto'; });
+    document.querySelectorAll('.capa-mapa[data-capa]').forEach(b => { b.dataset.estado = capasVisibles[b.dataset.capa] ? 'visible' : 'oculto'; });
     document.body.classList.toggle('sin-cortes', !capasVisibles.cortes);
     document.querySelector('.capas-mapa').addEventListener('click', e => {
       const b = e.target.closest('.capa-mapa');
-      if (b) alternarCapaMapa(b.dataset.capa);
+      if (b && b.dataset.yo !== undefined) return alternarUbicacion();
+      if (b && b.dataset.capa) alternarCapaMapa(b.dataset.capa);
     });
 
     // =====================================================================
@@ -2331,15 +2421,14 @@
       // Un solo tooltip (el del sitio): sobre un nombre de UV o una letra de corte no se muestra el de la manzana
       const etiqueta = { remove: ocultarTip };
       const sobreMarcador = ev => ev && ev.target && ev.target.closest && ev.target.closest('.maplibregl-marker');
-      const capasEncima = ['relaves-3d', 'colegios-3d'];
-      const sobreOtraCapa = pt => { const ls = capasEncima.filter(id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none');
-        return ls.length > 0 && map.queryRenderedFeatures(pt, { layers: ls }).length > 0; };
       if (!ES_TACTIL) {
         // Un solo manejador para todo el mapa: como mucho una consulta por cuadro, y el elemento de más arriba manda
         // (relave > colegio > manzana). Antes cada capa consultaba el mapa 3D por su cuenta en cada movimiento.
-        const CAPAS_HOVER = ['relaves-3d', 'colegios-3d', 'cortes', 'manzanas'];
+        const CAPAS_HOVER = ['uv-nombres', 'relaves-3d', 'colegios-3d', 'cortes', 'manzanas'];
         let ultimoMov = null, movPendiente = false, sobreAlgo = false;
+        const ponerHover = n => { if (nombreHover !== n) { nombreHover = n; pintarNombresUV(); } };
         const salir = () => {
+          ponerHover(null);
           if (!sobreAlgo) return;
           sobreAlgo = false;
           map.getCanvas().style.cursor = '';
@@ -2365,6 +2454,15 @@
           const capas = CAPAS_HOVER.filter(id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none');
           const fs = capas.length ? map.queryRenderedFeatures(e.point, { layers: capas }) : [];
           const de = id => fs.find(f => f.layer.id === id);
+          const nom = de('uv-nombres');
+          if (nom) {
+            sobreAlgo = true;
+            map.getCanvas().style.cursor = 'pointer';
+            ocultarTip();
+            ponerHover(nom.properties.n);
+            return programarUV(nom.properties.n, 200);
+          }
+          ponerHover(null);
           const rel = de('relaves-3d'), col = !rel && de('colegios-3d'), corte = de('cortes'), mz = !rel && !col && de('manzanas');
           if (!rel && !col && !mz && !corte) return salir();
           sobreAlgo = true;
@@ -2382,22 +2480,24 @@
         // Al entrar a un nombre de UV o a una letra de corte, se oculta el tooltip de la manzana de abajo
         map.getCanvasContainer().addEventListener('mouseover', ev => { if (sobreMarcador(ev)) ocultarTip(); });
       }
-      if (map.getLayer('relaves-3d')) {
-        map.on('click', 'relaves-3d', e => { ocultarTip(); abrirFichaRelave(e.features[0].properties.id); });
-      }
-      if (map.getLayer('colegios-3d')) {
-        map.on('click', 'colegios-3d', e => {
-          if (map.getLayer('relaves-3d') && map.getLayoutProperty('relaves-3d', 'visibility') !== 'none'
-            && map.queryRenderedFeatures(e.point, { layers: ['relaves-3d'] }).length) return;
-          ocultarTip();
-          abrirFichaColegio(e.features[0].properties.id);
-        });
-      }
-      map.on('click', 'manzanas', e => {
-        // Si se tocó un relave o un colegio, abre ese (no la manzana de abajo)
-        if (sobreOtraCapa(e.point)) return;
+      // Clic: el elemento de más arriba manda (nombre de UV > corte > relave > colegio > manzana)
+      map.on('click', e => {
+        const capas = ['uv-nombres', 'cortes', 'relaves-3d', 'colegios-3d', 'manzanas']
+          .filter(id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none');
+        const fs = map.queryRenderedFeatures(e.point, { layers: capas });
+        const de = id => fs.find(f => f.layer.id === id);
+        const nom = de('uv-nombres'), corte = de('cortes'), rel = de('relaves-3d'), col = de('colegios-3d'), mz = de('manzanas');
         etiqueta.remove();
-        abrirFichaManzana(e.features[0].properties);
+        if (nom) {
+          const n = nom.properties.n;
+          if (uvDestacada.fija && uvDestacada.nombre === n) return quitarUV(true);
+          destacarUV(n, true);
+          return abrirFichaUV(n);
+        }
+        if (corte) return irACorte(corte.properties.id);
+        if (rel) return abrirFichaRelave(rel.properties.id);
+        if (col) return abrirFichaColegio(col.properties.id);
+        if (mz) return abrirFichaManzana(mz.properties);
       });
     }
 
@@ -3598,7 +3698,6 @@
         type: 'Feature', properties: { id: c.id, comuna: c.comuna }, geometry: { type: 'LineString', coordinates: c.puntos } })) } });
       map.addLayer({ id: 'cortes', type: 'line', source: 'cortes',
         paint: { 'line-color': '#c6f24e', 'line-width': 2.2, 'line-dasharray': [3, 2] } });
-      map.on('click', 'cortes', e => { e.preventDefault(); irACorte(e.features[0].properties.id); });
       TODOS_CORTES.forEach(c => [[c.puntos[0], c.id], [c.puntos[c.puntos.length - 1], c.id + '′']].forEach(([p, t]) => {
         const el = document.createElement('div');
         el.className = 'etiqueta-corte';
@@ -3798,7 +3897,6 @@
     //   cerrar la tarjeta, pulsar Escape o volver a tocar el nombre.
     // =====================================================================
     const uvDestacada = { nombre: null, fija: false };
-    const etiquetasUV = {};
     let temporizadorUV = null, uvPendiente = null;
 
     function programarUV(nombre, espera) {
@@ -3812,7 +3910,7 @@
       temporizadorUV = setTimeout(() => destacarUV(nombre, false), espera ?? (uvDestacada.nombre ? 350 : 1000));
     }
 
-    function destacarUV(nombre, fija) {
+    function destacarUV(nombre, fija, mover = true) {
       clearTimeout(temporizadorUV);
       uvDestacada.nombre = nombre;
       uvDestacada.fija = fija;
@@ -3820,9 +3918,9 @@
       const filtro = ['==', ['get', 'NOMBRE_UV'], nombre];
       ['uv-halo', 'uv-borde'].forEach(id => map.getLayer(id) && map.setFilter(id, filtro));
       map.setPaintProperty('manzanas', 'fill-extrusion-color', exprColorFinal());
-      Object.entries(etiquetasUV).forEach(([n, el]) => el.classList.toggle('activa', n === nombre));
+      pintarNombresUV();
       mostrarTarjetaUV(nombre, fija);
-      if (fija && centrosUV[nombre]) map.easeTo({ center: centrosUV[nombre], duration: 900 });
+      if (fija && mover && centrosUV[nombre]) map.easeTo({ center: centrosUV[nombre], duration: 900 });
     }
 
     function quitarUV(forzar) {
@@ -3837,8 +3935,9 @@
       pintarRelaves();
       ['uv-halo', 'uv-borde'].forEach(id => map.getLayer(id) && map.setFilter(id, ['==', ['get', 'NOMBRE_UV'], '__ninguna__']));
       map.setPaintProperty('manzanas', 'fill-extrusion-color', exprColorFinal());
-      Object.values(etiquetasUV).forEach(el => el.classList.remove('activa'));
+      pintarNombresUV();
       document.getElementById('tarjeta-uv').hidden = true;
+      yo.tarjeta = false;
     }
 
     // Tarjeta con el resumen de la UV destacada
@@ -3971,27 +4070,22 @@
       });
     }
 
-    // Alfileres de UV: cada uno elige la altura de tallo más baja que no choque
-    // con las etiquetas ya ubicadas (se recalcula al mover o hacer zoom)
-    const ALTURAS_TALLO = esMovil() ? [16, 30, 44, 58] : [26, 44, 62, 80, 98, 116];
+    // Nombres de UV: cada uno elige la altura de tallo más baja que no choque con los ya ubicados
+    // (se recalcula al terminar de mover o hacer zoom). En celular, el que no cabe se oculta.
     function acomodarPines() {
-      // Celular: si una etiqueta no cabe sin encimarse, se oculta (gana la UV más poblada)
+      if (!map.getSource('uv-nombres')) return;
       const ocultarSiChoca = esMovil();
       const pob = n => (resumenDeUV(n) || { poblacion: 0 }).poblacion;
-      const pines = Object.entries(etiquetasUV).map(([n, el]) => {
-        const c = centrosUV[n];
-        if (!c || el.classList.contains('otra-comuna')) return null;
-        el.classList.remove('choca');
-        const pt = map.project(c);
-        const t = el.querySelector('.pin-texto');
-        return { n, el, x: pt.x, y: pt.y, w: t.offsetWidth + 6, h: t.offsetHeight + 4 };
-      }).filter(Boolean).sort(ocultarSiChoca
-        ? (a, b) => (b.el.classList.contains('activa') - a.el.classList.contains('activa')) || pob(b.n) - pob(a.n)
+      const pines = nombresUV.features.filter(f => f.properties.comuna === comunaActiva).map(f => {
+        const pt = map.project(f.geometry.coordinates), d = dimNombre[f.properties.img] || { w: 80, h: 16 };
+        return { f, n: f.properties.n, x: pt.x, y: pt.y, w: d.w + 6, h: d.h + 4 };
+      }).sort(ocultarSiChoca
+        ? (a, b) => (b.n === uvDestacada.nombre) - (a.n === uvDestacada.nombre) || pob(b.n) - pob(a.n)
         : (a, b) => b.y - a.y); // escritorio: primero los más cercanos (abajo en pantalla)
       // Las letras de los cortes (A, A′…) también ocupan espacio: los nombres las esquivan
       const base = map.getContainer().getBoundingClientRect();
       const cajas = document.body.classList.contains('sin-cortes') ? [] :
-        [...document.querySelectorAll('.etiqueta-corte')].map(e => {
+        [...document.querySelectorAll('.etiqueta-corte')].filter(e => e.offsetParent).map(e => {
           const r = e.getBoundingClientRect();
           return { x0: r.left - base.left - 2, x1: r.right - base.left + 2, y0: r.top - base.top - 2, y1: r.bottom - base.top + 2 };
         });
@@ -4002,13 +4096,16 @@
           const caja = { x0: p.x - p.w / 2, x1: p.x + p.w / 2, y1: p.y - alto, y0: p.y - alto - p.h };
           if (!choca(caja)) { elegida = alto; break; }
         }
+        p.f.properties.oculto = false;
         if (elegida === null) {
-          if (ocultarSiChoca) { p.el.classList.add('choca'); return; }
+          if (ocultarSiChoca) { p.f.properties.oculto = true; return; }
           elegida = ALTURAS_TALLO[ALTURAS_TALLO.length - 1];
         }
         cajas.push({ x0: p.x - p.w / 2, x1: p.x + p.w / 2, y1: p.y - elegida, y0: p.y - elegida - p.h });
-        p.el.querySelector('.pin-tallo').style.height = elegida + 'px';
+        p.f.properties.alto = elegida;
+        p.f.properties.desplaza = [0, -elegida - 6];
       });
+      map.getSource('uv-nombres').setData(nombresUV);
     }
     map.on('moveend', acomodarPines);
     map.once('idle', acomodarPines);
@@ -4475,6 +4572,204 @@
       if (c) map.easeTo({ center: c, zoom: Math.max(map.getZoom(), 14), duration: 900 });
     }
 
+    // =====================================================================
+    // DÓNDE ESTOY: ubicación del visitante (solo al tocar el botón; nunca sale del navegador)
+    // =====================================================================
+    const yo = { activo: false, vigilancia: null, primera: true, pos: null, prec: null, comuna: null, uv: null };
+    // Área del atlas: Copiapó (ciudad, San Pedro, Paipote) y Tierra Amarilla (valle hasta Amolanas)
+    const ZONA_TA = [-70.30, -28.25, -69.85, -27.44];
+    let zonaCP = null;
+    function comunaDeUbicacion([lon, lat]) {
+      if (!zonaCP && datos) {
+        const b = [180, 90, -180, -90];
+        datos.features.forEach(f => (f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates)
+          .forEach(pl => pl[0].forEach(([x, y]) => { b[0] = Math.min(b[0], x); b[1] = Math.min(b[1], y); b[2] = Math.max(b[2], x); b[3] = Math.max(b[3], y); })));
+        zonaCP = [b[0] - 0.015, b[1] - 0.015, b[2] + 0.015, b[3] + 0.015];
+      }
+      const dentro = z => z && lon >= z[0] && lon <= z[2] && lat >= z[1] && lat <= z[3];
+      if (dentro(zonaCP) && lat > -27.445) return 'CP';
+      if (dentro(ZONA_TA)) return 'TA';
+      return null;
+    }
+    // Distancias en metros (proyección local)
+    const aMetros = ([lon, lat]) => [6371008.8 * lon * Math.PI / 180 * Math.cos(-27.45 * Math.PI / 180), 6371008.8 * lat * Math.PI / 180];
+    const anillosDe = g => (g.type === 'Polygon' ? [g.coordinates] : g.coordinates);
+    function dentroDeGeom(pt, g) {
+      return anillosDe(g).some(([ext, ...hs]) => {
+        const en = r => { let d = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+          const [xi, yi] = r[i], [xj, yj] = r[j];
+          if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj - xi) * (pt[1] - yi) / (yj - yi) + xi) d = !d; } return d; };
+        return en(ext) && !hs.some(en);
+      });
+    }
+    function distanciaAGeom(pt, g) {
+      if (dentroDeGeom(pt, g)) return 0;
+      const P = aMetros(pt);
+      let d = Infinity;
+      anillosDe(g).forEach(pl => pl.forEach(r => {
+        for (let i = 1; i < r.length; i++) {
+          const A = aMetros(r[i - 1]), B = aMetros(r[i]), dx = B[0] - A[0], dy = B[1] - A[1], l = dx * dx + dy * dy;
+          const t = l ? Math.max(0, Math.min(1, ((P[0] - A[0]) * dx + (P[1] - A[1]) * dy) / l)) : 0;
+          d = Math.min(d, Math.hypot(P[0] - A[0] - t * dx, P[1] - A[1] - t * dy));
+        }
+      }));
+      return d;
+    }
+    const masCercano = (pt, feats) => feats.reduce((m, f) => { const d = distanciaAGeom(pt, f.geometry); return d < m.d ? { f, d } : m; }, { f: null, d: Infinity });
+    const fmtDist = d => d < 1000 ? `${fmt(Math.round(d / 10) * 10)} m` : `${fmt(d / 1000, 1)} km`;
+
+    // Figura de persona (Font Awesome dibujado en un círculo) y círculo de precisión
+    async function crearImagenPersona() {
+      if (map.hasImage('yo-persona')) return;
+      try { await Promise.race([document.fonts.load('900 20px "Font Awesome 6 Free"'), new Promise(r => setTimeout(r, 1500))]); } catch (e) { /* sin ícono */ }
+      const S = 2, n = 34, cv = document.createElement('canvas'), x = cv.getContext('2d', { willReadFrequently: true });
+      cv.width = cv.height = n * S;
+      x.fillStyle = 'rgba(198, 242, 78, 0.3)'; x.beginPath(); x.arc(n / 2 * S, n / 2 * S, 16.5 * S, 0, 2 * Math.PI); x.fill();
+      x.fillStyle = '#0b0f14'; x.beginPath(); x.arc(n / 2 * S, n / 2 * S, 12.5 * S, 0, 2 * Math.PI); x.fill();
+      x.strokeStyle = '#c6f24e'; x.lineWidth = 2.5 * S; x.stroke();
+      x.fillStyle = '#ffffff'; x.font = `900 ${13 * S}px "Font Awesome 6 Free"`; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.fillText('\uf183', n / 2 * S, n / 2 * S + S);
+      map.addImage('yo-persona', x.getImageData(0, 0, n * S, n * S), { pixelRatio: S });
+    }
+    function circuloPrecision([lon, lat], radio) {
+      const r = Math.max(5, radio || 0), dLat = r / 111320, dLon = r / (111320 * Math.cos(lat * Math.PI / 180));
+      const anillo = Array.from({ length: 65 }, (_, i) => { const a = 2 * Math.PI * i / 64; return [lon + dLon * Math.cos(a), lat + dLat * Math.sin(a)]; });
+      return { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [anillo] } };
+    }
+    async function dibujarUbicacion() {
+      const datosYo = { type: 'FeatureCollection', features: [circuloPrecision(yo.pos, yo.prec),
+        { type: 'Feature', properties: { persona: true }, geometry: { type: 'Point', coordinates: yo.pos } }] };
+      if (!map.getSource('yo')) {
+        await crearImagenPersona();
+        map.addSource('yo', { type: 'geojson', data: datosYo });
+        map.addLayer({ id: 'yo-precision', type: 'fill', source: 'yo', filter: ['!', ['has', 'persona']],
+          paint: { 'fill-color': '#c6f24e', 'fill-opacity': 0.12 } });
+        map.addLayer({ id: 'yo-precision-borde', type: 'line', source: 'yo', filter: ['!', ['has', 'persona']],
+          paint: { 'line-color': '#c6f24e', 'line-width': 1.5, 'line-opacity': 0.7, 'line-dasharray': [2, 2] } });
+        map.addLayer({ id: 'yo-persona', type: 'symbol', source: 'yo', filter: ['has', 'persona'],
+          layout: { 'icon-image': 'yo-persona', 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
+      } else map.getSource('yo').setData(datosYo);
+      ['yo-precision', 'yo-precision-borde', 'yo-persona'].forEach(id => map.setLayoutProperty(id, 'visibility', 'visible'));
+    }
+    function quitarDibujoUbicacion() {
+      ['yo-precision', 'yo-precision-borde', 'yo-persona'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', 'none'));
+    }
+
+    let temporizadorAviso = null;
+    function avisoUbicacion(html, ms = 7000) {
+      const el = document.getElementById('aviso-yo');
+      el.innerHTML = html;
+      el.hidden = false;
+      clearTimeout(temporizadorAviso);
+      temporizadorAviso = setTimeout(() => { el.hidden = true; }, ms);
+    }
+    const NOTA_PC = 'Desde un computador la ubicación se estima por wifi o por la dirección IP: puede errar por cientos de metros o más. En un celular con GPS es precisa.';
+    const usaComputador = () => !ES_TACTIL;
+
+    function marcarBotonYo(estadoBoton) {
+      const b = document.querySelector('.boton-yo');
+      if (!b) return;
+      b.classList.toggle('activo', estadoBoton === 'activo');
+      b.classList.toggle('buscando', estadoBoton === 'buscando');
+      b.setAttribute('aria-pressed', estadoBoton !== 'apagado');
+      b.dataset.estado = estadoBoton === 'buscando' ? 'buscando…' : estadoBoton;
+    }
+    function alternarUbicacion() { yo.activo ? apagarUbicacion() : encenderUbicacion(); }
+    function encenderUbicacion() {
+      if (!('geolocation' in navigator) || !window.isSecureContext) {
+        return avisoUbicacion('Este navegador no permite obtener la ubicación.');
+      }
+      Object.assign(yo, { activo: true, primera: true });
+      marcarBotonYo('buscando');
+      yo.vigilancia = navigator.geolocation.watchPosition(nuevaUbicacion, errorUbicacion,
+        { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+    }
+    function apagarUbicacion() {
+      if (yo.vigilancia != null) navigator.geolocation.clearWatch(yo.vigilancia);
+      Object.assign(yo, { activo: false, vigilancia: null, pos: null, uv: null });
+      marcarBotonYo('apagado');
+      quitarDibujoUbicacion();
+      if (yo.tarjeta) { yo.tarjeta = false; quitarUV(true); }
+    }
+    function errorUbicacion(err) {
+      const msj = {
+        1: 'No se dio permiso para usar la ubicación. Para activarlo, toque el candado junto a la dirección del sitio y permita la ubicación.',
+        2: 'No se pudo obtener la ubicación en este momento. Revise que el GPS o la ubicación del equipo estén activados.',
+        3: 'La ubicación tardó demasiado en llegar. Intente de nuevo, idealmente con el GPS activado.'
+      }[err && err.code] || 'No se pudo obtener la ubicación.';
+      avisoUbicacion(msj);
+      apagarUbicacion();
+    }
+
+    async function nuevaUbicacion(pos) {
+      if (!yo.activo) return;
+      const pt = [pos.coords.longitude, pos.coords.latitude];
+      const c = comunaDeUbicacion(pt);
+      if (!c) {
+        avisoUbicacion(`Su ubicación está fuera de Copiapó y Tierra Amarilla, el área que cubre este atlas.${usaComputador()
+          ? '<br><span style="color:var(--texto-suave)">' + NOTA_PC + '</span>' : ''}`, 9000);
+        return apagarUbicacion();
+      }
+      Object.assign(yo, { pos: pt, prec: pos.coords.accuracy, comuna: c });
+      marcarBotonYo('activo');
+      if (c !== comunaActiva) await activarComuna(c);
+      await dibujarUbicacion();
+      const datosLugar = lugarDeUbicacion(pt, c);
+      // Primera vez: destaca su UV, muestra la tarjeta y vuela; después solo se mueve la figura (y la tarjeta si cambia de UV)
+      if (yo.primera || datosLugar.uv !== yo.uv) {
+        if (datosLugar.uv) destacarUV(datosLugar.uv, true, false); else quitarUV(true);
+        mostrarTarjetaYo(datosLugar);
+      }
+      yo.uv = datosLugar.uv;
+      if (yo.primera) {
+        yo.primera = false;
+        map.flyTo({ center: pt, zoom: Math.max(14, Math.min(16, 17 - Math.log2(Math.max(50, yo.prec) / 50))),
+          pitch: estado.en3D ? 55 : 0, bearing: map.getBearing(), duration: 1800 });
+        map.once('moveend', () => map.once('idle', corregirAlturaCamara));
+        // En computador la tarjeta ya explica la limitación; en celular se avisa solo si el GPS viene impreciso
+        if (!usaComputador() && yo.prec > 200) avisoUbicacion(`Ubicación aproximada (±${fmtDist(yo.prec)}): el GPS todavía no tiene buena señal. Si sale al exterior, la figura se ajustará sola.`, 9000);
+      }
+    }
+    // Manzana, UV, colegio y relave más cercanos a la ubicación
+    function lugarDeUbicacion(pt, c) {
+      const C = COMUNAS[c];
+      const mzs = (C.geo ? C.geo.features : []).filter(f => !f.properties.sinPoblacion);
+      let mz = mzs.find(f => dentroDeGeom(pt, f.geometry)) || null, dMz = 0;
+      if (!mz) { const m = masCercano(pt, mzs); if (m.d <= 150) { mz = m.f; dMz = m.d; } }
+      let uv = mz ? mz.properties.uv : null;
+      if (!uv && uvsGeo) {
+        const u = uvsGeo.features.find(f => comunaDeUV(f.properties.NOMBRE_UV) === c && dentroDeGeom(pt, f.geometry));
+        if (u) uv = u.properties.NOMBRE_UV;
+      }
+      const col = colegiosGeo ? masCercano(pt, colegiosGeo.features.filter(f => f.properties.comuna === c)) : { f: null };
+      const rel = relavesGeo ? masCercano(pt, relavesGeo.features) : { f: null };
+      return { uv, mz: mz && mz.properties, dMz, col, rel };
+    }
+    function mostrarTarjetaYo(L) {
+      const t = document.getElementById('tarjeta-uv');
+      const pf = L.mz && L.mz.cluster >= 0 ? COMUNAS[yo.comuna].perfiles[L.mz.cluster] : null;
+      const filas = [
+        ['fa-map-location-dot', L.uv ? `Unidad vecinal <b>${esc(nombreCorto(L.uv))}</b>` : 'Fuera de las unidades vecinales del atlas'],
+        ['fa-house', L.mz ? (pf ? `${L.dMz ? 'La manzana más cercana' : 'Su manzana'} es de <b>perfil ${pf.letra}</b> (${esc(pf.nombre.toLowerCase())}) · ${fmt(L.mz.per)} personas`
+          : `${L.dMz ? 'La manzana más cercana' : 'Su manzana'} tiene pocos habitantes (${fmt(L.mz.per)}), así que no tiene perfil`) : 'Fuera de las manzanas del Censo'],
+        ['fa-school', L.col.f ? `Colegio más cercano: <b>${esc(nombreCorto(L.col.f.properties.nombre))}</b>, a ${fmtDist(L.col.d)}` : null],
+        ['fa-triangle-exclamation', L.rel.f ? `Relave más cercano: <b>${esc(nombreCorto(L.rel.f.properties.nombre))}</b>, a <span style="${L.rel.d <= 1000 ? 'color:#ff6b5b' : ''}">${fmtDist(L.rel.d)}</span>` : null]
+      ].filter(([, v]) => v);
+      t.innerHTML = `
+        <div class="tarjeta-uv-cabecera">
+          <span><span class="mono">USTED ESTÁ AQUÍ · ${esc(NOMBRE_COMUNA[yo.comuna].toUpperCase())}</span><b>${L.uv ? esc(nombreCorto(L.uv)) : NOMBRE_COMUNA[yo.comuna]}</b></span>
+          <span class="tarjeta-uv-botones">
+            ${L.uv ? `<button onclick="abrirFichaUV('${esc(L.uv).replace(/'/g, '&#39;')}')" title="Ficha de la unidad vecinal">FICHA</button>` : ''}
+            <button onclick="apagarUbicacion()" aria-label="Dejar de mostrar mi ubicación" title="Dejar de mostrar mi ubicación"><i class="fa-solid fa-xmark"></i></button>
+          </span>
+        </div>
+        <ul class="yo-lista">${filas.map(([i, v]) => `<li><i class="fa-solid ${i}"></i><span>${v}</span></li>`).join('')}</ul>
+        <small class="yo-nota">Precisión ±${fmtDist(yo.prec)} · su ubicación no sale de este navegador.</small>
+        ${usaComputador() ? `<small class="yo-nota pc"><i class="fa-solid fa-desktop"></i> ${NOTA_PC}</small>` : ''}`;
+      t.hidden = false;
+      yo.tarjeta = true;
+    }
+
     // Selector de comuna: el mapa muestra solo la comuna elegida (menos peso para el navegador)
     function cargarTA() {
       const T = COMUNAS.TA;
@@ -4510,7 +4805,7 @@
         if (si && !m.enMapa) { m.addTo(map); m.enMapa = true; }
         if (!si && m.enMapa !== false) { m.remove(); m.enMapa = false; }
       };
-      Object.entries(marcadoresUV).forEach(([n, m]) => poner(m, comunaDeUV(n) === comunaActiva));
+      ['uv-tallos', 'uv-nombres'].forEach(id => map.getLayer(id) && map.setFilter(id, filtroNombresUV()));
       marcadoresCorte.forEach(m => poner(m, m.comuna === comunaActiva));
       // Recorridos de buses: solo existen en Copiapó (casilla de la leyenda y botón de capas)
       const chkRutas = document.getElementById('chk-rutas');
@@ -4572,7 +4867,7 @@
       return true;
     }
     function filtrarPinesComuna() {
-      Object.entries(etiquetasUV).forEach(([n, el]) => el.classList.toggle('otra-comuna', comunaDeUV(n) !== comunaActiva));
+      ['uv-tallos', 'uv-nombres'].forEach(id => map.getLayer(id) && map.setFilter(id, filtroNombresUV()));
     }
     async function irAComuna(c, alAbrir = false) {
       await activarComuna(c);
