@@ -2424,7 +2424,7 @@
       if (!ES_TACTIL) {
         // Un solo manejador para todo el mapa: como mucho una consulta por cuadro, y el elemento de más arriba manda
         // (relave > colegio > manzana). Antes cada capa consultaba el mapa 3D por su cuenta en cada movimiento.
-        const CAPAS_HOVER = ['uv-nombres', 'relaves-3d', 'colegios-3d', 'cortes', 'manzanas'];
+        const CAPAS_HOVER = ['yo-persona', 'uv-nombres', 'relaves-3d', 'colegios-3d', 'cortes', 'manzanas'];
         let ultimoMov = null, movPendiente = false, sobreAlgo = false;
         const ponerHover = n => { if (nombreHover !== n) { nombreHover = n; pintarNombresUV(); } };
         const salir = () => {
@@ -2454,6 +2454,12 @@
           const capas = CAPAS_HOVER.filter(id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none');
           const fs = capas.length ? map.queryRenderedFeatures(e.point, { layers: capas }) : [];
           const de = id => fs.find(f => f.layer.id === id);
+          if (de('yo-persona') && yo.lugar) {
+            sobreAlgo = true;
+            map.getCanvas().style.cursor = 'pointer';
+            ponerHover(null);
+            return mostrarTip(tipYo(), e.originalEvent);
+          }
           const nom = de('uv-nombres');
           if (nom) {
             sobreAlgo = true;
@@ -2482,12 +2488,13 @@
       }
       // Clic: el elemento de más arriba manda (nombre de UV > corte > relave > colegio > manzana)
       map.on('click', e => {
-        const capas = ['uv-nombres', 'cortes', 'relaves-3d', 'colegios-3d', 'manzanas']
+        const capas = ['yo-persona', 'uv-nombres', 'cortes', 'relaves-3d', 'colegios-3d', 'manzanas']
           .filter(id => map.getLayer(id) && map.getLayoutProperty(id, 'visibility') !== 'none');
         const fs = map.queryRenderedFeatures(e.point, { layers: capas });
         const de = id => fs.find(f => f.layer.id === id);
         const nom = de('uv-nombres'), corte = de('cortes'), rel = de('relaves-3d'), col = de('colegios-3d'), mz = de('manzanas');
         etiqueta.remove();
+        if (de('yo-persona') && yo.lugar) return abrirTarjetaYo();
         if (nom) {
           const n = nom.properties.n;
           if (uvDestacada.fija && uvDestacada.nombre === n) return quitarUV(true);
@@ -4686,12 +4693,14 @@
     }
     function apagarUbicacion() {
       if (yo.vigilancia != null) navigator.geolocation.clearWatch(yo.vigilancia);
-      Object.assign(yo, { activo: false, vigilancia: null, pos: null, uv: null });
+      Object.assign(yo, { activo: false, vigilancia: null, pos: null, uv: null, lugar: null });
       marcarBotonYo('apagado');
       quitarDibujoUbicacion();
       if (yo.tarjeta) { yo.tarjeta = false; quitarUV(true); }
     }
     function errorUbicacion(err) {
+      // Ya ubicado: un corte pasajero del GPS no apaga la función (la figura queda en la última posición)
+      if (yo.pos && err && err.code !== 1) return;
       const msj = {
         1: 'No se dio permiso para usar la ubicación. Para activarlo, toque el candado junto a la dirección del sitio y permita la ubicación.',
         2: 'No se pudo obtener la ubicación en este momento. Revise que el GPS o la ubicación del equipo estén activados.',
@@ -4721,6 +4730,7 @@
         mostrarTarjetaYo(datosLugar);
       }
       yo.uv = datosLugar.uv;
+      yo.lugar = datosLugar;
       if (yo.primera) {
         yo.primera = false;
         map.flyTo({ center: pt, zoom: Math.max(14, Math.min(16, 17 - Math.log2(Math.max(50, yo.prec) / 50))),
@@ -4745,6 +4755,16 @@
       const rel = relavesGeo ? masCercano(pt, relavesGeo.features) : { f: null };
       return { uv, mz: mz && mz.properties, dMz, col, rel };
     }
+    // Tooltip y ficha de la figura de persona
+    function tipYo() {
+      const L = yo.lugar;
+      return `USTED ESTÁ AQUÍ${L.uv ? ' · ' + esc(nombreCorto(L.uv)) : ''}<br>Precisión ±${fmtDist(yo.prec)}${ES_TACTIL ? '' : ' · clic para ver el detalle'}`;
+    }
+    function abrirTarjetaYo() {
+      if (!yo.lugar) return;
+      if (yo.lugar.uv) destacarUV(yo.lugar.uv, true, false); else quitarUV(true);
+      mostrarTarjetaYo(yo.lugar);
+    }
     function mostrarTarjetaYo(L) {
       const t = document.getElementById('tarjeta-uv');
       const pf = L.mz && L.mz.cluster >= 0 ? COMUNAS[yo.comuna].perfiles[L.mz.cluster] : null;
@@ -4760,7 +4780,7 @@
           <span><span class="mono">USTED ESTÁ AQUÍ · ${esc(NOMBRE_COMUNA[yo.comuna].toUpperCase())}</span><b>${L.uv ? esc(nombreCorto(L.uv)) : NOMBRE_COMUNA[yo.comuna]}</b></span>
           <span class="tarjeta-uv-botones">
             ${L.uv ? `<button onclick="abrirFichaUV('${esc(L.uv).replace(/'/g, '&#39;')}')" title="Ficha de la unidad vecinal">FICHA</button>` : ''}
-            <button onclick="apagarUbicacion()" aria-label="Dejar de mostrar mi ubicación" title="Dejar de mostrar mi ubicación"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="quitarUV(true)" aria-label="Cerrar la tarjeta (la ubicación sigue en el mapa)" title="Cerrar la tarjeta (la ubicación sigue en el mapa)"><i class="fa-solid fa-xmark"></i></button>
           </span>
         </div>
         <ul class="yo-lista">${filas.map(([i, v]) => `<li><i class="fa-solid ${i}"></i><span>${v}</span></li>`).join('')}</ul>
@@ -4928,6 +4948,18 @@
       const el = document.querySelector('.maplibregl-ctrl-attrib');
       if (el) el.classList.remove('maplibregl-compact-show');
     });
+  </script>
+  <script>
+    // Guardar datos y relieve en el navegador (atlas-sw.js): la segunda visita carga al instante.
+    // En el servidor local queda apagado (para ver siempre los datos recién editados), salvo con ?sw=1.
+    if ('serviceWorker' in navigator) {
+      const local = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+      if (!local || /[?&]sw=1(&|$)/.test(location.search)) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('atlas-sw.js').catch(() => { /* sin caché: el atlas funciona igual */ }));
+      } else {
+        navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.active && /atlas-sw\.js$/.test(r.active.scriptURL) && r.unregister()));
+      }
+    }
   </script>
   <script>
     // Enlaces sin ".html": GitHub Pages los resuelve, pero el servidor local (Live Server) no.
